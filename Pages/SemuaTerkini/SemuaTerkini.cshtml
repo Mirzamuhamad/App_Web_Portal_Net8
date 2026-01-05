@@ -1,0 +1,65 @@
+@page
+
+@model semuaTerkiniModel
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Semua Terkini";
+}
+
+<div class="max-w-7xl p-2 sm:p-10 mx-auto pb-10">
+    <!-- BARIS DUA KOLOM -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-0 items-center">
+
+        <!-- KOLOM KIRI: TEXT -->
+        <h4 class="text-sm sm:text-2xl font-bold text-gray-700 pb-2 sm:pb-0">
+            Jelajahi Semua Info Terkini Kami
+        </h4>
+
+        <!-- KOLOM KANAN: SEARCH BAR -->
+        <div class="w-full flex items-center rounded-full border border-gray-300 
+                overflow-hidden shadow-sm">
+            <input type="text" placeholder="Cari terkini..." class="flex-1 px-3 py-1.5 text-sm outline-none" />
+
+            <button class="text-white px-4 py-1.5 rounded-full flex items-center justify-center
+                       bg-blue-100 hover:bg-blue-200  transition">
+                <img src="~/icons/search.png" class="h-5 w-5" />
+            </button>
+        </div>
+
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-3 pt-0 gap-4 sm:gab-4 mt-8 sm:mt-10">
+        @foreach (var propertyItemTerkini in Model.SemuaTerkiniItems)
+        {
+
+            <a href="/DetailTerkini/DetailTerkini?id=@propertyItemTerkini.Id"
+                    class="snap-start rounded-none sm:rounded-2xl 
+                   overflow-hidden sm:border sm:border-gray-200 sm:shadow-sm bg-white 
+                    hover:shadow-lg hover:-translate-y-1 transition">
+
+                    <img src="@propertyItemTerkini.ImageUrl"
+                        class="w-full h-56 sm:h-48 object-cover rounded-md sm:rounded-none" />
+
+                    <div class="pt-2 sm:p-2">
+                        <h3 class="text-sm sm:text-lg font-bold mb-0 sm:mb-1 text-gray-700">@propertyItemTerkini.Title</h3>
+                        <p class="text-gray-500 text-xs sm:text-sm">
+                            @propertyItemTerkini.CreateDate
+                        </p>
+                    </div>
+                </a>
+        }
+    </div>
+@* 
+    <div id="terkiniContainer"
+     class="grid grid-cols-1 sm:grid-cols-3 pt-0 gap-4 sm:gap-4 mt-8 sm:mt-10">
+</div>
+
+<div id="loadMoreTrigger" 
+     hx-get="/SemuaTerkini/SemuaTerkini?page=1"
+     hx-trigger="load, revealed"
+     hx-target="#loadMoreTrigger"
+     hx-swap="outerHTML">
+     
+     <p class="text-center pt-5 text-gray-400">Memulai load data...</p>
+</div> *@
+</div>

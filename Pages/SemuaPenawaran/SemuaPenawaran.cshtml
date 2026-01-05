@@ -1,0 +1,70 @@
+@page
+
+@model semuaPenawaranModel
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Semua Terkini";
+}
+
+<div class="max-w-7xl p-2 sm:p-10 mx-auto pb-10">
+    <!-- BARIS DUA KOLOM -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-0 items-center">
+
+        <!-- KOLOM KIRI: TEXT -->
+        <h4 class="text-sm sm:text-2xl font-bold text-gray-700 pb-2 sm:pb-0">
+            Jelajahi Semua Penawaran & Promo
+        </h4>
+
+        <!-- KOLOM KANAN: SEARCH BAR -->
+        <div class="w-full flex items-center rounded-full border border-gray-300 
+                overflow-hidden shadow-sm">
+            <input type="text" placeholder="Cari Semua Penawaran....." class="flex-1 px-3 py-1.5 text-sm outline-none" />
+
+            <button class="text-white px-4 py-1.5 rounded-full flex items-center justify-center
+                       bg-gray-100 hover:bg-blue-200  transition">
+                <img src="~/icons/search.png" class="h-5 w-5" />
+            </button>
+        </div>
+
+    </div>
+
+     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-4  mt-8 sm:mt-10">
+
+        @foreach (var item in Model.SemuaPenawaranItems)
+        {
+            <a href="/DetailPenawaran/DetailPenawaran/@item.Id" class="block rounded-none sm:rounded-2xl overflow-hidden
+                sm:border sm:border-gray-200 sm:shadow-sm hover:shadow-md
+                transition duration-300 hover:-translate-y-1"> <!-- Link tujuan -->
+
+                <div class="relative">
+                    <img src="@item.ImageUrl" class="w-full h-44 sm:h-56 object-cover rounded-md sm:rounded-none" />
+
+                    <span class="absolute top-3 left-3 bg-white px-3 py-1 rounded-xl 
+                           text-xs sm:text-sm font-semibold text-gray-700">
+                        @item.Tag
+                    </span>
+
+                    <span class="absolute bottom-3 right-3 bg-black text-white px-3 sm:px-1 
+                           py-2 rounded-xl font-semibold text-xs sm:text-sm">
+                        @item.Price
+                    </span>
+                </div>
+
+                <div class="pt-2 sm:p-2">
+                    <h3 class="text-sm sm:text-lg font-bold mb-2 text-gray-700">
+                        @item.Title
+                    </h3>
+
+                    <p class="text-gray-600 flex items-center gap-2 text-xs sm:text-sm">
+                        <i class="ri-map-pin-line"></i> @item.Location
+                    </p>
+                </div>
+
+            </a>
+        }
+
+
+    </div>
+
+
+</div>

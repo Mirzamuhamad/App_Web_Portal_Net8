@@ -1,0 +1,72 @@
+@page
+
+@model Pages.UnitList.UnitListModel
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Unit List";
+}
+
+<div class="max-w-7xl mx-auto p-2 sm:pt-5 pb-30">
+
+    @* <!-- HEADER -->
+    <div class="flex items-center gap-3 mb-3 sm:pb-5">
+        <a href="/Index" class="text-gray-600 hover:text-black text-xl">
+            <i class="fa-solid fa-arrow-left"></i>
+        </a>
+        <h1 class=" text-1xl sm:text-2xl font-bold text-gray-600 ">Unit List</h1>
+    </div> *@
+
+    <!-- GRID CARD -->
+    <div class="grid grid-cols-1 md:grid-cols-2 pt-2 gap-3">
+
+        @foreach (var item in Model.UnitItems)
+        {
+            <!-- PILIH WARNA BADGE -->
+            var badgeColor = item.Status.ToLower() == "penyewa"
+            ? "bg-yellow-400 text-gray-800"
+            : "bg-green-500 text-white";
+
+            <!-- PILIH ICON WARNA -->
+            var iconColor = item.Status.ToLower() == "penyewa"
+            ? "text-blue-600 bg-blue-50"
+            : "text-purple-600 bg-purple-50";
+
+            <a href="/DetailPage?id=@item.UnitCode" class="block transform hover:scale-[1.02] transition duration-200">
+
+                <div class="bg-white rounded-3xl shadow-md overflow-hidden border border-gray-200">
+
+                    <!-- IMAGE -->
+                    <div class="relative">
+                        <img src="@item.ImagePath" class="w-full h-48 object-cover" />
+
+                        <div class="absolute top-3 right-3 @badgeColor
+                            text-xs font-semibold px-3 py-1 rounded-full shadow text-gray-500">
+                            @item.Status.ToUpper()
+                        </div>
+                    </div>
+
+                    <!-- CONTENT -->
+                    <div class="p-4 flex items-start gap-4">
+                        <!-- ICON ROUND -->
+                        <div class="w-12 h-12 rounded-full flex items-center justify-center @iconColor">
+                            <img src="/icons/building.png" class="w-7 h-7" />
+                        </div>
+                        
+
+                        <div class="flex-grow">
+                            <h3 class="text-xl font-bold text-gray-700">@item.UnitCode</h3>
+                            <p class="text-gray-500 text-sm">@item.Building</p>
+                        </div>
+
+                        <div class="text-gray-500 text-sm font-medium whitespace-nowrap">
+                            @item.TicketCount Tiket
+                        </div>
+                    </div>
+                </div>
+
+            </a>
+
+        }
+
+    </div>
+</div>

@@ -1,0 +1,82 @@
+@page
+@model TataTertipModel
+
+@{
+    // Jika load via HTMX → tanpa layout (hanya isi content)
+    if (Request.Headers.ContainsKey("HX-Request"))
+        Layout = null;
+
+    ViewData["Title"] = "Tata Tertib Penghuni";
+}
+
+<div class="max-w-7xl mx-auto p-4 sm:pt-10 pb-20 animate-fadeIn">
+
+    <h1 class="text-3xl sm:text-4xl font-bold text-gray-800 mb-6">
+        Tata Tertib Tenant Kawasan Industri
+    </h1>
+
+    <p class="text-gray-600 mb-6">
+        Aturan ini dibuat untuk memastikan lingkungan kawasan industri tetap tertib, aman, nyaman, dan produktif bagi
+        seluruh tenant. Mohon untuk dibaca dan dipatuhi bersama.
+    </p>
+
+    <ol class="list-decimal pl-5 space-y-3 text-gray-700 text-base leading-relaxed">
+
+        <li>Menjaga kebersihan area tenant, area fasilitas umum, serta melakukan pengelolaan limbah sesuai ketentuan
+            yang berlaku.</li>
+
+        <li>Menghormati kenyamanan tenant lain dan menghindari kebisingan berlebihan terutama pada pukul 22:00–06:00
+            kecuali dengan izin manajemen kawasan.</li>
+
+        <li>Dilarang melakukan perubahan struktur bangunan, instalasi listrik, plumbing, atau utilitas lainnya tanpa
+            persetujuan resmi dari manajemen kawasan.</li>
+
+        <li>Aktivitas operasional wajib mematuhi standar K3 (Keselamatan dan Kesehatan Kerja) serta prosedur darurat
+            kawasan industri.</li>
+
+        <li>Pemanfaatan fasilitas umum dan utilitas kawasan (air, listrik, IPAL, jalan, parkir, dsb.) wajib mengikuti
+            peraturan, SOP, dan jam operasional yang ditetapkan.</li>
+
+        <li>Dilarang menggunakan atau menimbun bahan berbahaya (B3) tanpa izin serta wajib menyimpannya sesuai standar
+            keselamatan.</li>
+
+        <li>Setiap kendaraan operasional maupun pribadi wajib diparkir pada area yang telah ditentukan serta tidak
+            mengganggu akses emergency maupun aktivitas tenant lain.</li>
+
+        <li>Segera melaporkan kepada manajemen setiap insiden, kecelakaan kerja, potensi bahaya, atau kerusakan
+            fasilitas kawasan.</li>
+
+        <li>Pengelolaan limbah cair dan padat harus melalui sistem pengolahan kawasan atau pihak yang berizin. Dilarang
+            membuang limbah sembarangan.</li>
+
+        <li>Tamu, vendor, kontraktor, maupun tenaga kerja pihak ketiga wajib mengikuti prosedur keamanan dan registrasi
+            yang ditetapkan.</li>
+
+        <li>Dilarang melakukan aktivitas yang dapat menimbulkan gangguan, kerusakan, polusi udara, air, maupun tanah
+            tanpa mitigasi yang sesuai.</li>
+
+        <li>Penggunaan signage, spanduk, atau media promosi di area kawasan harus melalui persetujuan manajemen terlebih
+            dahulu.</li>
+
+        <li>Menjaga ketertiban administratif, termasuk pembayaran tagihan utilitas, sewa, serta dokumen operasional
+            tepat waktu.</li>
+
+        <li>Setiap tenant wajib mengikuti sosialisasi dan pelatihan rutin yang diselenggarakan manajemen kawasan terkait
+            K3 dan keamanan.</li>
+
+        <li>Manajemen kawasan berhak melakukan inspeksi rutin untuk memastikan kepatuhan terhadap tata tertib ini. Tenant
+            wajib memberikan akses penuh selama inspeksi berlangsung.</li>
+
+        <li>Pelaksanaan tata tertib ini akan dievaluasi secara berkala dan dapat diperbarui sesuai kebutuhan demi
+            terciptanya lingkungan industri yang optimal.</li>
+
+
+    </ol>
+
+    <p class="text-gray-600 mt-8">
+        Dengan mematuhi tata tertib ini, seluruh tenant dapat beroperasi secara aman, nyaman, dan efisien.
+        Terima kasih atas kerja sama dan komitmen Anda.
+    </p>
+
+
+</div>

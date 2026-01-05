@@ -1,0 +1,259 @@
+﻿@* @{
+    var namaUser = Context.Session.GetString("Nama"); // langsung Ambil session
+    var isLogin = !string.IsNullOrEmpty(namaUser); //cek status login
+} *@
+
+
+@* untuk abil data dari cookie *@
+@using System.Security.Claims
+@{
+    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    var role = User.FindFirstValue(ClaimTypes.Role);
+    var nama = User.Identity?.Name;
+    @* jika mau nambah di class onpostlogin di file login.cshtml.cs *@
+}
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    @* <meta name="viewport" content="width=device-width, initial-scale=1.0" /> *@
+    @* // Disable zoom on mobile *@
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+    <title>@ViewData["Title"] - Portal Tenant Net8</title>
+    @* <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" /> *@
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/custom.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/TestLandingPageNet8.styles.css" asp-append-version="true" />
+    <!-- Tailwind CSS CDN -->
+
+    @* <script src="https://cdn.tailwindcss.com"></script> *@
+    <link href="https://cdn.jsdelivr.net/npm/remixicon/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Mulish:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="~/css/notyf@3/notyf.min.css">
+
+
+
+</head>
+
+<body class="font-muli">
+    <header class="w-full bg-white top-2 z-50 pt-2 pb-2">
+        <div class="max-w-7xl mx-auto flex  items-center justify-between px-2 sm:px-6 py-2">
+
+            <!-- LOGO -->
+            <a asp-area="" asp-page="/Index" class="flex items-center gap-2">
+                <img src="~/image/Logo.svg" alt="Logo" class="h-6 sm:h-10 sm:h-7 w-auto" />
+            </a>
+
+
+            <!-- MOBILE BUTTON -->
+            <button id="menuBtn" class="lg:hidden text-3xl">
+                @* ☰ *@
+                <img src="~/icons/bullet-point.png" alt="Icons" class="h-6 sm:h-10 sm:h-8 w-auto">
+            </button>
+
+            <!-- MENU DESKTOP -->
+            @* <a hx-get="/Index" hx-target="#mainContent" hx-push-url="true" *@
+            <nav class="hidden lg:flex gap-3 text-lg font-medium text-gray-700">
+                <a hx-get="/Index" hx-target="#mainContent" hx-push-url="true"
+                    class="text-gray-700 hover:text-blue-600 hover:bg-White rounded-2xl px-2 transition-all duration-200 ease-out hover:shadow-md hover:-translate-y-0.5 py-1">Home</a>
+                <div class="relative group">
+                    <button
+                        class="text-gray-700 hover:text-blue-600 hover:bg-White rounded-2xl px-2 transition-all duration-200 ease-out hover:shadow-md hover:-translate-y-0.5 py-1">
+                        Layanan
+                    </button>
+
+                    <!-- Hover Bridge -->
+                    <div class="absolute left-0 top-full h-4 w-full"></div>
+                    <div class="absolute left-0 mt-1 w-[700px] bg-white p-2 rounded-2xl
+                    border border-gray-100 shadow-xl z-50
+                    hidden group-hover:block -translate-x-48">
+                        @await Component.InvokeAsync("MenuSemua")
+                    </div>
+                </div>
+
+
+                <a asp-page="/SemuaTerkini/SemuaTerkini"
+                    class="text-gray-700 hover:text-blue-600 hover:bg-White rounded-2xl px-2 transition-all duration-200 ease-out hover:shadow-md hover:-translate-y-0.5 py-1">
+                    Info Terkini </a>
+                <a asp-page="/SemuaAcara/SemuaAcara"
+                    class="text-gray-700 hover:text-blue-600 hover:bg-White rounded-2xl px-2 transition-all duration-200 ease-out hover:shadow-md hover:-translate-y-0.5 py-1">Acara</a>
+                <a asp-page="/SemuaPenawaran/SemuaPenawaran"
+                    class="text-gray-700 hover:text-blue-600 hover:bg-White rounded-2xl px-2 transition-all duration-200 ease-out hover:shadow-md hover:-translate-y-0.5 py-1">Penawaran
+                    & Promo</a>
+                @* <a asp-page="#contact"
+                    class="text-gray-700 hover:text-blue-600 hover:bg-White rounded-2xl px-2 transition-all duration-200 ease-out hover:shadow-md hover:-translate-y-0.5 py-1">Contact</a> *@
+
+            </nav>
+
+            <!-- LOGIN BUTTON RIGHT (GRAY) -->
+            <div class="hidden lg:block">
+                <a hx-get="/AccountUser/AccountUser" hx-target="#mainContent" hx-push-url="true"
+                    class="px-2 py-2 bg-gray-50 text-white rounded-full shadow-md hover:bg-gray-100 transition flex items-center justify-center">
+                    <p class="text-gray-700 text-sm font-semibold pr-2">
+                        Hi, @(string.IsNullOrEmpty(nama) ? "Guest" : nama)
+                        @* Hi, @User.Identity?.Name *@
+                    </p>
+
+                    <img src="~/icons/profile.png" alt="profile" class="h-7 w-auto">
+                </a>
+            </div>
+
+        </div>
+
+        <!-- MOBILE MENU (SLIDE LEFT PANEL) -->
+        <div id="mobileMenu" class="fixed top-0 left-0 h-full w-64 bg-white shadow-lg 
+            z-50 menu-enter lg:hidden p-6 space-y-4 
+            text-lg font-medium text-gray-700 hidden rounded-r-xl">
+
+
+            <a hx-get="/Index" hx-target="#mainContent" hx-push-url="true"
+                class="hover:text-blue-600 block text-sm font-semibold">Home</a>
+            <a href="/Semuamenu/SemuaMenu"
+                class=" text-gray-700 hover:text-blue-600 block text-sm font-semibold ">Menu</a>
+            <a href="/SemuaTerkini/SemuaTerkini"
+                class="hover:text-blue-600 block text-sm font-semibold text-gray-700">Info Terkini</a>
+            <a href="/SemuaAcara/SemuaAcara"" class=" hover:text-blue-600 block text-sm font-semibold
+                text-gray-700">Acara</a>
+            <a href="/SemuaPenawaran/SemuaPenawaran"
+                class="hover:text-blue-600 block text-sm font-semibold text-gray-700">Penawaran &
+                Promo</a>
+            @* <a href="#contact" class="hover:text-blue-600 block text-sm font-semibold text-gray-700">Contact</a> *@
+
+            <a hx-get="/AccountUser/AccountUser" hx-target="#mainContent" hx-push-url="true" class="flex items-center gap-2 bg-gray-100/50 rounded-full px-2 py-2 shadow-sm
+              hover:bg-gray-100 transition">
+                <img src="~/icons/profile.png" alt="profile" class="h-5 w-auto">
+                @* <p class="text-gray-800 text-xs font-semibold pl-0">
+                    Hi, John Doe
+                </p> *@
+                <p class="text-gray-800 text-xs font-semibold pl-0">
+                    Hi, @(string.IsNullOrEmpty(nama) ? "Guest" : nama)
+                    @* Hi, @User.Identity?.Name *@
+                </p>
+
+            </a>
+        </div>
+
+        <!-- BACKDROP -->
+        <div id="menuBackdrop"
+            class="hidden fixed inset-0 bg-black/40 z-40 lg:hidden transition duration-700 ease-in-out"></div>
+
+
+
+    </header>
+
+    <div class="pb-20">
+        <!-- 📌 Container utama untuk htmx -->
+        <main id="mainContent" role="main" class="pb-0 px-0 transition-all duration-300">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted bg-white mt-10">
+        <div class="container flex items-center justify-between py-4 text-sm text-gray-600">
+
+            <span>&copy; 2025 - Tenant Net8-Mrz</span>
+
+            <div class="flex items-center gap-4">
+
+                <!-- Privacy via HTMX -->
+                <a hx-get="/Privacy" hx-target="#mainContent" hx-push-url="true" class="hover:text-blue-600 transition">
+                    Privacy
+                </a>
+
+                <!-- Tata Tertib via HTMX -->
+                <a hx-get="/TataTertip/TataTertip" hx-target="#mainContent" hx-push-url="true"
+                    class="hover:text-blue-600 transition">
+                    Tata Tertib
+                </a>
+
+            </div>
+        </div>
+    </footer>
+
+
+
+
+    @* Style untuk loader halaman HTMX *@
+    <div id="pageLoader" class="fixed inset-0 bg-white/50 backdrop-blur-sm hidden items-center justify-center z-50">
+
+        <div class="relative flex items-center justify-center">
+            <!-- Glow Pulse -->
+            <div class="absolute w-20 h-20 rounded-full bg-yellow-400 opacity-30 animate-ping"></div>
+
+            <!-- Spinning Ring -->
+            <div class="animate-spin w-14 h-14 border-[4px] border-yellow-400 border-t-transparent rounded-full"></div>
+        </div>
+
+    </div>
+
+
+
+    @* <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> *@
+    @* <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script> *@
+    <script src="~/lib/sweetalert2/sweetalert2@11.js"></script>
+    <script src="~/lib/notyf/notyf.min.js"></script>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/browser-image-compression/browser-image-compression.js"></script>
+    @* <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script> *@
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+
+
+    <script>
+        document.body.addEventListener('htmx:beforeRequest', () => {
+            const loader = document.getElementById('pageLoader');
+            loader.classList.remove('hidden');
+            loader.classList.add('flex');
+
+            // Fade In
+            setTimeout(() => {
+                loader.classList.remove('opacity-0');
+                loader.classList.add('opacity-100');
+            }, 10);
+
+            console.log("Loader tampil");
+        });
+
+        document.body.addEventListener('htmx:afterSwap', () => {
+            const loader = document.getElementById('pageLoader');
+
+            // Fade Out
+            loader.classList.add('opacity-0');
+            loader.classList.remove('opacity-100');
+
+            // Setelah animasi selesai → hide
+            setTimeout(() => {
+                loader.classList.add('hidden');
+                loader.classList.remove('flex');
+            }, 300); // sama dengan duration transition
+
+            console.log("Loader hilang");
+        });
+
+
+
+    </script>
+
+
+    <!-- 🚀 Tambahkan HTMX -->
+    <script src="~/lib/htmx.org@1.9.10/htmx.min.js"></script>
+    <script defer src="~/lib/alpinejs@3.x.x/alpinejs.min.js"></script>
+
+
+    @* <script>
+        htmx.config.defaultSwapStyle = "outerHTML";
+    </script> *@
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+
+</html>

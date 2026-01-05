@@ -1,0 +1,91 @@
+{
+  "format": 1,
+  "restore": {
+    "D:\\App_Web_Portal_Kawasan_Net8\\TestLandingPageNet8.csproj": {}
+  },
+  "projects": {
+    "D:\\App_Web_Portal_Kawasan_Net8\\TestLandingPageNet8.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "D:\\App_Web_Portal_Kawasan_Net8\\TestLandingPageNet8.csproj",
+        "projectName": "TestLandingPageNet8",
+        "projectPath": "D:\\App_Web_Portal_Kawasan_Net8\\TestLandingPageNet8.csproj",
+        "packagesPath": "C:\\Users\\IT\\.nuget\\packages\\",
+        "outputPath": "D:\\App_Web_Portal_Kawasan_Net8\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\IT\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        }
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "dependencies": {
+            "Dapper": {
+              "target": "Package",
+              "version": "[2.1.66, )"
+            },
+            "Microsoft.Data.SqlClient": {
+              "target": "Package",
+              "version": "[5.2.2, )"
+            },
+            "System.Data.SqlClient": {
+              "target": "Package",
+              "version": "[4.9.0, )"
+            },
+            "X.PagedList": {
+              "target": "Package",
+              "version": "[10.5.9, )"
+            },
+            "X.PagedList.Mvc.Core": {
+              "target": "Package",
+              "version": "[10.5.9, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.AspNetCore.App": {
+              "privateAssets": "none"
+            },
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.416/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}

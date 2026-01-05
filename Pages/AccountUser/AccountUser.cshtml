@@ -1,0 +1,932 @@
+@page
+@model Pages.AccountUser.AccountUserModel
+@{
+    if (Request.Headers.ContainsKey("HX-Request"))
+    {
+        Layout = null;
+    }
+
+    ViewData["Title"] = "Akun Pengguna";
+}
+
+<div class="min-h-screen bg-slate-50/50 pb-20" x-data="{ 
+        activeTab: 'pengaduan',
+        isEditModalOpen: false,
+        isLoading: false, 
+        showToast: false, 
+        toastMsg: '',
+        profilePreview: '@(string.IsNullOrEmpty(Model.Tenant.DocumentPathUsers) ? $"https://ui-avatars.com/api/?name={Model.Tenant.Nama}&background=0D9488&color=fff" : Model.Tenant.DocumentPathUsers)',
+        
+        // Data reaktif untuk teks di halaman utama
+        tenantData: {
+            nama: '@Model.Tenant.Nama',
+            foto: '@Model.Tenant.DocumentPathUsers',
+            noHp: '@(Model.Tenant.NoHp ?? "-")',
+            npwp: '@(Model.Tenant.Npwp ?? "-")',
+            tempatLahir: '@Model.Tenant.TempatLahir',
+            tanggalLahir: '@(Model.Tenant.TanggalLahir?.ToString("dd MMMM yyyy") ?? "-")',
+            jenisKelamin: '@Model.Tenant.JenisKelamin',
+            alamat: '@Model.Tenant.AlamatLengkap',
+            propertyUnit: '@Model.Tenant.PropertyUnit'
+        },
+
+        async submitForm() {
+            this.isLoading = true; // Set loading jadi true saat mulai submit
+                const form = document.getElementById('editProfileForm');
+                const formData = new FormData(form);        
+                
+                try {
+                    const response = await fetch('?handler=UpdateProfile', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            // Antiforgery token wajib untuk keamanan ASP.NET Core
+                            'RequestVerificationToken': document.querySelector('input[name=__RequestVerificationToken]').value
+                        }
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        // 1. Update UI halaman utama tanpa reload
+                        this.tenantData.nama = formData.get('Nama');
+                        this.tenantData.noHp = formData.get('NoHp') || '-';
+                        this.tenantData.npwp = formData.get('Npwp') || '-';
+                        this.tenantData.tempatLahir = formData.get('TempatLahir');
+                        this.tenantData.jenisKelamin = formData.get('JenisKelamin');
+                        this.tenantData.alamat = formData.get('AlamatLengkap');
+                        // Khusus tanggal, jika ingin format rapi tanpa reload:
+                            let tglRaw = formData.get('TanggalLahir');
+                            if(tglRaw) {
+                                const dateObj = new Date(tglRaw);
+                                this.tenantData.tanggalLahir = dateObj.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
+                            } else {
+                                this.tenantData.tanggalLahir = '-';
+                            }
+                        
+                        
+                        if(result.newData.fotoPath) {
+                            this.tenantData.foto = result.newData.fotoPath;
+                            this.profilePreview = result.newData.fotoPath;
+                        }
+                        
+                        // 2. Tutup Modal & Tampilkan Notifikasi
+                        this.isLoading = false;
+                        this.isEditModalOpen = false;
+                        this.toastMsg = result.message;
+                        //this.showToast = true;
+                        showSuccess('Success',result.message);
+                        setTimeout(() => this.showToast = false, 3000);
+                    } else {
+                        alert('Gagal: ' + result.message);
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    showError('Error', error.message || 'Terjadi kesalahan saat mengirim data.');
+                    
+                }finally {
+                // PENTING: isLoading ditaruh di sini agar tombol aktif kembali 
+                // jika gagal, atau modal benar-benar selesai prosesnya.
+                this.isLoading = false;
+            }
+            
+        },
+
+    // Ajax untuk Reset Password
+        pwd: {
+            old: '',
+            new: '',
+            confirm: ''
+        },
+        isPwdLoading: false,
+
+        async changePassword() {
+            // Validasi sederhana di client
+
+            if (this.pwd.old == '' ) {
+                showError('Gagal', 'Password lama harus diisi!');
+                return;
+            }
+
+            if (this.pwd.new == '' ) {
+                showError('Gagal', 'Password baru harus diisi!');
+                return;
+            }
+
+            if (this.pwd.confirm == '' ) {
+                showError('Gagal', 'Konfirmasi password baru harus diisi!');
+                return;
+            }
+
+            if (this.pwd.new !== this.pwd.confirm) {
+                showError('Gagal', 'Konfirmasi password baru tidak cocok!');
+                return;
+            }
+
+            if (this.pwd.new.length < 6) {
+                showError('Gagal', 'Password baru minimal 6 karakter!');
+                return;
+            }
+
+            this.isPwdLoading = true;
+            try {
+                const response = await fetch('?handler=ChangePassword', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'RequestVerificationToken': document.querySelector('input[name=__RequestVerificationToken]').value
+                    },
+                    body: new URLSearchParams({
+                        'oldPwd': this.pwd.old,
+                        'newPwd': this.pwd.new
+                    })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    // Reset form
+                    this.pwd.old = ''; this.pwd.new = ''; this.pwd.confirm = '';
+                    this.toastMsg = result.message;
+                    //this.showToast = true;
+                    showSuccess('Success', result.message);
+                    setTimeout(() => this.showToast = false, 3000);
+                } else {
+                    showError('Gagal', result.message);
+                }
+            } catch (e) {
+                showError('Error', 'Terjadi kesalahan sistem.');
+            } finally {
+                this.isPwdLoading = false;
+            }
+        },
+
+    // Lightbox dan Detail Pengaduan
+    showDetail: false,
+    showLightbox: false,
+    currentImgIndex: 0,
+    selectedComplaint: {
+        id: '',
+        title: '',
+        date: '',
+        status: '',
+        description: '',
+        images: [],
+        KavlingName: '',
+        PhotoCount: 0
+    },
+    
+    openDetail(item) {
+        this.selectedComplaint = item;
+        this.showDetail = true;
+    },
+
+    openLightbox(index) {
+        this.currentImgIndex = index;
+        this.showLightbox = true;
+    },
+
+    prevImg() {
+        this.currentImgIndex = (this.currentImgIndex > 0) ? this.currentImgIndex - 1 : this.selectedComplaint.images.length - 1;
+    },
+
+    nextImg() {
+        this.currentImgIndex = (this.currentImgIndex < this.selectedComplaint.images.length - 1) ? this.currentImgIndex + 1 : 0;
+    }
+
+    }">
+
+    @* section header profile *@
+
+    <div class="mx-auto sm:px-4">
+
+        <div class="bg-white border border-gray-200 sm:rounded-3xl shadow-sm">
+            <div class="mx-auto px-2 sm:px-4 py-2 md:py-4">
+                <div class="flex items-center gap-3 md:gap-6">
+                    @{
+                        // Logika gambar: Gunakan foto dari DB, jika kosong gunakan Avatar inisial
+                        var profileImg = !string.IsNullOrEmpty(Model.Tenant.DocumentPathUsers)
+                        ? Model.Tenant.DocumentPathUsers
+                        : $"https://ui-avatars.com/api/?name={Model.Tenant.Nama}&background=0D9488&color=fff";
+                    }
+
+                    <img :src="profilePreview || '@profileImg'"
+                        class="w-16 h-16 sm:w-24 sm:h-24 rounded-2xl object-cover ring-none sm:ring-4 ring-teal-500/20 border-2 border-teal-600 shadow-lg">
+                    <div class="flex-1">
+                        <h1 class="text-base md:text-xl font-bold text-gray-900 leading-tight" x-text="tenantData.nama">
+                            @Model.Tenant.Nama</h1>
+                        <p class="text-[10px] md:text-sm text-gray-500 uppercase font-semibold"
+                            x-text="tenantData.propertyUnit">@Model.Tenant.PropertyUnit
+                        </p>
+                    </div>
+                    <div class="hidden md:block">
+                        <span class="px-4 py-3 bg-teal-100 text-teal-700 text-xs font-bold rounded-full">TENANT
+                            @Model.Tenant.RoleType</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @* end section header profile *@
+
+
+    <div class=" mx-auto p-0 md:p-4">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-2 md:gap-10 items-start">
+
+            <div class="lg:col-span-3">
+                <div
+                    class="bg-white rounded-none sm:border sm:border-slate-200 sm:rounded-2xl shadow-sm overflow-hidden sticky top-6">
+                    <div class="p-4 border-b border-slate-50 bg-slate-50/50 hidden md:block">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Menu Navigasi</p>
+                    </div>
+                    <nav class="flex lg:flex-col overflow-x-auto no-scrollbar bg-white p-0 sm:p-2">
+
+                        <div class="flex lg:flex-col w-full gap-2 sm:gap-3">
+                            <button @@click="activeTab = 'pengaduan'"
+                                :class="activeTab === 'pengaduan' ? 'border-teal-600 text-teal-600 bg-teal-50/50' : 'border-transparent text-gray-500'"
+                                class="flex-none lg:flex-1 flex items-center px-5 py-4 lg:px-4 lg:py-3 text-sm font-bold border-b-2 lg:border-b-0 lg:border-l-4 lg:rounded-md transition-all">
+                                Pengaduan
+                            </button>
+
+                            <button @@click="activeTab = 'tagihan'"
+                                :class="activeTab === 'tagihan' ? 'border-teal-600 text-teal-600 bg-teal-50/50' : 'border-transparent text-gray-500'"
+                                class="flex-none lg:flex-1 flex items-center px-5 py-4 lg:px-4 lg:py-3 text-sm font-bold border-b-2 lg:border-b-0 lg:border-l-4 lg:rounded-md transition-all">
+                                Tagihan
+                            </button>
+
+                            <button @@click="activeTab = 'profile'"
+                                :class="activeTab === 'profile' ? 'border-teal-600 text-teal-600 bg-teal-50/50' : 'border-transparent text-gray-500'"
+                                class="flex-none lg:flex-1 flex items-center px-5 py-4 lg:px-4 lg:py-3 text-sm font-bold border-b-2 lg:border-b-0 lg:border-l-4 lg:rounded-md transition-all">
+                                Profile
+                            </button>
+
+                            <button @@click="activeTab = 'password'"
+                                :class="activeTab === 'password' ? 'border-teal-600 text-teal-600 bg-teal-50/50' : 'border-transparent text-gray-500'"
+                                class="flex-none lg:flex-1 flex items-center px-5 py-4 lg:px-4 lg:py-3 text-sm font-bold border-b-2 lg:border-b-0 lg:border-l-4 lg:rounded-md transition-all">
+                                Password
+                            </button>
+                            <div class="h-[1px] bg-slate-100 my-2 hidden lg:block"></div>
+
+
+
+                            <div>
+                                @Html.AntiForgeryToken()
+                                <!-- Logout -->
+                                <button id="btnLogout"
+                                    class="flex-none lg:w-full flex items-center px-6 py-3.5 text-sm font-bold text-red-500 hover:bg-red-50 rounded-xl transition-all">
+                                    <i class="ri-logout-box-r-line mr-3 text-lg"></i> Logout
+                                </button>
+                            </div>
+
+                        </div>
+                    </nav>
+                </div>
+            </div>
+
+            <div class="lg:col-span-9">
+                <div class="bg-white border border-slate-200 rounded-2xl shadow-sm min-h-[500px] flex flex-col">
+
+                    <div class="overflow-y-auto custom-scrollbar no-scrollbar flex-1" style="max-height: 75vh;">
+
+                        @* section pengaduan  *@
+                        <div x-show="activeTab === 'pengaduan'" x-transition class="p-2 md:p-6">
+                            <div
+                                class="flex justify-between items-center mb-8 sticky top-0 bg-white py-2 z-10 border-b border-slate-50">
+                                <div>
+                                    <h2 class="text-xl font-bold text-slate-600">Riwayat Pengaduan</h2>
+                                    <p class="text-sm text-slate-500 mt-1">Pantau status laporan kendala unit Anda.</p>
+                                </div>
+                                @* <button
+                                    class="bg-teal-600 hover:bg-teal-700 text-white text-xs md:text-sm px-5 py-2.5 rounded-xl font-bold transition shadow-lg shadow-teal-100">
+                                    + Buat Aduan
+                                </button> *@
+                            </div>
+                            <div class="grid grid-cols-1 gap-4">
+                                @foreach (var item in Model.Complaints)
+                                {
+                                    @* start list data *@
+                                    <div @@click="openDetail({ 
+                                                            id: '@item.Id', 
+                                                            title: '@item.Title', 
+                                                            date: '@item.Date.ToString("dd MMM yyyy HH:mm:ss")', 
+                                                            status: '@item.Status',
+                                                            description: '@item.Description', 
+                                                            // Asumsi ImageUrl berisi string dipisah koma: 'img1.jpg,img2.jpg'
+                                                            images: '@item.ImageUrl'.split(','),
+                                                            kavlingName: '@item.KavlingName',
+                                                            photoCount:'@item.PhotoCount'
+                                                            })"
+                                        class="group p-2 sm:p-5 border border-slate-100 rounded-2xl bg-slate-50/30 hover:bg-white hover:border-teal-200 hover:shadow-md transition-all duration-300 flex justify-between items-center">
+                                        <div class="flex items-start gap-4">
+                                            <div
+                                                class="hidden md:flex w-12 h-12 bg-white mt-3 rounded-xl items-center justify-center border border-slate-100 shadow-sm text-teal-600">
+                                                <i class="ri-error-warning-line text-2xl"></i>
+                                            </div>
+
+                                            <div>
+                                                <span
+                                                    class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">@item.Id</span>
+                                                <h3
+                                                    class="font-bold text-slate-600 text-base group-hover:text-teal-700 transition-colors">
+                                                    @item.Title</h3>
+                                                <p class="text-xs text-slate-400 mt-1 flex items-center">
+                                                    <i class="ri-calendar-line mr-1"></i> @item.Date.ToString("dd MMM yyyy                             HH:mm:ss")
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <span
+                                            class="px-3 py-1.5 @(item.Status == "Proses" ? "bg-amber-50 text-amber-600 border-amber-100" : "bg-emerald-50 text-emerald-600 border-emerald-100") text-[10px] font-extrabold rounded-lg border uppercase tracking-wider">
+                                            @item.Status
+                                        </span>
+                                    </div>
+                                    @* End List data *@
+
+                                    @* Detail data Pengaduan *@
+                                    <div x-show="showDetail" x-cloak
+                                        class="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-y-auto"
+                                        x-transition:enter="transition ease-out duration-300"
+                                        x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
+
+                                        <div class="fixed inset-0 bg-slate-900/30 backdrop-blur-xs"
+                                            @@click="showDetail = false"></div>
+
+                                        <div class="relative bg-white w-full max-w-2xl rounded-2xl sm:rounded-3xl shadow-sm overflow-hidden"
+                                            x-transition:enter="transition ease-out duration-300"
+                                            x-transition:enter-start="opacity-0 scale-95 translate-y-4"
+                                            x-transition:enter-end="opacity-100 scale-100 translate-y-0">
+
+                                            <div
+                                                class="px-2 sm:px-8 py-2 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                                                <div>
+                                                    <span
+                                                        class="text-[10px] font-bold text-teal-600 uppercase tracking-widest"
+                                                        x-text="selectedComplaint.id"></span>
+                                                    <h3 class="text-lg font-bold text-slate-600 block"
+                                                        x-text="selectedComplaint.title"></h3>
+                                                </div>
+                                                <button @@click="showDetail = false"
+                                                    class="text-slate-400 hover:text-rose-500 transition">
+                                                    <i class="ri-close-line text-2xl"></i>
+                                                </button>
+                                            </div>
+
+                                            <div
+                                                class="p-2 sm:p-8 overflow-y-auto  max-h-[80vh] sm:max-h-[70vh] custom-scrollbar no-scrollbar">
+                                                <div class="space-y-6">
+
+                                                    <div
+                                                        class="grid grid-cols-2 md:grid-cols-2 gap-4 pb-6 border-b border-dashed border-slate-200">
+                                                        <div class="space-y-1 justify-self-start">
+                                                            <label
+                                                                class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Unit
+                                                                / Kavling</label>
+                                                            <div
+                                                                class="flex items-center gap-2 text-slate-600 font-semibold">
+                                                                <span x-text="selectedComplaint.kavlingName"></span>
+                                                            </div>
+                                                        </div>
+                                                        <div
+                                                            class="space-y-1 justify-self-end justify-text-center          ">
+                                                            <label
+                                                                class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Status
+                                                                Laporan</label>
+                                                            <div>
+                                                                <span
+                                                                    :class="selectedComplaint.status === 'Proses' ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'"
+                                                                    class="px-3 py-1 text-[10px] font-extrabold rounded-lg border uppercase tracking-wider inline-block"
+                                                                    x-text="selectedComplaint.status"></span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="space-y-1">
+                                                        <label
+                                                            class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Isi
+                                                            Laporan / Keluhan</label>
+                                                        <div
+                                                            class="bg-slate-50 border border-slate-100 rounded-2xl p-2 text-sm text-slate-600 leading-relaxed">
+                                                            <i
+                                                                class="ri-chat-quote-line text-slate-300 text-xl block mb-2"></i>
+                                                            <span x-text="selectedComplaint.description"></span>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="space-y-3">
+                                                        <label
+                                                            class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                                                            Foto Bukti (<span
+                                                                x-text="selectedComplaint.photoCount || 0"></span>)
+                                                        </label>
+
+                                                        <div class="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                                                            <template x-if="selectedComplaint.photoCount > 0">
+                                                                <template x-for="(img, index) in selectedComplaint.images"
+                                                                    :key="index">
+                                                                    <div @@click="openLightbox(index)"
+                                                                        class="aspect-square rounded-2xl overflow-hidden border-2 border-slate-100 p-1 bg-white shadow-sm cursor-zoom-in hover:border-teal-500 transition-all group">
+                                                                        <img :src="img"
+                                                                            class="w-full h-full object-cover rounded-xl group-hover:scale-110 transition-transform duration-500">
+                                                                    </div>
+                                                                </template>
+                                                            </template>
+
+                                                            <template
+                                                                x-if="!selectedComplaint.photoCount || selectedComplaint.photoCount == 0">
+                                                                <div
+                                                                    class="col-span-full py-10 border-2 border-dashed border-slate-100 rounded-3xl flex flex-col items-center justify-center text-slate-300">
+                                                                    <i class="ri-image-line text-4xl"></i>
+                                                                    <span class="text-xs mt-2 font-medium">Tidak ada
+                                                                        lampiran foto</span>
+                                                                </div>
+                                                            </template>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div
+                                                class=" p-2 sm:px-8 py-2 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+                                                <div class="flex-1 flex items-center text-xs text-slate-400">
+                                                    <i class="ri-time-line mr-1"></i> Dilaporkan pada <span
+                                                        class="ml-1 font-semibold" x-text="selectedComplaint.date"></span>
+                                                </div>
+                                                <button @@click="showDetail = false" type="button"
+                                                    class="px-4 sm:px-8 py-2.5 text-sm font-bold text-white bg-teal-600 hover:bg-teal-700 rounded-xl shadow-lg shadow-teal-100 transition">
+                                                    Tutup Detail
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @* End Lightbox for images *@
+
+                                    @* Lightbox for images *@
+                                    <div x-show="showLightbox" x-transition.opacity
+                                        class="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4"
+                                        x-cloak @@keydown.window.escape="showLightbox = false"
+                                        @@keydown.window.left="prevImg()" @@keydown.window.right="nextImg()">
+
+                                        <button @@click="showLightbox = false"
+                                            class="absolute top-6 right-6 text-white/70 hover:text-white z-50">
+                                            <i class="ri-close-line text-4xl"></i>
+                                        </button>
+
+                                        <button x-show="selectedComplaint.images.length > 1" @@click="prevImg()"
+                                            class="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-all">
+                                            <i class="ri-arrow-left-s-line text-3xl"></i>
+                                        </button>
+
+                                        <div class="max-w-4xl w-full h-[80vh] flex flex-col items-center justify-center">
+                                            <img :src="selectedComplaint.images[currentImgIndex]"
+                                                class="max-w-full max-h-full object-contain shadow-2xl rounded-lg">
+
+                                            <div class="mt-4 text-white/50 text-sm font-medium">
+                                                <span x-text="currentImgIndex + 1   "></span> / <span
+                                                    x-text="selectedComplaint.images.length"></span>
+                                            </div>
+                                        </div>
+
+                                        <button x-show="selectedComplaint.images.length > 1" @@click="nextImg()"
+                                            class="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 transition-all">
+                                            <i class="ri-arrow-right-s-line text-3xl"></i>
+                                        </button>
+                                    </div>
+                                    @* End Lightbox for images *@
+                                }
+
+                            </div>
+                        </div>
+                        @* end section pengaduan  *@
+
+                        @* section tagihan  *@
+                        <div x-show="activeTab === 'tagihan'" x-transition class="p-2 md:p-10">
+                            <div
+                                class="flex justify-between items-center mb-8 sticky top-0 bg-white py-2 z-10 border-b border-slate-50">
+                                <div>
+                                    <h2 class="text-xl font-bold text-slate-600">Riwayat Tagihan</h2>
+                                </div>
+                            </div>
+                            <div class="space-y-4">
+                                @foreach (var inv in Model.Invoices)
+                                {
+                                    <div
+                                        class="flex flex-col md:flex-row md:items-center justify-between p-6 border border-slate-100 rounded-2xl hover:shadow-sm transition bg-slate-50/20">
+                                        <div class="flex items-center gap-4 mb-4 md:mb-0">
+                                            <div
+                                                class="w-10 h-10 bg-teal-50 rounded-full flex items-center justify-center text-teal-600">
+                                                <i class="ri-wallet-3-line text-xl"></i>
+                                            </div>
+                                            <div>
+                                                <p class="font-bold text-slate-600 text-base">@inv.Period</p>
+                                                <p class="text-teal-600 font-black text-sm">Rp @inv.Amount.ToString("N0")
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-4">
+                                            <span
+                                                class="px-3 py-1.5 @(inv.Status == "Lunas" ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-rose-50 text-rose-600 border-rose-100") text-[10px] font-bold rounded-lg border uppercase tracking-widest">
+                                                @inv.Status
+                                            </span>
+                                            <button class="p-2 hover:bg-slate-100 rounded-lg text-slate-400 transition">
+                                                <i class="ri-download-2-line text-xl"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                        @* end section tagihan   *@
+
+                        @* section update profile     *@
+                        <div x-show="activeTab === 'profile'" x-transition class="p-3 md:p-5">
+
+                            <div
+                                class="flex justify-between items-center mb-8 sticky top-0 bg-white py-2 z-10 border-b border-slate-50">
+                                <div>
+                                    <h2 class="text-xl font-bold text-slate-600">Informasi Akun</h2>
+                                    <p class="text-xs text-slate-500 mt-1">Detail data pribadi yang terdaftar di sistem.
+                                    </p>
+                                </div>
+                                <button @@click="isEditModalOpen = true"
+                                    class="flex items-center gap-2 text-teal-600 font-bold text-sm hover:bg-teal-50 px-4 py-2 rounded-xl transition-all border border-teal-100">
+                                    <i class="ri-edit-line"></i> Edit Profil
+                                </button>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-y-8 gap-x-12">
+                                <div>
+                                    <span
+                                        class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Nama
+                                        Lengkap</span>
+                                    <p class="text-slate-500 font-semibold" x-text="tenantData.nama">@Model.Tenant.Nama
+                                    </p>
+                                </div>
+                                <div>
+                                    <span
+                                        class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Email</span>
+                                    <p class="text-slate-500 font-semibold">@Model.Tenant.Email</p>
+                                </div>
+                                <div>
+                                    <span
+                                        class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">No.
+                                        Handphone</span>
+                                    <p class="text-slate-500 font-semibold" x-text="tenantData.noHp">@(Model.Tenant.NoHp
+                                                                                ?? "-")</p>
+                                </div>
+                                <div>
+                                    <span
+                                        class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">NPWP</span>
+                                    <p class="text-slate-500 font-semibold" x-text="tenantData.npwp">@(Model.Tenant.Npwp
+                                                                                ?? "-")</p>
+                                </div>
+                                <div>
+                                    <span
+                                        class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Tempat,
+                                        Tanggal Lahir</span>
+                                    <p class="text-slate-500 font-semibold"
+                                        x-text="tenantData.tempatLahir + ', ' + tenantData.tanggalLahir">
+                                        @Model.Tenant.TempatLahir, @(Model.Tenant.TanggalLahir?.ToString("dd MMMM yyyy")
+                                                                                ?? "-")
+                                    </p>
+                                </div>
+                                <div>
+                                    <span
+                                        class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Jenis
+                                        Kelamin</span>
+                                    <p class="text-slate-500 font-semibold" x-text="tenantData.jenisKelamin">
+                                        @Model.Tenant.JenisKelamin</p>
+                                </div>
+                                <div class="md:col-span-2 pb-10">
+                                    <span
+                                        class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Alamat
+                                        Lengkap</span>
+                                    <p class="text-slate-600 font-semibold leading-relaxed" x-text="tenantData.alamat">
+                                        @Model.Tenant.AlamatLengkap
+                                    </p>
+                                </div>
+
+                                @* untuk spasi bawah *@
+                                <div class="md:col-span-2 pb-20">
+                                </div>
+
+                            </div>
+
+                            @* Modal Edit Profile *@
+
+                            <div x-show="isEditModalOpen" x-cloak
+                                class="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-y-auto"
+                                x-transition:enter="transition ease-out duration-300"
+                                x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
+
+                                <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm"
+                                    @@click="!isLoading ? isEditModalOpen = false : null"></div>
+
+                                <div class="relative bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden"
+                                    x-transition:enter="transition ease-out duration-300"
+                                    x-transition:enter-start="opacity-0 scale-95 translate-y-4"
+                                    x-transition:enter-end="opacity-100 scale-100 translate-y-0">
+
+                                    <div
+                                        class="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                                        <h3 class="text-lg font-bold text-slate-600">Edit Data Tenant</h3>
+                                        <button @@click="isEditModalOpen = false"
+                                            class="text-slate-400 hover:text-rose-500 transition">
+                                            <i class="ri-close-line text-2xl"></i>
+                                        </button>
+                                    </div>
+
+
+                                    <form method="post" enctype="multipart/form-data" id="editProfileForm">
+                                        <div class="p-8 overflow-y-auto max-h-[60vh] custom-scrollbar no-scrollbar">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="UserId" value="@Model.Tenant.UserId" />
+
+                                            <div class="space-y-6">
+                                                <div
+                                                    class="flex items-center gap-6 pb-6 border-b border-dashed border-slate-200">
+                                                    <div class="relative group">
+                                                        <img :src="profilePreview"
+                                                            class="w-24 h-24 rounded-2xl border-2 border-teal-500 p-0.5 object-cover shadow-md transition group-hover:opacity-75">
+                                                        <div
+                                                            class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition pointer-events-none">
+                                                            <i class="ri-camera-switch-line text-white text-2xl"></i>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="flex-1">
+                                                        <label
+                                                            class="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wider">Foto
+                                                            Profile</label>
+                                                        <input type="file" name="FotoFile" accept="image/*"
+                                                            @@change="profilePreview = URL.createObjectURL($event.target.files[0])"
+                                                            class="block w-full text-xs text-slate-500
+                                                        file:mr-4 file:py-2.5 file:px-4
+                                                        file:rounded-xl file:border-0
+                                                        file:text-xs file:font-bold
+                                                        file:bg-teal-50 file:text-teal-700
+                                                        hover:file:bg-teal-100
+                                                        cursor-pointer transition">
+                                                        <p class="text-[10px] text-slate-400 mt-2 italic">* Format: JPG,
+                                                            PNG. Maks 2MB</p>
+                                                    </div>
+                                                </div>
+
+                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    <div>
+                                                        <label
+                                                            class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Nama
+                                                            Lengkap</label>
+                                                        <input type="text" name="Nama" value="@Model.Tenant.Nama"
+                                                            class="w-full text-gray-600 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-teal-500 outline-none transition">
+                                                    </div>
+                                                    <div>
+                                                        <label
+                                                            class="block text-[10px] font-bold text-slate-400 uppercase mb-1">No.
+                                                            HP</label>
+                                                        <input type="text" name="NoHp" value="@Model.Tenant.NoHp"
+                                                            class="w-full text-gray-600 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-teal-500 outline-none transition">
+                                                    </div>
+                                                    <div>
+                                                        <label
+                                                            class="block text-[10px] font-bold text-slate-400 uppercase mb-1">NPWP</label>
+                                                        <input type="text" name="Npwp" value="@Model.Tenant.Npwp"
+                                                            placeholder="00.000.000.0-000.000"
+                                                            class="w-full text-gray-600 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-teal-500 outline-none transition">
+                                                    </div>
+                                                    <div>
+                                                        <label
+                                                            class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Jenis
+                                                            Kelamin</label>
+                                                        <select name="JenisKelamin"
+                                                            class="w-full text-gray-600 bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-teal-500 outline-none transition">
+                                                            <option value="Laki-laki"
+                                                                selected="@(Model.Tenant.JenisKelamin == "Laki-laki")">
+                                                                Laki-laki</option>
+                                                            <option value="Perempuan"
+                                                                selected="@(Model.Tenant.JenisKelamin == "Perempuan")">
+                                                                Perempuan</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+
+                                                <div>
+                                                    <label
+                                                        class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Alamat
+                                                        Lengkap</label>
+                                                    <textarea name="AlamatLengkap" rows="3"
+                                                        class="w-full text-gray-600 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-teal-500 outline-none transition">@Model.Tenant.AlamatLengkap</textarea>
+                                                </div>
+
+                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    <div>
+                                                        <label
+                                                            class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Tempat
+                                                            Lahir</label>
+                                                        <input type="text" name="TempatLahir"
+                                                            value="@Model.Tenant.TempatLahir"
+                                                            class="w-full text-gray-600 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-teal-500 outline-none transition">
+                                                    </div>
+                                                    <div>
+                                                        <label
+                                                            class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Tanggal
+                                                            Lahir</label>
+                                                        <input type="date" name="TanggalLahir"
+                                                            value="@(Model.Tenant.TanggalLahir?.ToString("yyyy-MM-dd"))"
+                                                            class="w-full text-gray-600 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-teal-500 outline-none transition">
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                        </div>
+
+                                        <div
+                                            class="px-8 py-6 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+                                            <button @@click="isEditModalOpen = false" type="button"
+                                                class="px-6 py-2.5 text-sm font-bold text-slate-500 border border-slate-200 hover:bg-slate-200 rounded-xl transition">Batal</button>
+                                            <button type="button" @@click="submitForm()" :disabled="isLoading"
+                                                :class="isLoading ? 'opacity-70 cursor-not-allowed' : ''"
+                                                class="px-8 py-2.5 text-sm font-bold text-white bg-teal-600 hover:bg-teal-700 rounded-xl shadow-lg shadow-teal-100 transition flex items-center gap-2">
+
+                                                <template x-if="isLoading">
+                                                    <svg class="animate-spin h-4 w-4 text-white"
+                                                        xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                        viewBox="0 0 24 24">
+                                                        <circle class="opacity-25" cx="12" cy="12" r="10"
+                                                            stroke="currentColor" stroke-width="4"></circle>
+                                                        <path class="opacity-75" fill="currentColor"
+                                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                                        </path>
+                                                    </svg>
+                                                </template>
+
+                                                <span x-text="isLoading ? 'Memproses...' : 'Simpan Perubahan'"></span>
+                                            </button>
+                                        </div>
+                                    </form>
+
+
+
+                                </div>
+                            </div>
+
+
+                        </div>
+                        @* end section update profile *@
+
+                        @* start section change password *@
+                        <div x-show="activeTab === 'password'" x-transition class="py-6 p-2 md:p-8">
+                            <h2 class="text-lg font-bold text-gray-700 mb-6">Ganti Password</h2>
+                            <div class="max-w-md space-y-4">
+
+                                <input type="hidden" name="UserId" x-model="pwd.userid" value="@Model.Tenant.UserId" />
+
+                                <input type="password" placeholder="Password Lama" x-model="pwd.old"
+                                    class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-teal-500">
+
+                                <input type="password" placeholder="Password Baru" x-model="pwd.new"
+                                    class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-teal-500">
+
+                                <input type="password" placeholder="Ulangi Password Baru" x-model="pwd.confirm"
+                                    class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-teal-500">
+
+                                <button @@click="changePassword()" :disabled="isPwdLoading"
+                                    class="w-full bg-slate-800 text-white py-2 rounded-lg font-bold text-sm hover:bg-slate-900 transition flex justify-center items-center gap-2">
+                                    <template x-if="isPwdLoading">
+                                        <i class="ri-loader-4-line animate-spin"></i>
+                                    </template>
+                                    <span x-text="isPwdLoading ? 'Memproses...' : 'Update Password'"></span>
+                                </button>
+                            </div>
+                        </div>
+                        @* end section change password  *@
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <template x-teleport="body">
+            <div x-show="showToast" x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0 transform translate-y-4"
+                x-transition:enter-end="opacity-100 transform translate-y-0"
+                x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100"
+                x-transition:leave-end="opacity-0" class="fixed bottom-10 right-10 z-[100]">
+
+                <div
+                    class="bg-slate-900 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-4 border border-slate-700">
+                    <div
+                        class="flex-shrink-0 w-8 h-8 bg-teal-500/20 text-teal-400 rounded-full flex items-center justify-center">
+                        <i class="ri-checkbox-circle-fill text-xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-bold" x-text="toastMsg"></p>
+                    </div>
+                    <button @@click="showToast = false" class="text-slate-400 hover:text-white">
+                        <i class="ri-close-line"></i>
+                    </button>
+                </div>
+            </div>
+        </template>
+
+    </div>
+
+
+</div>
+
+
+
+
+<script>
+    document.getElementById("btnLogout").addEventListener("click", async () => {
+        // Ganti confirm() bawaan dengan SweetAlert2
+        const result = await Swal.fire({
+
+            text: "Apakah Anda yakin ingin keluar dari aplikasi?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#0d9488', // Warna Teal-600 (sesuai tema Anda)
+            cancelButtonColor: '#e11d48',  // Warna Rose-600
+            confirmButtonText: 'Ya, Logout!',
+            cancelButtonText: 'Batal',
+            customClass: {
+                popup: 'rounded-3xl', // Agar senada dengan modal dashboard Anda
+                confirmButton: 'rounded-full px-4 py-2 text-sm font-bold mx-2',
+                cancelButton: 'rounded-full px-4 py-2 text-sm font-bold mx-1 border-2 border-rose-600 bg-transparent text-rose-600 hover:bg-rose-500 hover:text-white transition'
+            },
+            buttonsStyling: true // Pastikan ini true agar warna tombol tetap muncul
+        });
+
+        // Jika user klik "Batal", hentikan proses
+        if (!result.isConfirmed) return;
+
+        // Jika user klik "Ya", jalankan fetch
+        try {
+            const response = await fetch("?handler=Logout", {
+                method: "POST",
+                headers: {
+                    "RequestVerificationToken":
+                        document.querySelector('input[name="__RequestVerificationToken"]')?.value
+                }
+            });
+
+            const res = await response.json();
+
+            if (res.success) {
+                window.location.href = res.redirect;
+            } else {
+                showError("Gagal", "Terjadi kesalahan saat logout.");
+            }
+        } catch (error) {
+            console.error("Logout Error:", error);
+            showError("Gagal", "Terjadi kesalahan koneksi.");
+        }
+    });
+</script>
+
+
+@* 
+    <div class="relative w-28 h-28">
+        <img id="avatarPreview" src="/image/Image13.jpg" class="w-28 h-28 rounded-full object-cover border"
+            alt="Profile" />
+
+        <!-- Button edit -->
+        <button type="button" onclick="document.getElementById('avatarInput').click()" class="absolute bottom-0 right-0 bg-blue-600 text-white
+               w-8 h-8 rounded-full flex items-center justify-center
+               hover:bg-blue-700 transition">
+            ✎
+        </button>
+
+        <!-- Hidden file input -->
+        <input type="file" id="avatarInput" accept="image/*" class="hidden" />
+    </div> *@
+
+
+@* <div>
+    @Html.AntiForgeryToken()
+    <!-- Logout -->
+    <button id="btnLogout" class="px-4 py-2 text-sm font-semibold text-red-600
+                   border border-red-200 rounded-xl
+                   hover:bg-red-50 transition">
+        Logout
+    </button>
+</div> *@
+
+
+@* <script>
+        document.getElementById('avatarInput').addEventListener('change', function () {
+            const file = this.files[0];
+            if (!file) return;
+
+            // validasi simple
+            if (!file.type.startsWith('image/')) {
+                alert('File harus berupa gambar');
+                this.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById('avatarPreview').src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+    </script> *@
+

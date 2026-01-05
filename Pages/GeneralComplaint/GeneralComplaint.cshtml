@@ -1,0 +1,220 @@
+@page
+@model GeneralComplaintModel
+@{
+    Layout = null; // Menghilangkan Header dan Footer
+}
+
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pengaduan Umum</title>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script
+        src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Mulish:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        body {
+            font-family: 'Mulish', sans-serif;
+        }
+
+        input[type="datetime-local"] {
+            min-height: 3rem;
+            /* Memastikan input memiliki tinggi cukup di iPhone */
+            -webkit-appearance: listbox;
+            /* Memaksa tampilan picker standar iOS */
+        }
+
+        /* CSS Fix untuk iPhone yang tadi */
+        .ios-datetime-fix::-webkit-date-and-time-value {
+            text-align: left;
+            min-height: 1.25em;
+            color: #1e293b;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-50/50">
+
+    <div class="min-h-screen py-2 px-0" x-data="complaintForm()">
+        <div class=" mx-auto">
+
+            <div class="mb-2 text-center">
+                <h2 class="text-2xl font-extrabold text-slate-800 tracking-tight">Pengaduan Umum</h2>
+                <p class="text-sm text-slate-500">Silakan isi detail laporan Anda di bawah ini.</p>
+            </div>
+
+            <form x-ref="form" enctype="multipart/form-data"
+                class="bg-white px-2 pt-2 pb-0 rounded-[2.5rem] shadow-xl shadow-slate-200/40 border border-slate-100 space-y-4">
+                @Html.AntiForgeryToken()
+
+                <div class="space-y-1">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Nama
+                        Lengkap</label>
+                    <input type="text" name="Input.Nama" required placeholder="Masukkan nama Anda..."
+                        class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition">
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">No. WhatsApp /
+                        HP</label>
+                    <input type="tel" name="Input.Phone" required placeholder="Contoh: 08123456789"
+                        class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition">
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Deskripsi
+                        Kendala</label>
+                    <textarea name="Input.Description" required rows="4" placeholder="Jelaskan detail pengaduan Anda..."
+                        class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition resize-none"></textarea>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Jadwal Waktu
+                        Diskusi</label>
+                    <div class="relative pr-0">
+                        <input type="datetime-local" name="Input.Schedule" required
+                            class="ios-datetime-fix w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3.5 text-sm text-slate-800 focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition appearance-none"
+                            style="-webkit-appearance: listbox; height: 3.25rem;">
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Foto Bukti
+                        Pengaduan (Maks. 5)</label>
+                    <div class="grid grid-cols-3 sm:grid-cols-5 gap-3">
+                        <template x-for="(img, index) in previews" :key="index">
+                            <div
+                                class="relative aspect-square rounded-2xl overflow-hidden border border-slate-100 group shadow-sm">
+                                <img :src="img" class="w-full h-full object-cover">
+                                <button type="button" @@click="removeImage(index)"
+                                    class="absolute top-1 right-1 bg-rose-500/90 text-white w-6 h-6 rounded-lg backdrop-blur-sm flex items-center justify-center hover:bg-rose-600 transition">
+                                    <i class="ri-close-line"></i>
+                                </button>
+                            </div>
+                        </template>
+
+                        <label x-show="previews.length < 5"
+                            class="aspect-square rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center cursor-pointer hover:border-teal-500 hover:bg-teal-50/50 transition group">
+                            <i class="ri-image-add-line text-2xl text-slate-300 group-hover:text-teal-500"></i>
+                            <input type="file" multiple accept="image/*" class="hidden"
+                                @@change="previewImages($event)">
+                        </label>
+                    </div>
+                </div>
+
+                <div x-show="compressing" class="mb-4 p-4 bg-teal-50 rounded-2xl border border-teal-100">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-[10px] font-bold text-teal-600 uppercase tracking-widest">Memproses
+                            Gambar...</span>
+                        <span class="text-xs font-bold text-teal-600" x-text="compressProgress + '%'"></span>
+                    </div>
+                    <div class="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
+                        <div class="bg-teal-500 h-full transition-all duration-300"
+                            :style="'width: ' + compressProgress + '%'"></div>
+                    </div>
+                </div>
+
+                <div class="pt-4">
+                    <button type="button" :disabled="loading || compressing" @@click="submitForm()"
+                        class="w-full bg-teal-600 hover:bg-teal-700 disabled:bg-slate-300 text-white font-bold py-4 rounded-2xl shadow-lg transition-all flex items-center justify-center gap-3">
+                        <template x-if="loading">
+                            <i class="ri-loader-4-line animate-spin text-xl"></i>
+                        </template>
+                        <span x-text="loading ? 'Sedang Mengirim...' : 'Kirim Pengaduan'"></span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function complaintForm() {
+            return {
+                previews: [],
+                compressedFiles: [],
+                loading: false,
+                compressing: false,
+                compressProgress: 0,
+
+                async previewImages(event) {
+                    const files = Array.from(event.target.files);
+                    if (this.previews.length + files.length > 5) {
+                        alert('Maksimal 5 foto.');
+                        return;
+                    }
+
+                    this.compressing = true;
+                    for (const file of files) {
+                        try {
+                            const options = {
+                                maxSizeMB: 1, maxWidthOrHeight: 1280, useWebWorker: true,
+                                onProgress: (p) => { this.compressProgress = p; }
+                            };
+                            const compressedFile = await imageCompression(file, options);
+                            this.compressedFiles.push(compressedFile);
+
+                            const reader = new FileReader();
+                            reader.onload = (e) => this.previews.push(e.target.result);
+                            reader.readAsDataURL(compressedFile);
+                        } catch (error) {
+                            console.error(error);
+                        }
+                    }
+                    this.compressing = false;
+                    this.compressProgress = 0;
+                },
+
+                removeImage(index) {
+                    this.previews.splice(index, 1);
+                    this.compressedFiles.splice(index, 1);
+                },
+
+                async submitForm() {
+                    this.loading = true;
+                    const formData = new FormData();
+                    formData.append('Input.Nama', this.$refs.form.querySelector('[name="Input.Nama"]').value);
+                    formData.append('Input.Phone', this.$refs.form.querySelector('[name="Input.Phone"]').value);
+                    formData.append('Input.Schedule', this.$refs.form.querySelector('[name="Input.Schedule"]').value);
+                    formData.append('Input.Description', this.$refs.form.querySelector('[name="Input.Description"]').value);
+
+                    this.compressedFiles.forEach((file) => {
+                        formData.append('Input.Photos', file, file.name);
+                    });
+
+                    try {
+                        const response = await fetch('', {
+                            method: 'POST',
+                            body: formData,
+                            headers: { 'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value }
+                        });
+                        const result = await response.json();
+                        if (result.success) {
+                            // --- BAGIAN CLEAR DATA ---
+                            this.$refs.form.reset();      // 1. Reset semua input text, date, dan textarea
+                            this.previews = [];           // 2. Kosongkan tampilan preview foto
+                            this.compressedFiles = [];    // 3. Kosongkan array file foto yang siap kirim
+                            // -------------------------
+                            Swal.fire({ icon: 'success', title: 'Berhasil!', text: result.message, confirmButtonColor: '#0d9488' })
+                                .then(() => window.location.reload());
+                        } else {
+                            Swal.fire({ icon: 'warning', title: 'Gagal', text: result.message });
+                        }
+                    } catch (e) {
+                        Swal.fire({ icon: 'error', title: 'Error', text: 'Terjadi kesalahan koneksi.' });
+                    } finally {
+                        this.loading = false;
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>

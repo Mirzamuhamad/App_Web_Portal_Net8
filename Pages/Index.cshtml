@@ -1,0 +1,551 @@
+﻿@page
+@model IndexModel
+@{
+   if (Request.Headers.ContainsKey("HX-Request"))
+    {
+        Layout = null; // hanya kirim konten BODY tanpa layout
+    }
+    ViewData["Title"] = "Home";
+}
+
+
+<!-- ========================= -->
+<!-- HERO SECTION (Mobile-first) -->
+<!-- ========================= -->
+
+<section class="relative px-1 sm:px-6  lg:px-10 pt-48 sm:pt-30 pb-10 sm:pb-6
+                bg-cover bg-center bg-no-repeat bg-[url('/Image/Image9.jpg')]
+               overflow-visible rounded-t-2xl sm:rounded-t-3xl ">
+    @* rounded-2xl sm:rounded-3xl  *@ @*Untuk Rounded Image*@
+
+    <div class="absolute inset-0 bg-black/45 rounded-t-2xl sm:rounded-t-3xl "></div>
+
+    @* <!-- ========== USER BAR (ATAS) ========== -->
+    <div class="absolute top-4 left-2 sm:left-10 right-2 sm:right-10 flex items-center justify-between z-30">
+        <!-- Nama User -->
+        <p class="text-white text-sm sm:text-lg font-semibold drop-shadow-md">
+            Hi, John Doe
+        </p>
+        <!-- Icon Profile (putih) -->
+        <!-- Profile Button -->
+        <div id="profileBtn" class="w-7 h-7 sm:w-8 sm:h-8 bg-white bg-opacity-80 backdrop-blur-md
+            rounded-full flex items-center justify-center shadow cursor-pointer">
+            <img src="/icons/settings.png" class="w-6 h-6" />
+        </div>
+
+        <!-- Dropdown Menu -->
+        <div id="profileMenu" class="hidden absolute right-2 mt-2 
+            w-32 sm:w-40            <!-- Mobile lebih kecil -->
+            bg-white shadow-lg rounded-md py-2 z-50
+            opacity-0 translate-y-2 transition-all duration-200">
+
+            <!-- Menu Akun -->
+            <a href="#" class="px-3 sm:px-4 py-2 flex items-center gap-2 hover:bg-gray-100">
+                <i class="fa-solid fa-user text-gray-700 text-sm sm:text-base"></i>
+                <span class="text-sm sm:text-base">Akun</span>
+            </a>
+
+            <!-- Logout -->
+            <a href="#" class="px-3 sm:px-4 py-2 flex items-center gap-2 hover:bg-gray-100">
+                <i class="fa-solid fa-right-from-bracket text-red-500 text-sm sm:text-base"></i>
+                <span class="text-red-500 font-semibold text-sm sm:text-base">Logout</span>
+            </a>
+        </div>
+
+    </div>
+    <!-- ====================================== --> *@
+
+    <div class="relative max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-10 text-white">
+
+        <!-- LEFT -->
+        <!-- LEFT -->
+        <div class="flex flex-col justify-center left-15 md:py-12 md:mt-6">
+
+            <h1 class="text-2xl sm:text-4xl lg:text-5xl font-bold leading-tight mb-4 sm:mb-12 md:pl-2 pl-2">
+                Discover your dream <br />
+                home with us
+            </h1>
+        </div>
+        @* <!-- RIGHT (Blue Box) -->
+        <div class="flex justify-center items-start mt-6 lg:mt-0">
+            <div class="bg-blue-600 text-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl w-full sm:w-auto shadow-lg">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+
+                    <div>
+                        <label class="text-xs sm:text-sm">Location</label>
+                        <input type="text" class="mt-1 p-2 w-full rounded-xl text-black text-sm sm:text-base"
+                            placeholder="Search">
+                    </div>
+
+                    <div>
+                        <label class="text-xs sm:text-sm">Property</label>
+                        <select class="mt-1 p-2 w-full rounded-xl text-black text-sm sm:text-base">
+                            <option>Townhouse</option>
+                            <option>Villas</option>
+                            <option>Loft</option>
+                            <option>House</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="text-xs sm:text-sm">Status</label>
+                        <select class="mt-1 p-2 w-full rounded-xl text-black text-sm sm:text-base">
+                            <option>Rent</option>
+                            <option>Sell</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button class="mt-5 bg-black text-white w-full py-3 rounded-xl font-medium 
+                       text-sm sm:text-base">
+                    Search Properties
+                </button>
+            </div>
+        </div> *@
+
+
+        <!-- Floating Card (Kuning) -->
+        <div class="absolute left-2 right-2 -bottom-20 sm:-bottom-20 z-30">
+            <div class="bg-yellow-400 p-3 sm:p-4 rounded-2xl shadow-lg flex items-center justify-between">
+
+                <div>
+                    <!-- Judul kecil -->
+                    <p class="text-xs sm:text-sm font-medium text-gray-700">
+                        Jumlah Tagihan
+                    </p>
+
+                    <!-- Nominal diperkecil di HP -->
+                    <p class="text-lg sm:text-2xl font-bold text-gray-900 leading-tight">
+                        Rp 2.500.000
+                    </p>
+
+                    <!-- Badge diperkecil -->
+                    <span class="inline-block bg-yellow-300 text-gray-800 
+                         text-[8px] sm:text-xs font-semibold mt-2 
+                         px-2 py-0.5 sm:px-3 sm:py-1 rounded-full">
+                        JATUH TEMPO 20 Nov 2025
+                    </span>
+                </div>
+
+                <!-- Button lebih kecil di HP -->
+                <button onclick="window.location.href='/UnitList/unitList'" class="bg-white text-blue-600 font-semibold 
+                       text-xs sm:text-sm 
+                       px-2 py-1.5 sm:px-4 sm:py-2 
+                       rounded-full shadow whitespace-nowrap">
+                    Lihat Semua Unit
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+<!-- SECTION MENU ICON -->
+<section class="mt-20 sm:mt-40 px-2">
+    <div class="grid grid-cols-4 gap-6 sm:gap-20 text-center">
+        @* load dari data dummy atau database *@
+        @foreach (var menuItem in Model.HomeMenuItems)
+        {
+            <a href="@menuItem.Url" class="group flex flex-col items-center space-y-2 cursor-pointer">
+
+                <div class="w-14 h-14 sm:w-24 sm:h-24
+                                    bg-gray-100 rounded-full flex items-center justify-center shadow-md
+                                    transition duration-500 ease-out
+                                    hover:bg-gray-200
+                                    group-hover:scale-110        <!-- zoom smooth -->
+                                    ">
+
+                    <img src="@menuItem.IconPath"
+                        class="w-7 h-7 sm:w-16 sm:h-16 transition duration-500 ease-out group-hover:scale-125" />
+                </div>
+
+                <span class=" text-xs sm:text-lg font-medium text-gray-700
+                                    transition duration-500 ease-out
+                                    group-hover:scale-125          <!-- font ikut ngezoom -->
+                                    ">
+                    @menuItem.Title
+                </span>
+            </a>
+
+
+
+        }
+
+        @* <a href="/properti" class="flex flex-col items-center space-y-2 cursor-pointer">
+            <div
+                class="w-14  h-14 bg-gray-100 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-200 transition">
+                <img src="/icons/home.png" class="w-7 h-7" />
+            </div>
+            <span class="text-sm font-medium text-gray-700">Unit Saya</span>
+        </a>
+
+        <!-- Item 2 -->
+        <a href="/darurat" class="flex flex-col items-center space-y-2 cursor-pointer">
+            <div
+                class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-200 transition">
+                <img src="/icons/mechanic.png" class="w-7 h-7" />
+            </div>
+            <span class="text-sm font-medium text-gray-700">Service Order</span>
+        </a>
+
+        <!-- Item 3 -->
+        <a href="/acara" class="flex flex-col items-center space-y-2 cursor-pointer">
+            <div
+                class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-200 transition">
+                <img src="/icons/house.png" class="w-7 h-7" />
+            </div>
+            <span class="text-sm font-medium text-gray-700">For Sale or Lease</span>
+        </a>
+
+        <!-- Item 4 -->
+        <a href="/transportasi" class="flex flex-col items-center space-y-2 cursor-pointer">
+            <div
+                class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-200 transition">
+                <img src="/icons/bill.png" class="w-7 h-7" />
+            </div>
+            <span class="text-sm font-medium text-gray-700">Tagihan</span>
+        </a>
+
+        <!-- Item 5 -->
+        <a href="/unit" class="flex flex-col items-center space-y-2 cursor-pointer">
+            <div
+                class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-200 transition">
+                <img src="/icons/hand-paper-check.png" class="w-7 h-7" />
+            </div>
+            <span class="text-sm font-medium text-gray-700">Izin & upload</span>
+        </a>
+
+        <!-- Item 6 -->
+        <a href="/bantuan" class="flex flex-col items-center space-y-2 cursor-pointer">
+            <div
+                class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-200 transition">
+                <img src="/icons/complaint.png" class="w-7 h-7" />
+            </div>
+            <span class="text-sm font-medium text-gray-700">Complaint</span>
+        </a>
+
+        <!-- Item 7 -->
+        <a href="/cctv" class="flex flex-col items-center space-y-2 cursor-pointer">
+            <div
+                class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-200 transition">
+                <img src="/icons/handcuffs.png" class="w-7 h-7" />
+            </div>
+            <span class="text-sm font-medium text-gray-700">Pelanggaran</span>
+        </a>
+
+        <!-- Item 8 -->
+        <a href="/semua" class="flex flex-col items-center space-y-2 cursor-pointer">
+            <div
+                class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-200 transition">
+                <img src="/icons/asset.png" class="w-7 h-7" />
+            </div>
+            <span class="text-sm font-medium text-gray-700">Asset Booking</span>
+        </a>
+        <!-- Item 1 -->
+        <a href="/properti" class="flex flex-col items-center space-y-2 cursor-pointer">
+            <div
+                class="w-14  h-14 bg-gray-100 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-200 transition">
+                <img src="/icons/faq.png" class="w-7 h-7" />
+            </div>
+            <span class="text-sm font-medium text-gray-700">FAQ</span>
+        </a>
+
+        <!-- Item 2 -->
+        <a href="/darurat" class="flex flex-col items-center space-y-2 cursor-pointer">
+            <div
+                class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-200 transition">
+                <img src="/icons/sos.png" class="w-7 h-7" />
+            </div>
+            <span class="text-sm font-medium text-gray-700">Darurat</span>
+        </a>
+
+        <!-- Item 3 -->
+        <a href="/acara" class="flex flex-col items-center space-y-2 cursor-pointer">
+            <div
+                class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-200 transition">
+                <img src="/icons/diagram.png" class="w-7 h-7" />
+            </div>
+            <span class="text-sm font-medium text-gray-700">Acara</span>
+        </a>
+
+        <!-- Item 4 -->
+        <a href="/transportasi" class="flex flex-col items-center space-y-2 cursor-pointer">
+            <div
+                class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-200 transition">
+                <img src="/icons/car.png" class="w-7 h-7" />
+            </div>
+            <span class="text-sm font-medium text-gray-700">Transportasi</span>
+        </a>
+
+        <!-- Item 5 -->
+        <a href="/unit" class="flex flex-col items-center space-y-2 cursor-pointer">
+            <div
+                class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-200 transition">
+                <img src="/icons/info.png" class="w-7 h-7" />
+            </div>
+            <span class="text-sm font-medium text-gray-700">Information Center</span>
+        </a>
+
+        <!-- Item 6 -->
+        <a href="/bantuan" class="flex flex-col items-center space-y-2 cursor-pointer">
+            <div
+                class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-200 transition">
+                <img src="/icons/help.png" class="w-7 h-7" />
+            </div>
+            <span class="text-sm font-medium text-gray-700">Bantuan</span>
+        </a>
+
+        <!-- Item 7 -->
+        <a href="/cctv" class="flex flex-col items-center space-y-2 cursor-pointer">
+            <div
+                class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-200 transition">
+                <img src="/icons/cctv.png" class="w-7 h-7" />
+            </div>
+            <span class="text-sm font-medium text-gray-700">CCTV</span>
+        </a>
+
+        <!-- Item 8 -->
+        <a href="/semua" class="flex flex-col items-center space-y-2 cursor-pointer">
+            <div
+                class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-200 transition">
+                <img src="/icons/more.png" class="w-7 h-7" />
+            </div>
+            <span class="text-sm font-medium text-gray-700">Semua</span>
+        </a> *@
+
+    </div>
+</section>
+
+
+<!-- ========================= -->
+<!-- NEWS CAROUSEL (Mobile-first) -->
+<!-- ========================= -->
+<section class="max-w-7xl mx-auto px-2 sm:px-6 pb-10 mt-16 sm:mt-20">
+    <div class="flex justify-between items-center mb-0 sm:mb-10">
+        <h2 class="text-1xl sm:text-4xl lg:text-5xl font-bold text-gray-700">Info Terkini</h2>
+        <a href="/SemuaTerkini/SemuaTerkini" class="text-blue-600 font-semibold text-xs sm:text-lg">Lihat Semua</a>
+    </div>
+
+    <div class="relative">
+
+        <!-- BUTTON — Prev -->
+        <button id="btnPrev"
+            class="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-black/70 text-white w-10 h-10 flex items-center justify-center rounded-full hover:bg-black transition hidden md:flex">
+            ‹
+        </button>
+
+        <!-- BUTTON — Next -->
+        <button id="btnNext"
+            class="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-black/70 text-white w-10 h-10 flex items-center justify-center rounded-full hover:bg-black transition hidden md:flex">
+            ›
+        </button>
+
+        <!-- Carousel -->
+        <div id="verticalCarousel" class="flex overflow-x-auto gap-2 sm:gab-5 snap-x snap-mandatory scrollbar-hide scroll-smooth px-1 sm:px-2 pb-5 ">
+            @foreach (var propertyItemTerkini in Model.Terkini)
+            {
+                <a href="/DetailTerkini/DetailTerkini?id=@propertyItemTerkini.Id"
+                    class="min-w-[355px] sm:min-w-[405px] snap-start rounded-2xl sm:rounded-3xl mt-6 sm:mt-10 overflow-hidden border border-gray-200 shadow-sm bg-white hover:shadow-lg hover:-translate-y-1 transition">
+                    <img src="@propertyItemTerkini.ImageUrl" class="w-full h-40 sm:h-48 object-cover" />
+                    <div class="p-2 sm:p-4">
+                        <h3 class="text-sm sm:text-2xl font-bold mb-0 sm:mb-1 text-gray-700">@propertyItemTerkini.Title</h3>
+                        <p class="text-gray-500 text-sm sm:text-base">
+                            @propertyItemTerkini.CreateDate
+
+                        </p>
+                    </div>
+                </a>
+            }
+        </div>
+
+    </div>
+</section>
+
+
+
+<!-- ========================= -->
+<!-- Acara CAROUSEL (Mobile-first) -->
+<!-- ========================= -->
+<section class="max-w-7xl mx-auto px-2 sm:px-6 pb-10 sm:pb-19">
+    <div class="flex justify-between items-center mb-0 sm:mb-10">
+        <h2 class="text-1xl sm:text-4xl lg:text-5xl font-bold text-gray-700">Acara</h2>
+        <a href="/SemuaAcara/SemuaAcara" class="text-blue-600 font-semibold text-xs sm:text-lg">Lihat Semua</a>
+    </div>
+
+    <div class="relative">
+
+        <!-- BUTTON — Prev -->
+        <button id="btnPrevAcara"
+            class="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-black/70 text-white w-10 h-10 flex items-center justify-center rounded-full hover:bg-black transition hidden md:flex">
+            ‹
+        </button>
+
+        <!-- BUTTON — Next -->
+        <button id="btnNextAcara"
+            class="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-black/70 text-white w-10 h-10 flex items-center justify-center rounded-full hover:bg-black transition hidden md:flex">
+            ›
+        </button>
+
+        <!-- Carousel -->
+        <div id="verticalCarouselAcara" class="flex overflow-x-auto gap-2 sm:gab-3 snap-x snap-mandatory scrollbar-hide 
+                    scroll-smooth px-1 sm:px-2 pb-5">
+
+            @foreach (var ItemCaraouselAcara in Model.Acara)
+            {
+                <a href="/DetailAcara/DetailAcara?id=@ItemCaraouselAcara.Id"
+                    class="min-w-[355px] sm:min-w-[405px] snap-start rounded-none sm:rounded-3xl 
+                                                                                                                          mt-6 sm:mt-10 overflow-hidden sm:border sm:border-gray-200 sm:shadow-sm bg-white 
+                                                                                                                          hover:shadow-lg hover:-translate-y-1 transition">
+
+                    <img src="@ItemCaraouselAcara.ImageUrl"
+                        class="w-full h-56 sm:h-48 object-cover rounded-2xl sm:rounded-none" />
+
+                    <div class="pt-2 sm:p-4">
+                        <h3 class="text-sm sm:text-2xl font-bold mb-0 sm:mb-1 text-gray-700">@ItemCaraouselAcara.Title</h3>
+                        <p class="text-gray-500 text-xs sm:text-base">
+                            @ItemCaraouselAcara.StartDate - @ItemCaraouselAcara.EndDate
+                        </p>
+                    </div>
+
+                </a>
+            }
+        </div>
+
+    </div>
+</section>
+
+
+<!-- ========================= -->
+<!-- POPULAR PROPERTIES -->
+<!-- ========================= -->
+<section class="max-w-7xl mx-auto px-2 sm:px-6 pb-10 sm:pb-24">
+    <div class="flex justify-between items-center mb-6 sm:mb-10">
+        <h2 class="text-1xl sm:text-4xl lg:text-5xl font-bold text-gray-700">Penawaran & Promo</h2>
+        <a href="/SemuaPenawaran/SemuaPenawaran" class="text-blue-600 font-semibold text-xs sm:text-lg">Lihat Semua</a>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+
+        @foreach (var item in Model.Properties)
+        {
+            <a href="/DetailPenawaran/DetailPenawaran/@item.Id" class="block rounded-2xl sm:rounded-3xl overflow-hidden
+                border border-gray-200 shadow-sm hover:shadow-md
+                transition duration-300 hover:-translate-y-1"> <!-- Link tujuan -->
+
+                <div class="relative">
+                    <img src="@item.ImageUrl" class="w-full h-44 sm:h-56 object-cover" />
+
+                    <span class="absolute top-3 left-3 bg-white px-3 py-1 rounded-xl 
+                           text-xs sm:text-sm font-semibold text-gray-700">
+                        @item.Tag
+                    </span>
+
+                    <span class="absolute bottom-3 right-3 bg-black text-white px-3 sm:px-1 
+                           py-2 rounded-xl font-semibold text-xs sm:text-sm">
+                        @item.Price
+                    </span>
+                </div>
+
+                <div class="p-2 sm:p-5">
+                    <h3 class="text-sm sm:text-xl font-bold mb-2 text-gray-700">
+                        @item.Title
+                    </h3>
+
+                    <p class="text-gray-600 flex items-center gap-2 text-sm sm:text-base">
+                        <i class="ri-map-pin-line"></i> @item.Location
+                    </p>
+                </div>
+
+            </a>
+        }
+
+
+    </div>
+</section>
+
+
+@* <!-- ========================= -->
+<!-- ABOUT SECTION -->
+<!-- ========================= -->
+<section class="max-w-7xl mx-auto px-2 sm:px-6 pb-14 sm:pb-24 mt-16 sm:mt-20">
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+
+        <!-- LEFT -->
+        <div>
+            <h2 class="text-2xl sm:text-4xl lg:text-5xl font-bold mb-6 text-gray-700">About our company</h2>
+
+            <p class="text-gray-500 text-sm sm:text-base leading-relaxed mb-6">
+                We are a team of experienced real estate professionals committed to delivering exceptional service.
+            </p>
+
+            <p class="text-gray-600 text-sm sm:text-base leading-relaxed">
+                We believe in building lasting relationships based on trust, transparency, and personalized service.
+            </p>
+        </div>
+
+        <!-- RIGHT (Stats) -->
+        <div class="flex flex-col justify-center space-y-6">
+            <div class="flex justify-between text-center text-sm sm:text-base">
+
+                <div>
+                    <p class="text-gray-600">Satisfaction Rate</p>
+                    <p class="text-3xl sm:text-5xl font-bold">99%</p>
+                </div>
+
+                <div>
+                    <p class="text-gray-600">Happy Clients</p>
+                    <p class="text-3xl sm:text-5xl font-bold">15K</p>
+                </div>
+
+                <div>
+                    <p class="text-gray-600">Expert Agents</p>
+                    <p class="text-3xl sm:text-5xl font-bold">45+</p>
+                </div>
+            </div>
+
+            <button class="bg-black text-white px-5 sm:px-6 py-3 rounded-xl font-medium w-max text-sm sm:text-base">
+                About Us
+            </button>
+        </div>
+
+    </div>
+
+    <!-- Categories -->
+    <div class="mt-10 sm:mt-14 bg-black text-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl 
+                flex flex-wrap justify-between text-base sm:text-xl gap-4">
+
+        <span class="flex items-center gap-2"><i class="ri-map-pin-line"></i> Townhouse</span>
+        <span class="flex items-center gap-2"><i class="ri-map-pin-line"></i> Villas</span>
+        <span class="flex items-center gap-2"><i class="ri-map-pin-line"></i> Loft</span>
+        <span class="flex items-center gap-2"><i class="ri-map-pin-line"></i> House</span>
+    </div>
+
+</section> *@
+
+
+<!-- ========================= -->
+<!-- MENU FROM DATABASE -->
+<!-- ========================= -->
+@* <section class="max-w-7xl mx-auto px-2 sm:px-6 pb-14 sm:pb-24 mt-16 sm:mt-20">
+    <h2 class="text-2xl sm:text-3xl font-bold mb-3">Menu Dari Database</h2>
+
+    @if (Model.ItemsMenu != null && Model.ItemsMenu.Count > 0)
+    {
+        <div class="space-y-4">
+            @foreach (var item in Model.ItemsMenu)
+            {
+                <div class="p-4 border rounded-xl bg-white shadow hover:shadow-md transition">
+                    <div class="font-bold text-lg sm:text-xl">@item.MenuName</div>
+                    <!--<div class="text-gray-500 text-sm sm:text-base">@item.MenuUrl</div>-->
+                    <div class="text-xs text-gray-400">ID: @item.MenuId</div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <p class="text-gray-600 text-sm sm:text-base">Tidak ada data ditemukan.</p>
+    }
+</section> *@

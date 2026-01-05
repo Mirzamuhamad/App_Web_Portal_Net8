@@ -1,0 +1,40 @@
+@page "{id?}"
+@model DetailPenawaranModel
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Detail Penawaran & Promo";
+}
+
+<div class="max-w-7xl mx-auto p-2 sm:pt-5 pb-30">
+    <!-- WRAPPER AGAR ROUNDED BAWAH MUNCUL -->
+    <div class="bg-white rounded-b-2xl overflow-hidden">
+
+        <!-- IMAGE RESPONSIVE BOX -->
+        <div class="w-full shadow-lg"> <!-- px-2 mobile, hilang di desktop -->
+            <div class="overflow-hidden rounded-2xl sm:rounded-t-3xl sm:rounded-b-3x1">
+                <img src="@Model.Item.ImageUrl" class="w-full h-72 sm:h-96 object-cover" />
+            </div> 
+        </div>
+
+        <!-- CONTENT -->
+        <div class="bg-white pt-2 pl-2 sm:p-2 space-y-4 ">
+            <!-- TITLE + DATE -->
+            <div class="space-y-1">
+                <h1 class="text-1xl sm:text-3xl font-bold text-gray-700 leading-tight">
+                    @Model.Item.Title
+                </h1>
+
+                <p class="text-gray-500 text-md flex items-center font-bold gap-2">
+                    <img src="~/icons/asset.png" class="h-6 w-6 sm:h-8 sm:w-8 " />
+                    @Model.Item.Price
+                </p>
+            </div>
+
+            <!-- DESCRIPTION -->
+            <div class="text-gray-700 leading-relaxed text-base sm:text-lg">
+                @Model.Item.Description
+            </div>
+
+        </div>
+    </div>
+</div>

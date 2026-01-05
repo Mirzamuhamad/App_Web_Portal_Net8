@@ -1,0 +1,43 @@
+@page
+@model SemuaMenuModel
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Semua Menu";
+}
+<section class="mt-0 sm:mt-10 px-2">
+    <div class="max-w-7xl mx-auto pb-20">
+@* <h2 class="text-2xl sm:text-4xl font-bold text-gray-700 mb-10 text-center">
+            Jelajahi Semua Menu Kami
+        </h2> *@
+@foreach (var group in Model.SemuaMenuItems.GroupBy(m => m.Category))
+{
+            <h2
+                class="text-1x1 sm:text-2xl text-gray-700 mt-8 mb-4 
+                bg-none sm:bg-gray-100 sm:px-4 py-2 font-bold sm:font-medium rounded-none sm:rounded-full shadow-none sm:shadow-sm">
+                @group.Key
+            </h2>
+
+            <div class="grid grid-cols-4 sm:grid-cols-5 gap-6 sm:gap-20 text-center">
+                @foreach (var menuItem in group)
+                {
+                    <a href="@menuItem.Url" class="group flex flex-col items-center space-y-2 cursor-pointer">
+
+                        <div class="w-14 h-14 sm:w-24 sm:h-24
+                                    bg-gray-100 rounded-full flex items-center justify-center shadow-md
+                                    transition duration-500 ease-out
+                                    hover:bg-gray-200
+                                    group-hover:scale-110">
+                            <img src="@menuItem.IconPath"
+                                class="w-7 h-7 sm:w-16 sm:h-16 transition duration-500 ease-out group-hover:scale-125" />
+                        </div>
+
+                        <span
+                            class="text-xs sm:text-lg font-medium text-gray-700 transition duration-500 ease-out group-hover:scale-125">
+                            @menuItem.Title
+                        </span>
+                    </a>
+                }
+            </div>
+}
+
+        <section />

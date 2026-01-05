@@ -1,0 +1,128 @@
+html {
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  margin-bottom: 60px;
+}
+
+/* Hilangkan scrollbar horizontal */
+    .scrollbar-hide::-webkit-scrollbar { display: none; }
+    .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+
+    /* untuk animasi sliding hp */
+@layer utilities {
+
+  /* --- State awal (tertutup) --- */
+  .menu-enter {
+    opacity: 0;
+    transform: translateX(-100%);
+    pointer-events: none;
+  }
+
+  /* --- Saat dibuka (slide from left) --- */
+  .menu-enter-active {
+    opacity: 1;
+    transform: translateX(0);
+    pointer-events: auto;
+    transition: all 0.3s ease-out;
+  }
+
+  /* --- Saat ditutup (slide kembali ke kiri) --- */
+  .menu-exit-active {
+    opacity: 0;
+    transform: translateX(-100%);
+    pointer-events: none;
+    transition: all 0.3s ease-in;
+  }
+
+  /* Backdrop fading */
+  .backdrop-hidden { opacity: 0; pointer-events: none; }
+  .backdrop-visible { opacity: 1; pointer-events: auto; transition: opacity .3s; }
+}
+
+.htmx-added {
+    opacity: 0;
+    transform: translateY(10px);
+}
+
+.htmx-settling {
+    transition: all 300ms ease;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-toast {
+  animation: slide-in 0.3s ease-out;
+}
+
+
+/* Opsional: Membuat scrollbar lebih cantik */
+    /* Hilangkan scrollbar navigasi horizontal */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* Custom scrollbar untuk konten area */
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #0d9488; /* Teal-600 */
+        border-radius: 10px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #0f766e;
+    }
+
+/* Hilangkan semua scrollbar */
+        .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+
+    .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    /* agar elemen modal tidak "berkedip" muncul sebentar saat halaman baru dimuat: */
+    [x-cloak] { display: none !important; }
+
+
+
+
+
+
+
+

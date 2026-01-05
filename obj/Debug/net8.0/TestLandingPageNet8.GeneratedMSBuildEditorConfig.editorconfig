@@ -1,0 +1,107 @@
+is_global = true
+build_property.TargetFramework = net8.0
+build_property.TargetPlatformMinVersion = 
+build_property.UsingMicrosoftNETSdkWeb = true
+build_property.ProjectTypeGuids = 
+build_property.InvariantGlobalization = 
+build_property.PlatformNeutralAssembly = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property._SupportedPlatformList = Linux,macOS,Windows
+build_property.RootNamespace = TestLandingPageNet8
+build_property.RootNamespace = TestLandingPageNet8
+build_property.ProjectDir = D:\App_Web_Portal_Kawasan_Net8\
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = 
+build_property.RazorLangVersion = 8.0
+build_property.SupportLocalizedComponentNames = 
+build_property.GenerateRazorMetadataSourceChecksumAttributes = 
+build_property.MSBuildProjectDirectory = D:\App_Web_Portal_Kawasan_Net8
+build_property._RazorSourceGeneratorDebug = 
+
+[D:/App_Web_Portal_Kawasan_Net8/Pages/AccountUser/AccountUser.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWNjb3VudFVzZXJcQWNjb3VudFVzZXIuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/App_Web_Portal_Kawasan_Net8/Pages/CreateComplaint/CreateComplaint.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ3JlYXRlQ29tcGxhaW50XENyZWF0ZUNvbXBsYWludC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/App_Web_Portal_Kawasan_Net8/Pages/DetailAcara/DetailAcara.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcRGV0YWlsQWNhcmFcRGV0YWlsQWNhcmEuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/App_Web_Portal_Kawasan_Net8/Pages/DetailPenawaran/DetailPenawaran.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcRGV0YWlsUGVuYXdhcmFuXERldGFpbFBlbmF3YXJhbi5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/App_Web_Portal_Kawasan_Net8/Pages/DetailTerkini/DetailTerkini.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcRGV0YWlsVGVya2luaVxEZXRhaWxUZXJraW5pLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/App_Web_Portal_Kawasan_Net8/Pages/Error.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcRXJyb3IuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/App_Web_Portal_Kawasan_Net8/Pages/GeneralComplaint/GeneralComplaint.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcR2VuZXJhbENvbXBsYWludFxHZW5lcmFsQ29tcGxhaW50LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/App_Web_Portal_Kawasan_Net8/Pages/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/App_Web_Portal_Kawasan_Net8/Pages/Login.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTG9naW4uY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/App_Web_Portal_Kawasan_Net8/Pages/Privacy.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUHJpdmFjeS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/App_Web_Portal_Kawasan_Net8/Pages/SemuaAcara/SemuaAcara.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2VtdWFBY2FyYVxTZW11YUFjYXJhLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/App_Web_Portal_Kawasan_Net8/Pages/SemuaMenu/SemuaMenu.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2VtdWFNZW51XFNlbXVhTWVudS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/App_Web_Portal_Kawasan_Net8/Pages/SemuaPenawaran/SemuaPenawaran.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2VtdWFQZW5hd2FyYW5cU2VtdWFQZW5hd2FyYW4uY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/App_Web_Portal_Kawasan_Net8/Pages/SemuaTerkini/ItemTerkiniList.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2VtdWFUZXJraW5pXEl0ZW1UZXJraW5pTGlzdC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/App_Web_Portal_Kawasan_Net8/Pages/SemuaTerkini/SemuaTerkini.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2VtdWFUZXJraW5pXFNlbXVhVGVya2luaS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/App_Web_Portal_Kawasan_Net8/Pages/Shared/Components/MenuSemua/Default.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2hhcmVkXENvbXBvbmVudHNcTWVudVNlbXVhXERlZmF1bHQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/App_Web_Portal_Kawasan_Net8/Pages/Shared/_ValidationScriptsPartial.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2hhcmVkXF9WYWxpZGF0aW9uU2NyaXB0c1BhcnRpYWwuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/App_Web_Portal_Kawasan_Net8/Pages/TataTertip/TataTertip.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcVGF0YVRlcnRpcFxUYXRhVGVydGlwLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/App_Web_Portal_Kawasan_Net8/Pages/UnitList/UnitList.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcVW5pdExpc3RcVW5pdExpc3QuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/App_Web_Portal_Kawasan_Net8/Pages/_ViewImports.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcX1ZpZXdJbXBvcnRzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/App_Web_Portal_Kawasan_Net8/Pages/_ViewStart.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcX1ZpZXdTdGFydC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/App_Web_Portal_Kawasan_Net8/Pages/Shared/_Layout.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2hhcmVkXF9MYXlvdXQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = b-6doy9rv9wf

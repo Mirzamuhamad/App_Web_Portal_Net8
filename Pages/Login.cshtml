@@ -1,0 +1,777 @@
+@page "/Login"
+@model LoginModel
+@{
+    Layout = null;
+}
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    @* <meta name="viewport" content="width=device-width, initial-scale=1"> *@
+    @* // Disable zoom on mobile *@
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+
+    <title>Login / Registration</title>
+
+    <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="~/css/custom.css" />
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
+
+    <link href="https://fonts.googleapis.com/css2?family=Mulish:wght@300;400;500;600&display=swap" rel="stylesheet">
+    @* <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script> *@
+
+
+    @* <link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css">
+    <script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script> *@
+
+    @* <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> *@
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+
+
+
+
+</head>
+
+<body
+    class="flex items-center justify-center min-h-none sm:min-h-screen font-muli px-2 bg-gray-50 overflow-y-auto sm:overflow-hidden">
+
+    <div x-data="{
+            mode: 'login',
+            loginHeight: 0,
+            registerHeight: 0,
+            init() {
+                this.$nextTick(() => {
+                    if (this.$refs.login) {
+                        this.loginHeight = this.$refs.login.scrollHeight;
+                    }
+                    if (this.$refs.register) {
+                        this.registerHeight = this.$refs.register.scrollHeight;
+                    }
+                    });
+
+            }
+        }"
+        class="w-full max-w-4xl bg-white shadow-xl rounded-2xl md:rounded-3xl overflow-hidden grid grid-cols-1 md:grid-cols-2">
+
+        <!-- LEFT PANEL -->
+
+        <div class="bg-blue-500 text-white flex flex-col items-center justify-center p-10 relative">
+
+            <template x-if="mode === 'login'">
+                <div class="text-center">
+                    <h2 class="text-3xl font-bold mb-2">Hello, Welcome!</h2>
+                    <p class="mb-6">Don't have an account?</p>
+
+                    <button x-on:click="mode = 'register'"
+                        class="text-sm bg-white text-blue-600 font-semibold px-6 py-2 rounded-full shadow hover:bg-gray-100 transition">
+                        Register
+                    </button>
+                </div>
+            </template>
+
+            <template x-if="mode === 'register'">
+                <div class="text-center">
+                    <h2 class="text-3xl font-bold mb-2">Welcome Back!</h2>
+                    <p class="mb-6">Already have an account?</p>
+
+                    <button x-on:click="mode = 'login'"
+                        class="bg-white text-sm text-blue-600 font-semibold px-6 py-2 rounded-full shadow hover:bg-gray-100 transition">
+                        Login
+                    </button>
+                </div>
+            </template>
+
+        </div>
+
+        <!-- RIGHT PANEL -->
+        <div class="overflow-hidden bg-white relative "
+            x-bind:style="`height: ${mode === 'login' ? 350 : 520}px; transition: height .4s ease;`">
+
+            <div class="flex w-[200%] transition-all duration-500 ease-out"
+                :style="mode === 'login' ? 'transform: translateX(0%)' : 'transform: translateX(-50%)'">
+
+                <!-- LOGIN FORM -->
+                <div x-ref="login" class="w-1/2 p-3 sm:p-10 space-y-3 sm:space-y-5">
+
+                    <form method="post" asp-page-handler="Login" class="ajax-login-form space-y-4">
+                        @Html.AntiForgeryToken()
+
+                        <h3 class="text-2xl font-semibold text-gray-500 mb-6">Login</h3>
+
+                        <!-- EMAIL -->
+                        <div class="space-y-0.5">
+                            <input type="email" name="InputLogin.EmailLogin" placeholder="Email"
+                                class="w-full p-2 border rounded-lg text-sm">
+                            <p class="text-xs text-red-500 pl-2 hidden" data-error-for="EmailLogin"></p>
+                        </div>
+
+
+                        <!-- PASSWORD -->
+                        <div class="space-y-0.5">
+                            <input type="password" name="InputLogin.PasswordLogin" placeholder="Password"
+                                class="w-full p-2 border rounded-lg text-sm">
+                            <p class="text-xs text-red-500 pl-2 hidden" data-error-for="PasswordLogin"></p>
+                        </div>
+
+
+
+                        <!-- SUBMIT -->
+                        <button type="submit" data-submit-btn class="w-full bg-blue-600 text-white p-2 rounded-lg
+                   hover:bg-blue-700 transition
+                   disabled:opacity-60 disabled:cursor-not-allowed
+                   flex items-center justify-center gap-2">
+
+                            <span data-btn-text>Login</span>
+
+                            <!-- CSS Spinner (tanpa SVG) -->
+                            <span data-spinner
+                                class="hidden w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                        </button>
+                    </form>
+
+                </div>
+
+
+                <!-- REGISTER FORM -->
+                <div class="w-1/2 bg-white overflow-hidden relative">
+
+                    <div x-ref="register" x-data="{ step: 1, role: null }" class="w-full h-full overflow-hidden">
+
+                        <!-- SLIDER -->
+                        <div class="flex w-[300%] h-full transition-transform duration-500 ease-in-out will-change-transform"
+                            :style="`transform: translateX(${step === 1 ? 0 : roleMap[role]}%)`" x-data="{
+                                roleMap: {
+                                OWNER: -33.333333,
+                                COMPANY: -66.666666,
+                                VENDOR: -100
+                                }
+                            }">
+
+                            <!-- ================= STEP 1 ================= -->
+                            <div class="w-1/3 flex-shrink-0">
+                                <div class="p-3 sm:p-10 space-y-5">
+                                    <h3 class="text-2xl font-semibold text-gray-500">
+                                        Selamat Datang
+                                    </h3>
+
+                                    <p class="text-sm text-gray-400">
+                                        Silakan pilih sesuai peran anda
+                                    </p>
+
+                                    <button x-on:click="role='OWNER'; step=2"
+                                        class="w-full border rounded-xl p-3 hover:bg-blue-50 transition text-gray-500 ">
+                                        Pemilik Kavling
+                                    </button>
+
+                                    <button x-on:click="role='COMPANY'; step=2"
+                                        class="w-full border rounded-xl p-3 hover:bg-blue-50 transition text-gray-500">
+                                        Perusahaan / PT
+                                    </button>
+
+                                    <button x-on:click="role='VENDOR'; step=2"
+                                        class="w-full border rounded-xl p-3 hover:bg-blue-50 transition text-gray-500">
+                                        Vendor
+                                    </button>
+
+
+                                    <p class="text-xs text-gray-400">
+                                        *Pendaftaran diverifikasi oleh Admin Kawasan
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- ================= OWNER ================= -->
+                            <div class="w-1/3 flex-shrink-0 max-h-[520px] overflow-y-auto no-scrollbar">
+                                <div class="p-2 sm:p-10 space-y-2">
+
+                                    <form method="post" asp-page-handler="Register" class="space-y-2 ajax-form"
+                                        enctype="multipart/form-data">
+                                        @Html.AntiForgeryToken()
+
+                                        <input type="hidden" name="Input.UserType" value="OWNER" />
+
+                                        <h3 class="text-2xl font-semibold text-gray-500">
+                                            Registrasi Pemilik Kavling
+                                        </h3>
+
+                                        <div class="space-y-0.5">
+                                            <input name="Input.OwnerName" placeholder="Nama Lengkap"
+                                                class="w-full p-2 border rounded-lg text-sm">
+                                            <p class="text-xs text-red-500 pl-2 hidden"
+                                                data-error-for="Input.OwnerName"></p>
+                                        </div>
+
+                                        <div class="space-y-0.5">
+                                            <input type="email" name="Input.Email" placeholder="Email"
+                                                class="w-full p-2 border rounded-lg text-sm">
+                                            <p class="text-xs text-red-500 pl-2 hidden" data-error-for="Input.Email">
+                                            </p>
+                                        </div>
+
+                                        <label class="flex items-center gap-2 text-sm text-gray-500">
+                                            @* <input type="checkbox" name="Input.HasKavlingCompany"> *@
+                                            Saya memiliki kavling di kawasan ini
+                                        </label>
+                                        <div class="space-y-0.5">
+                                            <textarea name="Input.KavlingDesc" rows="2"
+                                                placeholder="Deskripsikan lokasi atau nama Kavling anda"
+                                                class="w-full p-2 border rounded-lg text-sm resize-none"></textarea>
+                                            <p class="text-xs text-red-500 pl-2 hidden"
+                                                data-error-for="Input.KavlingDesc">
+                                            </p>
+                                        </div>
+
+                                        <label class="flex items-center gap-2 text-sm text-gray-500">
+                                            Upload Dokumen Pendukung
+                                        </label>
+
+                                        <div class="space-y-0.5">
+                                            <input type="file" name="Input.OwnerDocuments" multiple
+                                                accept=".pdf,.jpg,.jpeg,.png" class="w-full text-sm border rounded-lg
+                                                file:mr-3 file:py-2 file:px-4
+                                                file:border-0
+                                                file:text-sm file:font-semibold
+                                                file:bg-gray-100 file:text-gray-600
+                                                hover:file:bg-gray-200 cursor-pointer" data-role="OWNER"
+                                                onchange="addFiles(this,'OWNER')" />
+
+                                            <p class="text-xs text-red-500 pl-2 hidden"
+                                                data-error-for="Input.OwnerDocuments"></p>
+
+                                            <!-- PREVIEW AREA -->
+                                            <div id="preview-OWNER" class="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                            </div>
+                                        </div>
+
+                                        <div class="space-y-0.5">
+                                            <input type="password" name="Input.Password" placeholder="Password"
+                                                class="w-full p-2 border rounded-lg text-sm">
+                                            <p class="text-xs text-red-500 pl-2 hidden" data-error-for="Input.Password">
+                                            </p>
+                                        </div>
+
+                                        <div class="space-y-0.5">
+                                            <input type="password" name="Input.RetypePassword"
+                                                placeholder="Retype Password"
+                                                class="w-full p-2 border rounded-lg text-sm">
+                                            <p class="text-xs text-red-500 pl-2 hidden"
+                                                data-error-for="Input.RetypePassword"></p>
+                                        </div>
+
+                                        <div class="flex gap-3 pt-2">
+                                            <!-- ⛔ JANGAN SUBMIT -->
+                                            <button type="button" x-on:click="step=1"
+                                                class="w-1/2 border rounded-lg p-2 text-sm">
+                                                ← Kembali
+                                            </button>
+
+                                            <!-- ✅ SUBMIT -->
+                                            <button type="submit" data-submit-btn class="w-1/2 bg-blue-600 text-white rounded-lg p-2 text-sm
+                                                    hover:bg-blue-700 transition
+                                                    disabled:opacity-60 disabled:cursor-not-allowed
+                                                    flex items-center justify-center gap-2">
+                                                <span data-btn-text>Daftar</span>
+
+                                                <!-- Spinner -->
+                                                <span data-spinner
+                                                    class="hidden w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                                            </button>
+
+                                        </div>
+
+                                    </form>
+                                </div>
+                            </div>
+
+                            <!-- ================= COMPANY ================= -->
+                            <div class="w-1/3 flex-shrink-0 max-h-[520px] overflow-y-auto no-scrollbar">
+                                <div class="p-2 sm:p-10 space-y-2">
+                                    <form method="post" asp-page-handler="Register" class="space-y-2 ajax-form"
+                                        enctype="multipart/form-data">
+                                        @Html.AntiForgeryToken()
+
+                                        <input type="hidden" name="Input.UserType" value="COMPANY" />
+
+
+                                        <h3 class="text-2xl font-semibold text-gray-500">
+                                            Registrasi Perusahaan / PT
+                                        </h3>
+
+                                        <div class="space-y-0.5">
+                                            <input name="Input.OwnerName" placeholder="Nama Lengkap"
+                                                class="w-full p-2 border rounded-lg text-sm">
+                                            <p class="text-xs text-red-500 pl-2 hidden"
+                                                data-error-for="Input.OwnerName"></p>
+                                        </div>
+
+                                        <div class="space-y-0.5">
+                                            <input type="email" name="Input.Email" placeholder="Email"
+                                                class="w-full p-2 border rounded-lg text-sm">
+                                            <p class="text-xs text-red-500 pl-2 hidden" data-error-for="Input.Email">
+                                            </p>
+                                        </div>
+
+                                        <label class="flex items-center gap-2 text-sm text-gray-500">
+                                            @* <input type="checkbox" name="Input.HasKavlingCompany"> *@
+                                            Saya penghuni kavling di kawasan ini
+                                        </label>
+                                        <div class="space-y-0.5">
+                                            <textarea name="Input.KavlingDesc" rows="2"
+                                                placeholder="Lokasi dan nama kavling tempat PT Anda "
+                                                class="w-full p-2 border rounded-lg text-sm resize-none"></textarea>
+                                            <p class="text-xs text-red-500 pl-2 hidden"
+                                                data-error-for="Input.KavlingDesc">
+                                            </p>
+                                        </div>
+
+                                        <label class="flex items-center gap-2 text-sm text-gray-500">
+                                            Upload Dokumen Pendukung
+                                        </label>
+                                        <div class="space-y-0.5">
+                                            <input type="file" name="Input.OwnerDocuments" multiple
+                                                accept=".pdf,.jpg,.jpeg,.png" class="w-full text-sm border rounded-lg
+                                                file:mr-3 file:py-2 file:px-4
+                                                file:border-0
+                                                file:text-sm file:font-semibold
+                                                file:bg-gray-100 file:text-gray-600
+                                                hover:file:bg-gray-200 cursor-pointer" data-role='COMPANY'
+                                                onchange="addFiles(this,'COMPANY')" />
+
+                                            <p class="text-xs text-red-500 pl-2 hidden"
+                                                data-error-for="Input.OwnerDocuments"></p>
+
+                                            <!-- PREVIEW AREA -->
+                                            <div id="preview-COMPANY"
+                                                class="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-3"></div>
+
+                                        </div>
+
+                                        <div class="space-y-0.5">
+                                            <input type="password" name="Input.Password" placeholder="Password"
+                                                class="w-full p-2 border rounded-lg text-sm">
+                                            <p class="text-xs text-red-500 pl-2 hidden" data-error-for="Input.Password">
+                                            </p>
+                                        </div>
+
+
+                                        <div class="space-y-0.5">
+                                            <input type="password" name="Input.RetypePassword"
+                                                placeholder="Retype Password"
+                                                class="w-full p-2 border rounded-lg text-sm">
+                                            <p class="text-xs text-red-500 pl-2 hidden"
+                                                data-error-for="Input.RetypePassword"></p>
+                                        </div>
+
+                                        <div class="flex gap-3 pt-2">
+                                            <!-- ⛔ JANGAN SUBMIT -->
+                                            <button type="button" x-on:click="step=1"
+                                                class="w-1/2 border rounded-lg p-2 text-sm">
+                                                ← Kembali
+                                            </button>
+
+                                            <!-- ✅ SUBMIT -->
+                                            <button type="submit" data-submit-btn class="w-1/2 bg-blue-600 text-white rounded-lg p-2 text-sm
+                                            hover:bg-blue-700 transition
+                                            disabled:opacity-60 disabled:cursor-not-allowed
+                                            flex items-center justify-center gap-2">
+                                                <span data-btn-text>Daftar</span>
+
+                                                <!-- Spinner -->
+                                                <span data-spinner
+                                                    class="hidden w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                                            </button>
+                                        </div>
+
+                                    </form>
+                                </div>
+                            </div>
+
+                            <!-- ================= VENDOR ================= -->
+                            <div class="w-1/3 flex-shrink-0 max-h-[520px] overflow-y-auto no-scrollbar">
+                                <div class="p-2 sm:p-10 space-y-2">
+
+                                    <form method="post" asp-page-handler="Register" class="space-y-2 ajax-form"
+                                        enctype="multipart/form-data">
+                                        @Html.AntiForgeryToken()
+
+                                        <input type="hidden" name="Input.UserType" value="VENDOR" />
+
+                                        <h3 class="text-2xl font-semibold text-gray-500">
+                                            Registrasi Vendor
+                                        </h3>
+
+                                        <div class="space-y-0.5">
+                                            <input name="Input.OwnerName" placeholder="Nama Lengkap"
+                                                class="w-full p-2 border rounded-lg text-sm">
+                                            <p class="text-xs text-red-500 pl-2 hidden"
+                                                data-error-for="Input.OwnerName"></p>
+                                        </div>
+
+                                        <div class="space-y-0.5">
+                                            <input type="email" name="Input.Email" placeholder="Email"
+                                                class="w-full p-2 border rounded-lg text-sm">
+                                            <p class="text-xs text-red-500 pl-2 hidden" data-error-for="Input.Email">
+                                            </p>
+                                        </div>
+
+                                        <label class="flex items-center gap-2 text-sm text-gray-500">
+                                            Deskripsikan Bidang Anda
+                                        </label>
+                                        <div class="space-y-0.5">
+                                            <textarea name="Input.KavlingDesc" rows="2"
+                                                placeholder="Bidang atau nama usaha anda"
+                                                class="w-full p-2 border rounded-lg text-sm resize-none"></textarea>
+                                            <p class="text-xs text-red-500 pl-2 hidden"
+                                                data-error-for="Input.KavlingDesc">
+                                            </p>
+                                        </div>
+                                        <label class="flex items-center gap-2 text-sm text-gray-500">
+                                            Upload Dokumen Ijin Usaha Anda
+                                        </label>
+                                        <div class="space-y-0.5">
+                                            <input type="file" name="Input.OwnerDocuments" multiple
+                                                accept=".pdf,.jpg,.jpeg,.png" class="w-full text-sm border rounded-lg
+                                                file:mr-3 file:py-2 file:px-4
+                                                file:border-0
+                                                file:text-sm file:font-semibold
+                                                file:bg-gray-100 file:text-gray-600
+                                                hover:file:bg-gray-200 cursor-pointer" data-role='VENDOR'
+                                                onchange="addFiles(this,'VENDOR')" />
+
+                                            <p class="text-xs text-red-500 pl-2 hidden"
+                                                data-error-for="Input.OwnerDocuments"></p>
+
+                                            <!-- PREVIEW AREA -->
+                                            <div id="preview-VENDOR" class="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                            </div>
+                                        </div>
+
+
+                                        <div class="space-y-0.5">
+                                            <input type="password" name="Input.Password" placeholder="Password"
+                                                class="w-full p-2 border rounded-lg text-sm">
+                                            <p class="text-xs text-red-500 pl-2 hidden" data-error-for="Input.Password">
+                                            </p>
+                                        </div>
+
+                                        <div class="space-y-0.5">
+                                            <input type="password" name="Input.RetypePassword"
+                                                placeholder="Retype Password"
+                                                class="w-full p-2 border rounded-lg text-sm">
+                                            <p class="text-xs text-red-500 pl-2 hidden"
+                                                data-error-for="Input.RetypePassword"></p>
+                                        </div>
+
+                                        <div class="flex gap-3 pt-2">
+                                            <!-- ⛔ JANGAN SUBMIT -->
+                                            <button type="button" x-on:click="step=1"
+                                                class="w-1/2 border rounded-lg p-2 text-sm">
+                                                ← Kembali
+                                            </button>
+
+                                            <!-- ✅ SUBMIT -->
+                                            <button type="submit" data-submit-btn class="w-1/2 bg-blue-600 text-white rounded-lg p-2 text-sm
+                                                            hover:bg-blue-700 transition
+                                                            disabled:opacity-60 disabled:cursor-not-allowed
+                                                            flex items-center justify-center gap-2">
+                                                <span data-btn-text>Daftar</span>
+
+                                                <!-- Spinner -->
+                                                <span data-spinner
+                                                    class="hidden w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                                            </button>
+
+                                        </div>
+
+                                    </form>
+
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+
+
+
+        </div>
+    </div>
+    </div>
+
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+</body>
+@* REGISTER *@
+<script>
+    document.querySelectorAll(".ajax-form").forEach(form => {
+        form.addEventListener("submit", async e => {
+            e.preventDefault();
+
+            const submitBtn = form.querySelector("[data-submit-btn]");
+            const btnText = submitBtn.querySelector("[data-btn-text]");
+            const spinner = submitBtn.querySelector("[data-spinner]");
+
+            // ===== LOADING ON =====
+            submitBtn.disabled = true;
+            btnText.textContent = "Memproses...";
+            spinner.classList.remove("hidden");
+
+
+            // reset error
+            form.querySelectorAll("[data-error-for]").forEach(el => {
+                el.classList.add("hidden");
+                el.textContent = "";
+            });
+
+            form.querySelectorAll("[data-field]").forEach(input => {
+                input.classList.remove("border-red-500", "animate-shake");
+            });
+
+            try {
+                const formData = new FormData(form);
+
+                const res = await fetch(form.action || "?handler=Register", {
+                    method: "POST",
+                    body: formData,
+                    headers: {
+                        "RequestVerificationToken":
+                            document.querySelector('input[name="__RequestVerificationToken"]')?.value
+                    }
+                });
+
+                const result = await res.json();
+
+                if (!result.success) {
+
+                    Object.keys(result.errors).forEach(key => {
+                        const errorEl = form.querySelector(`[data-error-for="${key}"]`);
+                        const inputEl = form.querySelector(`[data-field="${key}"]`);
+
+                        if (errorEl) {
+                            errorEl.textContent = result.errors[key][0];
+                            errorEl.classList.remove("hidden");
+                        }
+
+                        if (inputEl) {
+                            inputEl.classList.add("border-red-500", "animate-shake");
+                            inputEl.addEventListener("animationend", () => {
+                                inputEl.classList.remove("animate-shake");
+                            }, { once: true });
+                        }
+                    });
+
+                    @* showError(
+                        "Validasi Gagal",
+                        "Periksa kembali data yang Anda isi"
+                    ); *@
+
+                } else {
+                    @* showSuccess("Success",
+                        result.message
+                    ); *@
+                        form.reset();
+                    showSuccessRedirect(
+                        "Registrasi Berhasil",
+                        result.message,
+                        "/Login",   // tujuan redirect
+                        4           // countdown (detik)
+                    );
+                }
+
+            } catch (err) {
+                showError(
+                    "Gagal",
+                    "Terjadi kesalahan koneksi ke server"
+                );
+            } finally {
+                // ===== LOADING OFF =====
+                submitBtn.disabled = false;
+                btnText.textContent = "Daftar";
+                spinner.classList.add("hidden");
+            }
+        });
+    });
+</script>
+@* End Register *@
+
+@* LOGIN *@
+
+<script>
+    document.querySelectorAll(".ajax-login-form").forEach(form => {
+        form.addEventListener("submit", async e => {
+            e.preventDefault();
+
+            const submitBtn = form.querySelector("[data-submit-btn]");
+            const btnText = submitBtn.querySelector("[data-btn-text]");
+            const spinner = submitBtn.querySelector("[data-spinner]");
+
+            // ===== LOADING ON =====
+            submitBtn.disabled = true;
+            btnText.textContent = "Memproses...";
+            spinner.classList.remove("hidden");
+
+            // reset error
+            form.querySelectorAll("[data-error-for]").forEach(el => {
+                el.classList.add("hidden");
+                el.textContent = "";
+            });
+
+            try {
+                const formData = new FormData(form);
+
+                const res = await fetch(form.action || "?handler=Login", {
+                    method: "POST",
+                    body: formData,
+                    headers: {
+                        "RequestVerificationToken":
+                            document.querySelector('input[name="__RequestVerificationToken"]')?.value
+                    }
+                });
+
+                const result = await res.json();
+
+                if (!result.success) {
+                    Object.keys(result.errors).forEach(key => {
+                        const errorEl = form.querySelector(`[data-error-for="${key}"]`);
+                        if (errorEl) {
+                            errorEl.textContent = result.errors[key][0];
+                            errorEl.classList.remove("hidden");
+                        }
+                    });
+                } else {
+                    showSuccess("Success", result.message);
+                     window.location.href = "/Index";
+                    @* setTimeout(() => {
+                        window.location.href = "/Index";
+                    }, 1000); *@
+                }
+            } catch {
+                showError("Gagal", "Terjadi kesalahan koneksi");
+            } finally {
+                // ===== LOADING OFF =====
+                submitBtn.disabled = false;
+                btnText.textContent = "Login";
+                spinner.classList.add("hidden");
+            }
+        });
+    });
+</script>
+@* END LOGIN *@
+
+@* Priview IMage Upload File  per Role with Limitasi Jumlah File *@
+<script>
+
+    const MAX_FILES_BY_ROLE = {
+        OWNER: 5,
+        COMPANY: 3,
+        VENDOR: 2
+    };
+
+    // penyimpanan file per role
+    const fileStore = {
+        OWNER: [],
+        COMPANY: [],
+        VENDOR: []
+    };
+
+    function addFiles(input, role) {
+        const files = Array.from(input.files);
+        const store = fileStore[role];
+        const max = MAX_FILES_BY_ROLE[role];
+
+        for (const file of files) {
+
+            // ❌ MAX FILE
+            if (store.length >= max) {
+                showError("Gagal", `Maksimal upload ${max} file untuk ${role}`);
+                break;
+            }
+
+            // ❌ DUPLIKAT
+            const exists = store.some(
+                f => f.name === file.name && f.size === file.size
+            );
+            if (!exists) {
+                store.push(file);
+            }
+        }
+
+        syncInputFiles(input, store);
+        renderPreview(role);
+    }
+
+    function renderPreview(role) {
+        const preview = document.getElementById(`preview-${role}`);
+        const store = fileStore[role];
+
+        preview.innerHTML = "";
+
+        store.forEach((file, index) => {
+            const ext = file.name.split('.').pop().toLowerCase();
+
+            const wrapper = document.createElement("div");
+            wrapper.className =
+                "relative border rounded-lg p-2 bg-gray-50 shadow-sm";
+
+            // REMOVE
+            const removeBtn = document.createElement("button");
+            removeBtn.type = "button";
+            removeBtn.innerHTML = "✕";
+            removeBtn.className =
+                "absolute top-1 right-1 text-xs bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center";
+            removeBtn.onclick = () => removeFile(role, index);
+
+            // PREVIEW
+            let previewEl;
+            if (["jpg", "jpeg", "png"].includes(ext)) {
+                previewEl = document.createElement("img");
+                previewEl.src = URL.createObjectURL(file);
+                previewEl.className = "w-full h-28 object-cover rounded";
+            } else {
+                previewEl = document.createElement("div");
+                previewEl.className =
+                    "flex items-center justify-center h-28 bg-gray-100 rounded text-sm text-gray-600";
+                previewEl.innerText = "📄 PDF";
+            }
+
+            const fileName = document.createElement("p");
+            fileName.className = "text-xs mt-1 truncate text-gray-600";
+            fileName.innerText = file.name;
+
+            wrapper.appendChild(removeBtn);
+            wrapper.appendChild(previewEl);
+            wrapper.appendChild(fileName);
+            preview.appendChild(wrapper);
+        });
+    }
+
+    function removeFile(role, index) {
+        fileStore[role].splice(index, 1);
+        const input = document.querySelector(`input[data-role="${role}"]`);
+        syncInputFiles(input, fileStore[role]);
+        renderPreview(role);
+    }
+
+    function syncInputFiles(input, files) {
+        const dt = new DataTransfer();
+        files.forEach(f => dt.items.add(f));
+        input.files = dt.files;
+    }
+</script>
+
+
+
+</html>

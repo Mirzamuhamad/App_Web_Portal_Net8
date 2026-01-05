@@ -1,0 +1,53 @@
+@page "{id?}"
+@model DetailAcaraModel
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Detail Terkini";
+}
+
+<div class="max-w-7xl mx-auto p-2 sm:pt-5 pb-30">
+    <!-- WRAPPER AGAR ROUNDED BAWAH MUNCUL -->
+    <div class="bg-white rounded-b-2xl overflow-hidden">
+
+        <!-- IMAGE RESPONSIVE BOX -->
+        <div class="w-full shadow-lg"> <!-- px-2 mobile, hilang di desktop -->
+            <div class="overflow-hidden rounded-2xl sm:rounded-t-3xl sm:rounded-b-3x1">
+                <img src="@Model.DetailAcara.ImageUrl" class="w-full h-72 sm:h-96 object-cover" />
+            </div>
+        </div>
+
+        <!-- CONTENT -->
+        <div class="bg-white pt-2 pl-2 sm:p-2 space-y-4 ">
+            <!-- TITLE + DATE -->
+            <div class="space-y-1">
+                <h1 class="text-1xl sm:text-3xl font-bold text-gray-700 leading-tight">
+                    @Model.DetailAcara.Title
+                </h1>
+
+                <p class="text-gray-500 text-sm flex items-center gap-2">
+                    <img src="~/icons/calendar.png" class="h-4 w-4" />
+                    @Model.DetailAcara.StartDate - @Model.DetailAcara.EndDate
+                </p>
+            </div>
+
+            <!-- DESCRIPTION -->
+            <div class="text-gray-700 leading-relaxed text-base sm:text-lg">
+                @Model.DetailAcara.Description
+            </div>
+
+            <!-- LOCATION MAP LINK -->
+            @if (!string.IsNullOrEmpty(@Model.DetailAcara.LocationUrl))
+            {
+                <div class="pt-4">
+                    <a href="@Model.DetailAcara.LocationUrl"
+                       target="_blank"
+                       class="inline-flex items-center gap-2 text-blue-600 font-medium text-sm sm:text-base hover:underline">
+                        <img src="~/icons/maps.png" class="h-5 w-5" />
+                        Lihat Lokasi di Google Maps
+                    </a>
+                </div>
+            }
+
+        </div>
+    </div>
+</div>

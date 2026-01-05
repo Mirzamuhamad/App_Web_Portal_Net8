@@ -1,0 +1,284 @@
+@page
+@model Pages.CreateComplaint.CreateComplaintModel
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Buat Pengaduan";
+}
+
+@* <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet"> *@
+
+<div class="min-h-screen bg-slate-50/50 py-2 px-0 sm:py-4 sm:px-4" x-data="complaintForm()">
+    <div class=" mx-auto">
+
+        <div class="mb-2 sm:mb-4 flex px-2 sm:px-0 items-center justify-between">
+            <a href="/Index"
+                class="w-10 h-10 flex items-center justify-center bg-white rounded-2xl shadow-sm border border-slate-200 text-slate-400 hover:text-teal-600 transition">
+                <i class="ri-arrow-left-line"></i>
+            </a>
+            <div>
+                <h2 class="text-lg sm:text-2xl font-extrabold text-slate-800 tracking-tight">Buat Pengaduan</h2>
+                <p class="text-sm text-slate-500">Laporkan kendala Anda secara cepat.</p>
+            </div>
+
+        </div>
+
+        <form x-ref="form" enctype="multipart/form-data"
+            class="bg-white p-2 md:p-6 rounded-2xl sm:rounded-[2.5rem] shadow-xl shadow-slate-200/40 border border-slate-100 space-y-3 sm:space-y-4">
+            @Html.AntiForgeryToken()
+
+            <div class="space-y-1">
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Pilih Unit /
+                    Kavling</label>
+                <div class="relative">
+                    <select name="Input.KavlingId" required
+                        class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition appearance-none cursor-pointer">
+
+                        @foreach (var kavling in Model.KavlingList)
+                        {
+                            <option value="@kavling.Id">@kavling.KavlingCode</option>
+                        }
+
+                    </select>
+                    <i
+                        class="ri-arrow-down-s-line absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                </div>
+            </div>
+
+            <div class="space-y-1">
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Judul Laporan</label>
+                <input type="text" name="Input.Title" required placeholder="Masukan judul singkat..."
+                    class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition">
+            </div>
+
+            <div class="space-y-1">
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Deskripsi
+                    Kendala</label>
+                <textarea name="Input.Description" required rows="4"
+                    placeholder="Jelaskan detail kendala yang dialami..."
+                    class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition resize-none"></textarea>
+            </div>
+
+            <div class="space-y-3">
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Foto Bukti (Maks.
+                    5)</label>
+
+                <div class="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                    <template x-for="(img, index) in previews" :key="index">
+                        <div
+                            class="relative aspect-square rounded-2xl overflow-hidden border border-slate-100 group shadow-sm">
+                            <img :src="img" class="w-full h-full object-cover">
+                             
+                            <button type="button" @@click="removeImage(index)"
+                                class="absolute top-1 right-1 bg-rose-500/90 text-white w-6 h-6 rounded-lg backdrop-blur-sm flex items-center justify-center hover:bg-rose-600 transition">
+                                <i class="ri-close-line"></i>
+                            </button>
+                        </div>
+                    </template>
+
+                    <label x-show="previews.length < 5"
+                        class="aspect-square rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center cursor-pointer hover:border-teal-500 hover:bg-teal-50/50 transition group">
+                        <i class="ri-image-add-line text-2xl text-slate-300 group-hover:text-teal-500"></i>
+                        <span
+                            class="text-[9px] font-bold text-slate-400 group-hover:text-teal-600 mt-1 uppercase">Upload</span>
+                        <input type="file" name="Input.Photos" multiple accept="image/*" class="hidden"
+                            @@change="previewImages($event)">
+                    </label>
+                </div>
+            </div>
+            @* loading compress image *@
+            <div x-show="compressing" class="mb-4 p-4 bg-teal-50 rounded-2xl border border-teal-100">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-[10px] font-bold text-teal-600 uppercase tracking-widest">Memproses
+                        Gambar...</span>
+                    <span class="text-xs font-bold text-teal-600" x-text="compressProgress + '%'"></span>
+                </div>
+                <div class="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
+                    <div class="bg-teal-500 h-full transition-all duration-300"
+                        :style="'width: ' + compressProgress + '%'"></div>
+                </div>
+            </div>
+            @* end loading compress image  *@
+
+            <div class="pt-4">
+                <button type="button" :disabled="loading" @@click="submitForm()"
+                    class="w-full bg-teal-600 hover:bg-teal-700 disabled:bg-slate-300 text-white font-bold py-4 rounded-2xl shadow-lg shadow-teal-200 transition-all flex items-center justify-center gap-3 active:scale-[0.98]">
+                    <template x-if="loading">
+                        <i class="ri-loader-4-line animate-spin text-xl"></i>
+                    </template>
+                    <span x-text="loading ? 'Sedang Mengirim...' : 'Kirim Laporan'"></span>
+                </button>
+            </div>
+
+           
+        </form>
+    </div>
+</div>
+
+
+
+<script>
+    function complaintForm() {
+        return {
+            previews: [],
+            compressedFiles: [],
+            loading: false,
+            // Variabel Baru
+            compressing: false,
+            compressProgress: 0,
+
+            async previewImages(event) {
+                const files = Array.from(event.target.files);
+                if (this.previews.length + files.length > 5) {
+                    showError('Gagal', 'Maksimal 5 foto saja.');
+                    return;
+                }
+
+                this.compressing = true;
+                this.compressProgress = 0;
+
+                for (const file of files) {
+                    // Konfigurasi kompresi dengan onProgress
+                    const options = {
+                        maxSizeMB: 1,
+                        maxWidthOrHeight: 1280,
+                        useWebWorker: true,
+                        onProgress: (p) => {
+                            this.compressProgress = p; // p adalah angka 0-100
+                            console.log("Progress:", p); // Cek di console (F12)
+                        }
+                    };
+
+                    try {
+                        const compressedFile = await imageCompression(file, options);
+                        this.compressedFiles.push(compressedFile);
+
+                        const reader = new FileReader();
+                        reader.onload = (e) => this.previews.push(e.target.result);
+                        reader.readAsDataURL(compressedFile);
+                    } catch (error) {
+                        console.error("Gagal kompres gambar:", error);
+                        showError('Gagal', 'Gagal memproses gambar ' + file.name);
+                    }
+                }
+                
+                // Reset setelah selesai semua file
+                setTimeout(() => {
+                    this.compressing = false;
+                    this.compressProgress = 0;
+                }, 500);
+
+                event.target.value = '';
+            },
+
+            removeImage(index) {
+                this.previews.splice(index, 1);
+                this.compressedFiles.splice(index, 1);
+            },
+
+            async submitForm() {
+                this.loading = true;
+
+                // Karena kita pakai file hasil kompresi, kita susun FormData secara manual
+                const formData = new FormData();
+
+                // Ambil data teks dari form
+                formData.append('Input.KavlingId', this.$refs.form.querySelector('[name="Input.KavlingId"]').value);
+                formData.append('Input.Title', this.$refs.form.querySelector('[name="Input.Title"]').value);
+                formData.append('Input.Description', this.$refs.form.querySelector('[name="Input.Description"]').value);
+
+                // Tambahkan file yang sudah dikompresi
+                this.compressedFiles.forEach((file) => {
+                    formData.append('Input.Photos', file, file.name);
+                });
+
+                try {
+                    const response = await fetch('', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                        }
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        showSuccess('Sukses', result.message);
+                        setTimeout(() => {
+                            window.location.href = '/AccountUser/AccountUser';
+                        }, 2000);
+                    } else {
+                        showError('Gagal', result.message);
+                        this.loading = false;
+                    }
+                } catch (e) {
+                    showError('Error', 'Terjadi kesalahan koneksi.');
+                    this.loading = false;
+                }
+            }
+        }
+    }
+</script>
+
+@* save data tanpa compression image *@
+@* 
+<script>
+    function complaintForm() {
+        return {
+            previews: [],
+            loading: false,
+            previewImages(event) {
+                const files = Array.from(event.target.files);
+                if (this.previews.length + files.length > 5) {
+                    alert('Maksimal 5 foto saja.');
+                    return;
+                }
+                files.forEach(file => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => this.previews.push(e.target.result);
+                    reader.readAsDataURL(file);
+                });
+            },
+            removeImage(index) {
+                this.previews.splice(index, 1);
+                // Catatan: File asli di input file sulit dihapus secara parsial, 
+                // tapi form akan mengirimkan semua file yang terpilih terakhir.
+            },
+            async submitForm() {
+                this.loading = true;
+                const formData = new FormData(this.$refs.form);
+
+                try {
+                    const response = await fetch('', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                        }
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        // 1. Tampilkan notifikasi sukses
+                        showSuccess('Sukses',result.message);
+                        // 2. Tambahkan delay (misal: 2000ms = 2 detik)
+                        setTimeout(() => {
+                            window.location.href = '/AccountUser/AccountUser';
+                        }, 2000);
+                    } else {
+                        showError('Gagal',result.message);
+                        setTimeout(() => {
+                            this.loading = false; // Matikan loading agar user bisa coba lagi
+                        }, 2000);
+                        
+                    }
+                } catch (e) {
+                    showError('Terjadi kesalahan koneksi.');
+                } finally {
+                    this.loading = false;
+                }
+            }
+        }
+    }
+</script> *@

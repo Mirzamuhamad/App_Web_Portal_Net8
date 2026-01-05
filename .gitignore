@@ -1,0 +1,39 @@
+## [ File Database Backup & Data ]
+# Sangat penting agar tidak berat saat ditarik di PC lain
+*.bak
+*.mdf
+*.ldf
+
+## [ Hasil Build / Kompilasi ]
+# File ini akan dibuat ulang secara otomatis saat di-Run di PC lain
+[Bb]in/
+[Obj]/
+.vs/
+.vscode/
+Properties/launchSettings.json
+
+## [ Dependencies ]
+# Folder ini akan didownload ulang lewat 'npm install'
+node_modules/
+
+## [ Konfigurasi Lokal ]
+# File ini sering berisi path folder yang berbeda di tiap PC
+*.user
+*.suo
+*.sln.docstates
+appsettings.Development.json
+
+## [ User Uploads ]
+# Data dinamis yang tidak perlu ikut ke PC lain
+wwwroot/uploads/complaints/*
+wwwroot/uploads/documents/*
+wwwroot/uploads/profiles/*
+
+# Pastikan folder tetap ada (agar kodingan tidak error saat save)
+!wwwroot/uploads/complaints/.gitkeep
+!wwwroot/uploads/documents/.gitkeep
+!wwwroot/uploads/profiles/.gitkeep
+
+## [ OS Specific ]
+.DS_Store
+Thumbs.db

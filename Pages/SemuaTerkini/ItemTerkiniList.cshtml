@@ -1,0 +1,34 @@
+@model IEnumerable<semuaTerkiniModel.semuaTerkiniItem>
+
+@{
+    // Ambil page dari Query String
+    int page = int.TryParse(ViewContext.HttpContext.Request.Query["page"], out var p) ? p : 1;
+    int nextPage = page + 1; // Menghitung halaman berikutnya
+}
+
+<div hx-swap-oob="beforeend:#terkiniContainer">
+    @foreach (var item in Model)
+    {
+        <a href="/DetailTerkini/DetailTerkini?id=@item.Id"
+           class="rounded-none sm:rounded-2xl overflow-hidden sm:border sm:border-gray-200 sm:shadow-sm bg-white hover:shadow-lg hover:-translate-y-1 transition">
+            <img src="@item.ImageUrl" class="w-full h-56 sm:h-48 object-cover rounded-md sm:rounded-none" />
+            <div class="pt-2 sm:p-2">
+                <h3 class="text-sm sm:text-lg font-bold mb-0 sm:mb-1 text-gray-700">@item.Title</h3>
+                <p class="text-gray-500 text-xs sm:text-sm">@item.CreateDate</p>
+            </div>
+        </a>
+    }
+</div>
+
+
+@if (Model.Any())
+{
+    <div id="loadMoreTrigger"
+         hx-get="/SemuaTerkini/SemuaTerkini?page=@nextPage" 
+         hx-trigger="revealed" 
+         hx-target="#loadMoreTrigger" 
+         hx-swap="outerHTML"> 
+         
+         <p class="text-center pt-5 text-gray-400">Memuat Halaman @nextPage...</p>
+    </div>
+}
