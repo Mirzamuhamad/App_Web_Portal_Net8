@@ -49,7 +49,7 @@ namespace TestLandingPageNet8.Pages.AccountUser
             using (var connection = Db.Connect())
             {
                 // Query mengambil data berdasarkan UserId
-                string sql = "SELECT * FROM PortalUsers WHERE UserId = @Id";
+                string sql = "SELECT * FROM V_PortalUsers WHERE UserId = @Id";
 
                 // Menggunakan Dapper untuk mapping otomatis ke class PortalUser
                 Tenant = await connection.QueryFirstOrDefaultAsync<TenantViewModel>(sql, new { Id = userId });
@@ -238,7 +238,7 @@ namespace TestLandingPageNet8.Pages.AccountUser
         public string DocumentPathUsers { get; set; }
         public string RoleType { get; set; }
         // Properti tambahan untuk tampilan unit (jika diperlukan)
-        public string PropertyUnit { get; set; } = "Unit 12A - Green View";
+        public string PropertyUnit { get; set; } 
     }
     public class TicketViewModel
     {

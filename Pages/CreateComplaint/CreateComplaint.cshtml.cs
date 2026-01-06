@@ -41,10 +41,11 @@ namespace TestLandingPageNet8.Pages.CreateComplaint
             using (var connection = Db.Connect())
             {
                 await connection.OpenAsync();
-                string sql = "SELECT TOP 2 kavlingid, kavlingCode FROM MsKavlingsPortal WHERE fgActive = 'Y' ORDER BY kavlingCode ASC";
+                string sql = "SELECT kavlingid, kavlingCode FROM V_ListKavlingUserPOrtal WHERE UserId = @UserId";
 
                 using (var cmd = new SqlCommand(sql, connection))
                 {
+                    cmd.Parameters.AddWithValue("@UserId", User.FindFirstValue(ClaimTypes.NameIdentifier));
                     using (var reader = await cmd.ExecuteReaderAsync())
                     {
                         while (await reader.ReadAsync())
