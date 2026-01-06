@@ -22,17 +22,18 @@
         @foreach (var item in Model.UnitItems)
         {
             <!-- PILIH WARNA BADGE -->
-            var badgeColor = item.Status.ToLower() == "penyewa"
+            var badgeColor = item.OwnerType.ToLower() == "penyewa"
             ? "bg-yellow-400 text-gray-800"
             : "bg-green-500 text-white";
 
             <!-- PILIH ICON WARNA -->
-            var iconColor = item.Status.ToLower() == "penyewa"
+            var iconColor = item.OwnerType.ToLower() == "penyewa"
             ? "text-blue-600 bg-blue-50"
             : "text-purple-600 bg-purple-50";
 
-            <a href="/DetailPage?id=@item.UnitCode" class="block transform hover:scale-[1.02] transition duration-200">
-
+            <a asp-page="/UnitList/UnitDetailPage/UnitDetailPage" 
+   asp-route-id="@item.KavlingId" 
+   class="block transform hover:scale-[1.02] transition duration-200">
                 <div class="bg-white rounded-3xl shadow-md overflow-hidden border border-gray-200">
 
                     <!-- IMAGE -->
@@ -41,7 +42,7 @@
 
                         <div class="absolute top-3 right-3 @badgeColor
                             text-xs font-semibold px-3 py-1 rounded-full shadow text-gray-500">
-                            @item.Status.ToUpper()
+                            @item.OwnerType.ToUpper()
                         </div>
                     </div>
 
@@ -54,12 +55,12 @@
                         
 
                         <div class="flex-grow">
-                            <h3 class="text-xl font-bold text-gray-700">@item.UnitCode</h3>
-                            <p class="text-gray-500 text-sm">@item.Building</p>
+                            <h3 class="text-xl font-bold text-gray-700">@item.KavlingCode</h3>
+                            <p class="text-gray-500 text-sm">@item.kawasan</p>
                         </div>
 
                         <div class="text-gray-500 text-sm font-medium whitespace-nowrap">
-                            @item.TicketCount Tiket
+                            @item.TicketKavlingCount 
                         </div>
                     </div>
                 </div>

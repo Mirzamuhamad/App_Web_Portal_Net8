@@ -50,7 +50,6 @@ namespace TestLandingPageNet8.Pages.AccountUser
             {
                 // Query mengambil data berdasarkan UserId
                 string sql = "SELECT * FROM V_PortalUsers WHERE UserId = @Id";
-
                 // Menggunakan Dapper untuk mapping otomatis ke class PortalUser
                 Tenant = await connection.QueryFirstOrDefaultAsync<TenantViewModel>(sql, new { Id = userId });
 

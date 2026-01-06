@@ -1,0 +1,394 @@
+@page
+@model TestLandingPageNet8.Pages.UnitList.UnitDetailPage.UnitDetailPageModel
+@{
+    Layout = "_Layout";
+}
+
+<div class="min-h-screen bg-slate-50 pb-20" x-data="unitDetailLogic()">
+
+    <div class="bg-white border-b sticky top-0 z-30 px-2 sm:px-6 py-3 shadow-sm">
+        <div class="mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <a href="/Index"
+                    class="w-10 h-10 flex items-center justify-center bg-slate-100 rounded-2xl text-slate-500 hover:bg-teal-50 hover:text-teal-600 transition">
+                    <i class="ri-arrow-left-line text-xl"></i>
+                </a>
+                <div>
+                    <h1 class="text-lg font-black text-slate-800">@Model.Unit.KavlingCode</h1>
+                    <p class="text-[10px] text-slate-400 uppercase font-bold tracking-widest">@Model.Unit.Kawasan</p>
+                </div>
+            </div>
+            <button @@click="isModalOpen = true"
+                class="bg-teal-600 text-white px-5 py-2.5 rounded-2xl text-sm font-bold shadow-lg shadow-teal-100 hover:bg-teal-700 transition">
+                + Baru
+            </button>
+        </div>
+    </div>
+
+    <div class="mx-auto px-2 sm:px-6 mt-6 ">
+        <h2 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Riwayat Pengaduan Unit</h2>
+
+        <div class="grid grid-cols-1 gap-4">
+            @if (Model.Complaints != null && Model.Complaints.Any())
+            {
+                @foreach (var item in Model.Complaints)
+                {
+                    @* Start List Item *@
+                    <div @@click="openDetail({ 
+                                                    id: '@item.Id', 
+                                                    title: '@item.Title', 
+                                                    date: '@item.CreatedAt.ToString("dd MMM yyyy HH:mm:ss")', 
+                                                    status: '@item.Status',
+                                                    description: '@item.Description', 
+                                                    images: '@item.ImageUrl'.split(','),
+                                                    kavlingName: '@Model.Unit.KavlingCode',
+                                                    photoCount:'@item.PhotoCount'
+                                                })"
+                        class="group p-2 sm:p-5 border border-slate-100 rounded-2xl bg-white hover:border-teal-200 hover:shadow-md transition-all duration-300 flex justify-between items-center cursor-pointer">
+
+                        <div class="flex items-start gap-4">
+                            <div
+                                class="hidden md:flex w-12 h-12 bg-slate-50 mt-3 rounded-xl items-center justify-center border border-slate-100 shadow-sm text-teal-600 group-hover:bg-teal-600 group-hover:text-white transition-colors">
+                                <i class="ri-error-warning-line text-2xl"></i>
+                            </div>
+
+                            <div>
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">@item.Id -
+                                    @Model.Unit.KavlingCode</span>
+                                <h3 class="font-bold text-slate-600 text-base group-hover:text-teal-700 transition-colors">
+                                    @item.Title</h3>
+                                <p class="text-xs text-slate-400 mt-1 flex items-center">
+                                    <i class="ri-calendar-line mr-1"></i> @item.CreatedAt.ToString("dd MMM yyyy HH:mm:ss")
+                                </p>
+                            </div>
+                        </div>
+
+                        <span
+                            class="px-3 py-1.5 @(item.Status == "Proses" ? "bg-amber-50 text-amber-600 border-amber-100" : "bg-emerald-50 text-emerald-600 border-emerald-100") text-[10px] font-extrabold rounded-lg border uppercase tracking-wider">
+                            @item.Status
+                        </span>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="py-20 text-center bg-white rounded-[3rem] border-2 border-dashed border-slate-100">
+                    <i class="ri-inbox-line text-5xl text-slate-200"></i>
+                    <p class="text-slate-400 font-bold mt-2">Belum ada pengaduan untuk unit ini</p>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div x-show="showDetail" x-cloak class="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-y-auto"
+        x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100">
+
+        <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" @@click="showDetail = false"></div>
+
+        <div class="relative bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden"
+            x-transition:enter="transition ease-out duration-300 transform"
+            x-transition:enter-start="opacity-0 scale-95 translate-y-4"
+            x-transition:enter-end="opacity-100 scale-100 translate-y-0">
+
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                <div>
+                    <span class="text-[10px] font-bold text-teal-600 uppercase tracking-widest"
+                        x-text="selectedComplaint.id"></span>
+                    <h3 class="text-lg font-bold text-slate-700 block" x-text="selectedComplaint.title"></h3>
+                </div>
+                <button @@click="showDetail = false"
+                    class="w-10 h-10 flex items-center justify-center bg-white rounded-xl text-slate-400 hover:text-rose-500 shadow-sm transition">
+                    <i class="ri-close-line text-2xl"></i>
+                </button>
+            </div>
+
+            <div class="p-6 overflow-y-auto max-h-[70vh] no-scrollbar">
+                <div class="space-y-6">
+                    <div class="grid grid-cols-2 gap-4 pb-6 border-b border-dashed border-slate-200">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Unit /
+                                Kavling</label>
+                            <div class="text-slate-600 font-semibold mt-1" x-text="selectedComplaint.kavlingName"></div>
+                        </div>
+                        <div class="text-right">
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Status
+                                Laporan</label>
+                            <div class="mt-1">
+                                <span
+                                    :class="selectedComplaint.status === 'Proses' ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'"
+                                    class="px-3 py-1 text-[10px] font-extrabold rounded-lg border uppercase tracking-wider inline-block"
+                                    x-text="selectedComplaint.status"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Isi
+                            Laporan / Keluhan</label>
+                        <div
+                            class="bg-slate-50 border border-slate-100 rounded-2xl p-4 text-sm text-slate-600 leading-relaxed italic">
+                            <i class="ri-chat-quote-line text-teal-300 text-xl block mb-2"></i>
+                            <span x-text="selectedComplaint.description"></span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3">
+                            Foto Bukti (<span x-text="selectedComplaint.photoCount || 0"></span>)
+                        </label>
+                        <div class="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                            <template x-if="selectedComplaint.photoCount > 0">
+                                <template x-for="(img, index) in selectedComplaint.images" :key="index">
+                                    <div @@click="openLightbox(index)"
+                                        class="aspect-square rounded-2xl overflow-hidden border-2 border-slate-100 p-1 bg-white shadow-sm cursor-zoom-in hover:border-teal-500 transition-all group">
+                                        <img :src="img"
+                                            class="w-full h-full object-cover rounded-xl group-hover:scale-110 transition-transform duration-500">
+                                    </div>
+                                </template>
+                            </template>
+                            <template x-if="!selectedComplaint.photoCount || selectedComplaint.photoCount == 0">
+                                <div
+                                    class="col-span-full py-10 border-2 border-dashed border-slate-100 rounded-3xl flex flex-col items-center justify-center text-slate-300">
+                                    <i class="ri-image-line text-4xl"></i>
+                                    <span class="text-xs mt-2 font-medium">Tidak ada lampiran foto</span>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-end">
+                <button @@click="showDetail = false"
+                    class="px-8 py-3 bg-teal-600 text-white rounded-2xl font-bold shadow-lg shadow-teal-100">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+ <div x-show="isModalOpen"
+     class="fixed inset-0 z-[110] flex items-end sm:items-center justify-center bg-slate-900/60 backdrop-blur-sm"
+     x-cloak>
+    
+    <div class="bg-white w-full max-w-2xl rounded-t-[1.5rem] sm:rounded-[2rem] shadow-2xl flex flex-col max-h-[90vh] overflow-hidden"
+         @@click.away="isModalOpen = false">
+        
+        <div class="flex justify-between items-center px-2 sm:px-6 py-3 sm:py-5 border-b border-slate-50">
+            <h3 class="text-xl font-black text-slate-800">Buat Pengaduan</h3>
+            <button @@click="isModalOpen = false" class="w-10 h-10 flex items-center justify-center text-slate-400 hover:bg-slate-50 rounded-full text-2xl transition">&times;</button>
+        </div>
+
+        <form x-ref="form" enctype="multipart/form-data"
+              class="flex-1 overflow-y-auto px-2 sm:px-6 space-y-4 no-scrollbar bg-white">
+            @Html.AntiForgeryToken()
+
+            <div class="space-y-1">
+                <div class="relative">
+                    <select name="Input.KavlingId" required
+                            class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition appearance-none cursor-pointer">
+                        <option value="@Model.Unit.KavlingId">@Model.Unit.KavlingCode</option>
+                    </select>
+                    <i class="ri-arrow-down-s-line absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                </div>
+            </div>
+
+            <div class="space-y-1">
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Judul Laporan</label>
+                <input type="text" name="Input.Title" required placeholder="Masukan judul singkat..."
+                       class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition">
+            </div>
+
+            <div class="space-y-1">
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Deskripsi Kendala</label>
+                <textarea name="Input.Description" required rows="4"
+                          placeholder="Jelaskan detail kendala yang dialami..."
+                          class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition resize-none"></textarea>
+            </div>
+
+            <div class="space-y-3">
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Foto Bukti (Maks. 5)</label>
+                <div class="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                    <template x-for="(img, index) in previews" :key="index">
+                        <div class="relative aspect-square rounded-2xl overflow-hidden border border-slate-100 group shadow-sm">
+                            <img :src="img" class="w-full h-full object-cover">
+                            <button type="button" @@click="removeImage(index)"
+                                    class="absolute top-1 right-1 bg-rose-500/90 text-white w-6 h-6 rounded-lg backdrop-blur-sm flex items-center justify-center hover:bg-rose-600 transition">
+                                <i class="ri-close-line"></i>
+                            </button>
+                        </div>
+                    </template>
+
+                    <label x-show="previews.length < 5"
+                           class="aspect-square rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center cursor-pointer hover:border-teal-500 hover:bg-teal-50/50 transition group">
+                        <i class="ri-image-add-line text-2xl text-slate-300 group-hover:text-teal-500"></i>
+                        <span class="text-[9px] font-bold text-slate-400 group-hover:text-teal-600 mt-1 uppercase">Upload</span>
+                        <input type="file" name="Input.Photos" multiple accept="image/*" class="hidden" @@change="previewImages($event)">
+                    </label>
+                </div>
+            </div>
+
+            <div x-show="compressing" class="p-2 sm:p-4 bg-teal-50 rounded-2xl border border-teal-100">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-[10px] font-bold text-teal-600 uppercase tracking-widest">Memproses Gambar...</span>
+                    <span class="text-xs font-bold text-teal-600" x-text="compressProgress + '%'"></span>
+                </div>
+                <div class="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
+                    <div class="bg-teal-500 h-full transition-all duration-300" :style="'width: ' + compressProgress + '%'"></div>
+                </div>
+            </div>
+        </form>
+
+        <div class="p-6 border-t border-slate-50 bg-slate-50/50">
+            <button type="button" :disabled="loading" @@click="submitForm()"
+                    class="w-full bg-teal-600 hover:bg-teal-700 disabled:bg-slate-300 text-white font-bold py-4 rounded-2xl shadow-lg shadow-teal-200 transition-all flex items-center justify-center gap-3 active:scale-[0.98]">
+                <template x-if="loading">
+                    <i class="ri-loader-4-line animate-spin text-xl"></i>
+                </template>
+                <span x-text="loading ? 'Sedang Mengirim...' : 'Kirim Laporan'"></span>
+            </button>
+        </div>
+    </div>
+</div>
+
+    <div x-show="showLightbox" class="fixed inset-0 z-[200] bg-black/95 flex items-center justify-center p-4" x-cloak
+        @@keydown.window.escape="showLightbox = false">
+        <button @@click="showLightbox = false"
+            class="absolute top-6 right-6 text-white/70 hover:text-white transition z-[210]"><i
+                class="ri-close-line text-4xl"></i></button>
+        <button x-show="selectedComplaint.images.length > 1" @@click="prevImg()"
+            class="absolute left-4 top-1/2 w-12 h-12 bg-white/10 rounded-full text-white hover:bg-white/20"><i
+                class="ri-arrow-left-s-line text-3xl"></i></button>
+
+        <div class="max-w-4xl w-full h-[80vh] flex flex-col items-center justify-center">
+            <img :src="selectedComplaint.images[currentImgIndex]"
+                class="max-w-full max-h-full object-contain shadow-2xl rounded-lg">
+            <div class="mt-4 text-white/50 text-sm font-medium">
+                <span x-text="currentImgIndex + 1"></span> / <span x-text="selectedComplaint.images.length"></span>
+            </div>
+        </div>
+
+        <button x-show="selectedComplaint.images.length > 1" @@click="nextImg()"
+            class="absolute right-4 top-1/2 w-12 h-12 bg-white/10 rounded-full text-white hover:bg-white/20"><i
+                class="ri-arrow-right-s-line text-3xl"></i></button>
+    </div>
+
+</div>
+
+<script>
+    function unitDetailLogic() {
+        return {
+            // --- State Utama ---
+            isModalOpen: false,
+            showDetail: false,
+            showLightbox: false,
+            loading: false,
+            currentImgIndex: 0,
+            selectedComplaint: { id: '', title: '', status: '', description: '', images: [], kavlingName: '', date: '', photoCount: 0 },
+
+            // --- State Form & Upload ---
+            previews: [],
+            compressedFiles: [],
+            compressing: false,
+            compressProgress: 0,
+
+            // --- Logika Detail & Lightbox ---
+            openDetail(data) {
+                this.selectedComplaint = data;
+                this.showDetail = true;
+            },
+            openLightbox(index) {
+                this.currentImgIndex = index;
+                this.showLightbox = true;
+            },
+            prevImg() {
+                this.currentImgIndex = (this.currentImgIndex > 0) ? this.currentImgIndex - 1 : this.selectedComplaint.images.length - 1;
+            },
+            nextImg() {
+                this.currentImgIndex = (this.currentImgIndex < this.selectedComplaint.images.length - 1) ? this.currentImgIndex + 1 : 0;
+            },
+
+            // --- Logika Preview & Compress ---
+            async previewImages(event) {
+                const files = Array.from(event.target.files);
+                if (this.previews.length + files.length > 5) {
+                    alert('Maksimal 5 foto bukti.');
+                    return;
+                }
+
+                this.compressing = true;
+                this.compressProgress = 0;
+
+                for (const file of files) {
+                    const options = {
+                        maxSizeMB: 1,
+                        maxWidthOrHeight: 1280,
+                        useWebWorker: true,
+                        onProgress: (p) => { this.compressProgress = p; }
+                    };
+
+                    try {
+                        const compressedFile = await imageCompression(file, options);
+                        this.compressedFiles.push(compressedFile);
+
+                        const reader = new FileReader();
+                        reader.onload = (e) => this.previews.push(e.target.result);
+                        reader.readAsDataURL(compressedFile);
+                    } catch (error) {
+                        console.error("Gagal kompres:", error);
+                    }
+                }
+
+                setTimeout(() => {
+                    this.compressing = false;
+                    this.compressProgress = 0;
+                }, 500);
+                event.target.value = '';
+            },
+
+            removeImage(index) {
+                this.previews.splice(index, 1);
+                this.compressedFiles.splice(index, 1);
+            },
+
+            // --- Logika Submit ---
+            async submitForm() {
+                if (!this.$refs.form.reportValidity()) return;
+
+                this.loading = true;
+                const formData = new FormData();
+
+                formData.append('Input.KavlingId', this.$refs.form.querySelector('[name="Input.KavlingId"]').value);
+                formData.append('Input.Title', this.$refs.form.querySelector('[name="Input.Title"]').value);
+                formData.append('Input.Description', this.$refs.form.querySelector('[name="Input.Description"]').value);
+
+                this.compressedFiles.forEach((file) => {
+                    formData.append('Input.Photos', file, file.name);
+                });
+
+                try {
+                    const response = await fetch('', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                        }
+                    });
+
+                    const result = await response.json();
+                    if (result.success) {
+                        showSuccess('Sukses', result.message);
+                        setTimeout(() => {
+                            location.reload();
+                        }, 2000);
+                    } else {
+                        showError('Gagal', result.message);
+                        this.loading = false;
+                    }
+                } catch (e) {
+                    showError('Error', 'Terjadi kesalahan koneksi.');
+                    this.loading = false;
+                }
+            }
+        }
+    }
+</script>
