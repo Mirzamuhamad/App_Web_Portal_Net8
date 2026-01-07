@@ -72,7 +72,6 @@ public class LoginModel : PageModel
 
         // ===== LOGIN PROCESS =====
         var passwordHash = HashPassword(InputLogin.PasswordLogin);
-
         using var conn = Db.Connect();
         using var cmd = new SqlCommand(@"
         SELECT UserId, Nama, RoleType
@@ -144,13 +143,14 @@ public class LoginModel : PageModel
             message = "Login berhasil"
         });
     }
-
     // =================END Login =================
 
 
 
     // ================= REGISTER =================
 // Register dengan multi Upload Dokumen ======================================
+
+
 public IActionResult OnPostRegister()
     {
         ModelState.Clear();

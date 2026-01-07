@@ -1,0 +1,262 @@
+@page
+@model TestLandingPageNet8.Pages.Transportasi.TransportasiModel
+@{
+    Layout = null;
+    ViewData["Title"] = "Nearby Transport - Mobile Portal";
+}
+
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport" />
+    
+    <link href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;600;700;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: { primary: "#06b6d4", dark: "#0f172a" }
+                }
+            }
+        };
+    </script>
+    
+    <style>
+        body { font-family: 'Mulish', sans-serif; }
+        #map { height: 100%; width: 100%; border-radius: 1rem; }
+        .tap-highlight-none { -webkit-tap-highlight-color: transparent; }
+        
+        /* Loading Animation */
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #06b6d4;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        @@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* Filter Active State */
+        .stat-card.active {
+            border-color: #06b6d4;
+            background-color: rgba(6, 182, 212, 0.15);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-dark text-slate-900 dark:text-slate-100 min-h-screen pb-10">
+
+<div id="global-loader" class="hidden fixed inset-0 z-[9999] bg-white/60 dark:bg-dark/60 backdrop-blur-sm flex flex-col items-center justify-center">
+    <div class="loader mb-4"></div>
+    <span class="text-sm font-bold animate-pulse">Memperbarui Data...</span>
+</div>
+
+<nav class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-[1000] border-b border-slate-200 dark:border-slate-800">
+    <div class="mx-auto px-2 sm:px-4 h-16 flex items-center justify-between">
+        <a asp-page="/index" >
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white">
+                <span class="material-icons-outlined text-sm">arrow_back</span>
+            </div>
+            <span class="text-lg text-slate-700">Transportasi Umum</span>
+        </div>
+        </a>
+        @* <button onclick="document.documentElement.classList.toggle('dark')" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800">
+            <span class="material-icons-outlined block dark:hidden">dark_mode</span>
+            <span class="material-icons-outlined hidden dark:block">light_mode</span>
+        </button> *@
+    </div>
+</nav>
+
+<main class=" mx-auto px-2 sm:px-4 pt-1 space-y-6">
+    
+    @* <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800">
+        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 text-center">Tentukan Jarak Pencarian</label>
+        <div class="flex gap-2"> *@
+            <input type="hidden" id="input-radius" placeholder="Radius (KM) - Default 2" 
+                class="flex-1 px-5 py-3.5 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl focus:ring-2 focus:ring-primary text-sm font-bold" />
+            @* <button onclick="fetchData()" class="bg-primary text-white px-6 rounded-2xl font-bold text-sm shadow-lg shadow-primary/20 active:scale-90 transition-transform">
+                CARI
+            </button>
+        </div>
+    </div> *@
+
+    <div class="grid grid-cols-3 gap-3">
+        <div id="card-bus" onclick="filterData('Bus', this)" class="stat-card tap-highlight-none bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-3 rounded-2xl text-center transition-all cursor-pointer">
+            <span class="material-icons-outlined text-blue-500 block mb-1">directions_bus</span>
+            <span id="count-bus" class="text-sm font-black block">0</span>
+            <span class="text-[9px] text-slate-400 font-bold uppercase">Bus</span>
+        </div>
+        <div id="card-train" onclick="filterData('Train', this)" class="stat-card tap-highlight-none bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-3 rounded-2xl text-center transition-all cursor-pointer">
+            <span class="material-icons-outlined text-orange-500 block mb-1">train</span>
+            <span id="count-train" class="text-sm font-black block">0</span>
+            <span class="text-[9px] text-slate-400 font-bold uppercase">Stasiun</span>
+        </div>
+        <div id="card-toll" onclick="filterData('Toll', this)" class="stat-card tap-highlight-none bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-3 rounded-2xl text-center transition-all cursor-pointer">
+            <span class="material-icons-outlined text-red-500 block mb-1">toll</span>
+            <span id="count-toll" class="text-sm font-black block">0</span>
+            <span class="text-[9px] text-slate-400 font-bold uppercase">Tol</span>
+        </div>
+    </div>
+
+    <div class="h-56 bg-slate-200 dark:bg-slate-800 rounded-3xl overflow-hidden relative border-4 border-white dark:border-slate-900 shadow-sm">
+        <div id="map"></div>
+    </div>
+
+    <div class="space-y-4">
+        <div class="flex items-center justify-between px-2">
+            <h3 id="list-title" class="text-sm font-bold text-slate-700 sm:text-lg">Semua Lokasi</h3>
+            <button onclick="resetFilter()" class=" text-[10px] sm:text-[13px] text-primary ">Tampilkan Semua</button>
+        </div>
+        
+        <div id="transport-container" class="space-y-3 pb-20">
+            </div>
+    </div>
+</main>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    let map = L.map('map', { zoomControl: false, attributionControl: false }).setView([-6.2088, 106.8456], 13);
+    let markersLayer = L.layerGroup().addTo(map);
+    let allData = []; 
+    let userCoords = { lat: 0, lon: 0 };
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+    function showLoading(show) {
+        document.getElementById('global-loader').classList.toggle('hidden', !show);
+    }
+
+    function fetchData() {
+        showLoading(true);
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(updateLocation, (err) => {
+                showLoading(false);
+                alert("Gagal mendapatkan lokasi: " + err.message);
+            }, { enableHighAccuracy: true });
+        } else {
+            showLoading(false);
+            alert("Geolocation tidak didukung browser ini.");
+        }
+    }
+
+    async function updateLocation(position) {
+        userCoords.lat = position.coords.latitude;
+        userCoords.lon = position.coords.longitude;
+        
+        let radiusKm = document.getElementById('input-radius').value || 2;
+        const radiusMeters = radiusKm * 1000;
+
+        map.setView([userCoords.lat, userCoords.lon], 14);
+        markersLayer.clearLayers();
+
+        L.marker([userCoords.lat, userCoords.lon], {
+            icon: L.divIcon({ html: `<div class="w-4 h-4 bg-primary border-2 border-white rounded-full"></div>` })
+        }).addTo(markersLayer);
+
+        const query = `[out:json];(node["highway"="bus_stop"](around:${radiusMeters},${userCoords.lat},${userCoords.lon});node["public_transport"="platform"](around:${radiusMeters},${userCoords.lat},${userCoords.lon});node["railway"="station"](around:${radiusMeters},${userCoords.lat},${userCoords.lon});node["barrier"="toll_booth"](around:${radiusMeters},${userCoords.lat},${userCoords.lon}););out;`;
+        
+        try {
+            const res = await fetch(`https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`);
+            const json = await res.json();
+            
+            allData = json.elements.map(item => {
+                let type = 'Bus';
+                if (item.tags.railway === 'station') type = 'Train';
+                if (item.tags.barrier === 'toll_booth') type = 'Toll';
+                const dist = calculateDistance(userCoords.lat, userCoords.lon, item.lat, item.lon);
+                return { ...item, type, dist, name: item.tags.name || (type === 'Toll' ? "Gerbang Tol" : "Tanpa Nama") };
+            }).sort((a, b) => a.dist - b.dist);
+
+            updateStats();
+            resetFilter(); // Default tampilkan semua setelah fetch
+        } catch (e) {
+            alert("Gagal memuat data dari satelit.");
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    function updateStats() {
+        document.getElementById('count-bus').innerText = allData.filter(x => x.type === 'Bus').length;
+        document.getElementById('count-train').innerText = allData.filter(x => x.type === 'Train').length;
+        document.getElementById('count-toll').innerText = allData.filter(x => x.type === 'Toll').length;
+    }
+
+    function renderList(dataToRender) {
+        const container = document.getElementById('transport-container');
+        markersLayer.clearLayers();
+        
+        L.marker([userCoords.lat, userCoords.lon], {
+            icon: L.divIcon({ html: `<div class="w-4 h-4 bg-primary border-2 border-white rounded-full shadow-lg"></div>` })
+        }).addTo(markersLayer).bindPopup("Lokasi Anda");
+
+        let html = '';
+        dataToRender.forEach(item => {
+            const color = item.type === 'bus' ? 'blue' : (item.type === 'train' ? 'orange' : 'red');
+            const icon = item.type === 'bus' ? 'directions_bus' : (item.type === 'train' ? 'train' : 'toll');
+
+            html += `
+                <div onclick="openGoogleMaps(${item.lat}, ${item.lon})" 
+                     class="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-100 dark:border-slate-800 flex items-center justify-between shadow-sm active:scale-95 transition-all cursor-pointer">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-2xl bg-${color}-500/10 text-${color}-500 flex items-center justify-center">
+                            <span class="material-icons-outlined text-xl">${icon}</span>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-sm line-clamp-1">${item.name}</h4>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">${item.dist.toFixed(2)} KM</p>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-center text-primary">
+                        <span class="material-icons-outlined">directions</span>
+                        <span class="text-[8px] font-bold">RUTE</span>
+                    </div>
+                </div>`;
+            
+            L.marker([item.lat, item.lon]).addTo(markersLayer).bindPopup(item.name);
+        });
+        
+        container.innerHTML = html || '<p class="text-center py-10 text-slate-400 text-xs font-medium">Tidak ada data untuk kategori ini.</p>';
+    }
+
+    // Fungsi Navigasi yang diperbaiki
+    function openGoogleMaps(lat, lon) {
+        // Menggunakan URL Google Maps Directions API (Universal link)
+        const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}&travelmode=driving`;
+        window.open(url, '_blank');
+    }
+
+    function filterData(type, el) {
+        document.querySelectorAll('.stat-card').forEach(c => c.classList.remove('active'));
+        el.classList.add('active');
+        document.getElementById('list-title').innerText = "Daftar " + type;
+        const filtered = allData.filter(item => item.type === type);
+        renderList(filtered);
+    }
+
+    function resetFilter() {
+        document.querySelectorAll('.stat-card').forEach(c => c.classList.remove('active'));
+        document.getElementById('list-title').innerText = "Semua Lokasi";
+        renderList(allData);
+    }
+
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371;
+        const dLat = (lat2-lat1) * Math.PI/180;
+        const dLon = (lon2-lon1) * Math.PI/180;
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    window.onload = fetchData;
+</script>
+
+</body>
+</html>
