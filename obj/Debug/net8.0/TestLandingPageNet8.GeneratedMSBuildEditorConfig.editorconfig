@@ -86,6 +86,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2hhcmVkXF9WYWxpZGF0aW9uU2NyaXB0c1BhcnRpYWwuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
+[D:/App_Web_Portal_Kawasan_Net8/Pages/Ssos/Ssos.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU3Nvc1xTc29zLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
 [D:/App_Web_Portal_Kawasan_Net8/Pages/TataTertip/TataTertip.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcVGF0YVRlcnRpcFxUYXRhVGVydGlwLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
