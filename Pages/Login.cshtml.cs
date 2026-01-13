@@ -137,11 +137,15 @@ public class LoginModel : PageModel
             authProperties
         );
 
+  
+       
         return new JsonResult(new
         {
             success = true,
             message = "Login berhasil"
         });
+
+        
     }
     // =================END Login =================
 

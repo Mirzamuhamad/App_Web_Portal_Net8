@@ -28,6 +28,7 @@ appsettings.Development.json
 wwwroot/uploads/complaints/*
 wwwroot/uploads/documents/*
 wwwroot/uploads/profiles/*
+wwwroot/uploads/generalComplaint/*
 
 # Pastikan folder tetap ada (agar kodingan tidak error saat save)
 !wwwroot/uploads/complaints/.gitkeep
