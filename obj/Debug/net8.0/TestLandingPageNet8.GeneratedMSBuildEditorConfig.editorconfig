@@ -26,6 +26,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ3JlYXRlQ29tcGxhaW50XENyZWF0ZUNvbXBsYWludC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
+[D:/App_Web_Portal_Kawasan_Net8/Pages/CreateServiceOrder/CreateServiceOrder.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ3JlYXRlU2VydmljZU9yZGVyXENyZWF0ZVNlcnZpY2VPcmRlci5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [D:/App_Web_Portal_Kawasan_Net8/Pages/DetailAcara/DetailAcara.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcRGV0YWlsQWNhcmFcRGV0YWlsQWNhcmEuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
