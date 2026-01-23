@@ -11,10 +11,17 @@ namespace TestLandingPageNet8.Pages.CreateServiceOrder
         public int Id { get; set; }
         public string KavlingCode { get; set; }
     }
+
+    public class TypeServiceModel
+    {
+        public string TypeService { get; set; }
+    }
     public class CreateServiceOrderModel : PageModel
     {
         // Properti untuk menampung list yang akan ditampilkan di Dropdown
         public List<KavlingViewModel> KavlingList { get; set; } = new List<KavlingViewModel>();
+
+        public List<TypeServiceModel> TypeServiceList { get; set; } = new List<TypeServiceModel>();
 
         [BindProperty]
         public ComplaintInput Input { get; set; } = new ComplaintInput();
@@ -59,6 +66,28 @@ namespace TestLandingPageNet8.Pages.CreateServiceOrder
                     }
                 }
             }
+
+            // =======================
+            // 2️⃣ Ambil Type Service
+            // =======================
+            using (var connection = Db.Connect())
+            {
+                await connection.OpenAsync();
+
+                string sqlService = "SELECT * FROM V_GetTypeService ORDER BY Urutan ASC;";
+
+                using (var cmdService = new SqlCommand(sqlService, connection))
+                using (var reader = await cmdService.ExecuteReaderAsync())
+                {
+                    while (await reader.ReadAsync())
+                    {
+                        TypeServiceList.Add(new TypeServiceModel
+                        {
+                            TypeService = reader.GetString(0)
+                        });
+                    }
+                }
+            }
         }
 
         public async Task<IActionResult> OnPostAsync()
@@ -79,7 +108,7 @@ namespace TestLandingPageNet8.Pages.CreateServiceOrder
                     try
                     {
                         // 1. Insert ke Tabel Utama
-                        string sqlComplaint = @"INSERT INTO ComplaintPortal (KavlingId, Title, Description, Status, CreatedAt, CreatedBy) 
+                        string sqlComplaint = @"INSERT INTO ServiceOrderPortal (KavlingId, TypeService, Description, Status, CreatedAt, CreatedBy) 
                                                 OUTPUT INSERTED.Id 
                                                 VALUES (@KavlingId, @Title, @Description, 'Proses', GETDATE(), @UserId)";
 
@@ -96,7 +125,7 @@ namespace TestLandingPageNet8.Pages.CreateServiceOrder
                         // 2. Upload Foto & Insert ke Tabel Detail
                         if (Input.Photos != null && Input.Photos.Count > 0)
                         {
-                            string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads/complaints");
+                            string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads/service_order");
                             if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
 
                             foreach (var file in Input.Photos)
@@ -117,13 +146,13 @@ namespace TestLandingPageNet8.Pages.CreateServiceOrder
                                         await file.CopyToAsync(stream);
                                     }
 
-                                    string sqlImg = @"INSERT INTO ComplaintImages (ComplaintId, FilePath, FileName, FileType) 
+                                    string sqlImg = @"INSERT INTO ServiceOrderImages (ServiceId, FilePath, FileName, FileType) 
                                                      VALUES (@Cid, @Path, @Name, @Type)";
 
                                     using (var cmdImg = new SqlCommand(sqlImg, connection, transaction))
                                     {
                                         cmdImg.Parameters.AddWithValue("@Cid", newComplaintId);
-                                        cmdImg.Parameters.AddWithValue("@Path", "/uploads/complaints/" + uniqueName);
+                                        cmdImg.Parameters.AddWithValue("@Path", "/uploads/service_order/" + uniqueName);
                                         cmdImg.Parameters.AddWithValue("@Name", file.FileName);
                                         cmdImg.Parameters.AddWithValue("@Type", file.ContentType);
                                         await cmdImg.ExecuteNonQueryAsync();

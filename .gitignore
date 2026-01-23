@@ -29,6 +29,7 @@ wwwroot/uploads/complaints/*
 wwwroot/uploads/documents/*
 wwwroot/uploads/profiles/*
 wwwroot/uploads/generalComplaint/*
+wwwroot/uploads/service_order
 
 # Pastikan folder tetap ada (agar kodingan tidak error saat save)
 !wwwroot/uploads/complaints/.gitkeep

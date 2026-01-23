@@ -56,9 +56,9 @@
                     <select name="Input.Title" required
                         class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition appearance-none cursor-pointer">
 
-                        @foreach (var kavling in Model.KavlingList)
+                        @foreach (var TypeService in Model.TypeServiceList)
                         {
-                            <option value="@kavling.Id">@kavling.KavlingCode</option>
+                            <option value="@TypeService.TypeService">@TypeService.TypeService</option>
                         }
 
                     </select>
@@ -68,9 +68,9 @@
             </div>
 
             <div class="space-y-1">
-                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Deskripsikan service apa yang anda butuhkan</label>
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Deskripsi</label>
                 <textarea name="Input.Description" required rows="4"
-                    placeholder="Jelaskan detail kendala yang dialami..."
+                    placeholder="Jelaskan service apa yang anda butuhkan"
                     class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition resize-none"></textarea>
             </div>
 
