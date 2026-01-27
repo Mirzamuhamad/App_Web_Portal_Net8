@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "olkFbD8A5XS4okrnBVSAtf5dejz/MsXbKN1Ek48k93s=",
+  "Hash": "Rsq6NIxzNxEBMLCAWVBgmq2oYrpSuWlculPQIuC+iHk=",
   "Source": "TestLandingPageNet8",
   "BasePath": "_content/TestLandingPageNet8",
   "Mode": "Default",
@@ -2525,6 +2525,25 @@
       "OriginalItemSpec": "wwwroot\\uploads\\complaints\\25b039b5-3880-4ba4-9dca-5e2ae855d82c.jpg"
     },
     {
+      "Identity": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\uploads\\complaints\\292c6ec8-7eb2-424c-a5c9-8eb2e211c3e4.jpg",
+      "SourceId": "TestLandingPageNet8",
+      "SourceType": "Discovered",
+      "ContentRoot": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\",
+      "BasePath": "_content/TestLandingPageNet8",
+      "RelativePath": "uploads/complaints/292c6ec8-7eb2-424c-a5c9-8eb2e211c3e4.jpg",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\uploads\\complaints\\292c6ec8-7eb2-424c-a5c9-8eb2e211c3e4.jpg"
+    },
+    {
       "Identity": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\uploads\\complaints\\2ba3de13-8ec1-4ba0-a9d3-8e0d626d2592.png",
       "SourceId": "TestLandingPageNet8",
       "SourceType": "Discovered",
@@ -2675,6 +2694,25 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\uploads\\complaints\\8d4c21a8-c025-4f8f-8c92-0caa1aaa372c.jpg"
+    },
+    {
+      "Identity": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\uploads\\complaints\\9c37c590-ab55-4388-8fea-ea129a3ad6d2.jpeg",
+      "SourceId": "TestLandingPageNet8",
+      "SourceType": "Discovered",
+      "ContentRoot": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\",
+      "BasePath": "_content/TestLandingPageNet8",
+      "RelativePath": "uploads/complaints/9c37c590-ab55-4388-8fea-ea129a3ad6d2.jpeg",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\uploads\\complaints\\9c37c590-ab55-4388-8fea-ea129a3ad6d2.jpeg"
     },
     {
       "Identity": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\uploads\\complaints\\9e95ee8e-0209-4165-9447-4336290f15d5.jpeg",
@@ -3910,6 +3948,44 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\uploads\\profiles\\ea661d61-4b24-4784-b3fe-c2e5c2e317ac.jpg"
+    },
+    {
+      "Identity": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\uploads\\service_order\\1224c02a-1341-49d9-835f-313b76f7ff46.jpeg",
+      "SourceId": "TestLandingPageNet8",
+      "SourceType": "Discovered",
+      "ContentRoot": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\",
+      "BasePath": "_content/TestLandingPageNet8",
+      "RelativePath": "uploads/service_order/1224c02a-1341-49d9-835f-313b76f7ff46.jpeg",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\uploads\\service_order\\1224c02a-1341-49d9-835f-313b76f7ff46.jpeg"
+    },
+    {
+      "Identity": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\uploads\\service_order\\b40a9f20-6881-4619-a3e2-1cb1bc541db5.jpeg",
+      "SourceId": "TestLandingPageNet8",
+      "SourceType": "Discovered",
+      "ContentRoot": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\",
+      "BasePath": "_content/TestLandingPageNet8",
+      "RelativePath": "uploads/service_order/b40a9f20-6881-4619-a3e2-1cb1bc541db5.jpeg",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\uploads\\service_order\\b40a9f20-6881-4619-a3e2-1cb1bc541db5.jpeg"
     }
   ]
 }

@@ -25,6 +25,10 @@ namespace TestLandingPageNet8.Pages.AccountUser
         public TenantViewModel Tenant { get; set; }
         public List<TicketViewModel> Complaints { get; set; }
         public List<InvoiceViewModel> Invoices { get; set; }
+                        
+        // Di dalam class AccountUserModel
+        public List<ServiceOrderViewModel> ServiceOrders { get; set; } = new();
+
 
         //Get Data dari table PortalUsers ===================
         public async Task OnGetAsync()
@@ -56,6 +60,12 @@ namespace TestLandingPageNet8.Pages.AccountUser
                 // 2. Query untuk List Pengaduan menggunakan View V_ComplaintList
                 string sqlComplaints = "SELECT * FROM V_ComplaintList WHERE UserId = @Id ORDER BY ComplaintId DESC";
                 Complaints = (await connection.QueryAsync<TicketViewModel>(sqlComplaints, new { Id = userId })).ToList();
+
+
+
+// Di dalam OnGetAsync, tambahkan query:
+var sqlService = "SELECT * FROM V_ServiceOrderList WHERE UserId = @Uid ORDER BY Date DESC";
+ServiceOrders = (await connection.QueryAsync<ServiceOrderViewModel>(sqlService, new { Uid = userId })).ToList();
             }
 
 
@@ -268,4 +278,20 @@ namespace TestLandingPageNet8.Pages.AccountUser
         public string Status { get; set; } = string.Empty;
         public string JoinDate { get; set; } = string.Empty;
     }
+
+    // Tambahkan di dalam namespace yang sama
+public class ServiceOrderViewModel
+{
+    public string ServiceId { get; set; }
+    public string Id { get; set; } // TransNmbr
+    public string TypeService { get; set; }
+    public string Description { get; set; }
+    public string Status { get; set; }
+    public DateTime Date { get; set; }
+    public string KavlingName { get; set; }
+    public decimal Harga { get; set; }
+    public string ImageUrl { get; set; }
+    public int PhotoCount { get; set; }
+}
+
 }
