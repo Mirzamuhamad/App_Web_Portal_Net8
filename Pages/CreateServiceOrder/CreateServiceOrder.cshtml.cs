@@ -108,9 +108,9 @@ namespace TestLandingPageNet8.Pages.CreateServiceOrder
                     try
                     {
                         // 1. Insert ke Tabel Utama
-                        string sqlComplaint = @"INSERT INTO ServiceOrderPortal (KavlingId, TypeService, Description, Status, CreatedAt, CreatedBy) 
+                        string sqlComplaint = @"INSERT INTO ServiceOrderPortal (KavlingId, TypeService, Description, CreatedAt, CreatedBy) 
                                                 OUTPUT INSERTED.Id 
-                                                VALUES (@KavlingId, @Title, @Description, 'Proses', GETDATE(), @UserId)";
+                                                VALUES (@KavlingId, @Title, @Description, GETDATE(), @UserId)";
 
                         int newComplaintId;
                         using (var cmd = new SqlCommand(sqlComplaint, connection, transaction))
