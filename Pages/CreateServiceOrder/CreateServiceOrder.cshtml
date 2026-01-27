@@ -221,7 +221,8 @@
                     if (result.success) {
                         showSuccess('Sukses', result.message);
                         setTimeout(() => {
-                            window.location.href = '/AccountUser/AccountUser';
+                            // Menambahkan #service di akhir URL agar Alpine.js bisa membaca state tab
+                            window.location.href = '/AccountUser/AccountUser#service';
                         }, 2000);
                     } else {
                         showError('Gagal', result.message);

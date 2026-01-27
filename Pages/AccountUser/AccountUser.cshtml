@@ -10,7 +10,7 @@
 }
 
 <div class="min-h-screen bg-slate-50/50 pb-20" x-data="{ 
-        activeTab: 'pengaduan',
+        activeTab: window.location.hash ? window.location.hash.replace('#', '') : 'pengaduan',
         isEditModalOpen: false,
         isLoading: false, 
         showToast: false, 
@@ -404,17 +404,23 @@
                         </div>
                     </template>
 
-                    @* 3. Status (Dinamis & Pojok Kanan) *@
-                    <div class="space-y-1 md:text-right">
-                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-wider" 
-                               x-text="selectedComplaint.harga ? 'Status Service Order' : 'Status Laporan'">
-                        </label>
-                        <div>
-                            <span :class="['Proses', 'Pending', 'Waiting'].includes(selectedComplaint.status) ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'"
-                                  class="px-3 py-1 text-[10px] font-extrabold rounded-lg border uppercase tracking-wider inline-block"
-                                  x-text="selectedComplaint.status"></span>
-                        </div>
-                    </div>
+                   @* Status dengan pembedaan warna yang kontras *@
+<div class="space-y-1 md:text-right">
+    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-wider" 
+           x-text="selectedComplaint.harga ? 'Status Service Order' : 'Status Laporan'">
+    </label>
+    <div>
+        <span :class="{
+                'bg-amber-50 text-amber-600 border-amber-100': selectedComplaint.status === 'PENDING',
+                'bg-blue-50 text-blue-600 border-blue-100': selectedComplaint.status === 'PROSES',
+                'bg-emerald-50 text-emerald-600 border-emerald-100': selectedComplaint.status === 'SELESAI',
+                'bg-rose-50 text-rose-600 border-rose-100': selectedComplaint.status === 'CANCEL'
+              }"
+              class="px-3 py-1 text-[10px] font-extrabold rounded-lg border uppercase tracking-wider inline-block"
+              x-text="selectedComplaint.status">
+        </span>
+    </div>
+</div>  
                 </div>
 
                 @* Deskripsi *@
