@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "Rsq6NIxzNxEBMLCAWVBgmq2oYrpSuWlculPQIuC+iHk=",
+  "Hash": "9SyBhoEmqjrS+63QlUuZgAKh92d7UurZ9qzSJNJ+DmA=",
   "Source": "TestLandingPageNet8",
   "BasePath": "_content/TestLandingPageNet8",
   "Mode": "Default",
@@ -2582,6 +2582,25 @@
       "OriginalItemSpec": "wwwroot\\uploads\\complaints\\42219fc3-4158-4f0f-ac2c-faff50f702a5.png"
     },
     {
+      "Identity": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\uploads\\complaints\\4c7e7bcf-bdfc-4a4f-99d8-33fdf98c8133.jpg",
+      "SourceId": "TestLandingPageNet8",
+      "SourceType": "Discovered",
+      "ContentRoot": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\",
+      "BasePath": "_content/TestLandingPageNet8",
+      "RelativePath": "uploads/complaints/4c7e7bcf-bdfc-4a4f-99d8-33fdf98c8133.jpg",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\uploads\\complaints\\4c7e7bcf-bdfc-4a4f-99d8-33fdf98c8133.jpg"
+    },
+    {
       "Identity": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\uploads\\complaints\\623136ea-ec6e-4427-8155-657062d9aadc.jpg",
       "SourceId": "TestLandingPageNet8",
       "SourceType": "Discovered",
@@ -3986,6 +4005,25 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\uploads\\service_order\\b40a9f20-6881-4619-a3e2-1cb1bc541db5.jpeg"
+    },
+    {
+      "Identity": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\uploads\\service_order\\e04efbc3-38f0-49f7-853f-6a76b2a75aa5.png",
+      "SourceId": "TestLandingPageNet8",
+      "SourceType": "Discovered",
+      "ContentRoot": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\",
+      "BasePath": "_content/TestLandingPageNet8",
+      "RelativePath": "uploads/service_order/e04efbc3-38f0-49f7-853f-6a76b2a75aa5.png",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\uploads\\service_order\\e04efbc3-38f0-49f7-853f-6a76b2a75aa5.png"
     }
   ]
 }

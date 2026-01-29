@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Data.SqlClient;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
+using Dapper;   
 
 namespace TestLandingPageNet8.Pages.CreateServiceOrder
 {
@@ -25,6 +26,17 @@ namespace TestLandingPageNet8.Pages.CreateServiceOrder
 
         [BindProperty]
         public ComplaintInput Input { get; set; } = new ComplaintInput();
+
+        //tmbahan untuk class email
+        private readonly IConfiguration _config;
+        private readonly EmailService _email;
+
+        public CreateServiceOrderModel(IConfiguration config, EmailService email)
+        {
+            _config = config;
+            _email = email;
+        }
+        // end of email
 
         public class ComplaintInput
         {
@@ -107,6 +119,15 @@ namespace TestLandingPageNet8.Pages.CreateServiceOrder
                 {
                     try
                     {
+                        // 1. Ambil KavlingCode untuk keperluan email (MENGATASI ERROR CS0103)
+                string sqlKavling = "SELECT KavlingCode FROM V_ListKavlingUserPOrtal WHERE KavlingId = @KavlingId";
+                string selectedKavlingCode = "";
+                using (var cmdKav = new SqlCommand(sqlKavling, connection, transaction))
+                {
+                    cmdKav.Parameters.AddWithValue("@KavlingId", Input.KavlingId);
+                    var result = await cmdKav.ExecuteScalarAsync();
+                    selectedKavlingCode = result?.ToString() ?? "-";
+                }
                         // 1. Insert ke Tabel Utama
                         string sqlComplaint = @"INSERT INTO ServiceOrderPortal (KavlingId, TypeService, Description, CreatedAt, CreatedBy) 
                                                 OUTPUT INSERTED.Id 
@@ -161,10 +182,82 @@ namespace TestLandingPageNet8.Pages.CreateServiceOrder
                             }
                         }
 
+                        // Ambil Nomor Referensi (TransNmbr) yang digenerate sistem
+                        string transNmbr = "";
+                        string sqlGetTrans = "SELECT TransNmbr FROM ServiceOrderPortal WHERE Id = @Id";
+                        using (var cmdTrans = new SqlCommand(sqlGetTrans, connection, transaction))
+                        {
+                            cmdTrans.Parameters.AddWithValue("@Id", newComplaintId);
+                            var resTrans = await cmdTrans.ExecuteScalarAsync();
+                            transNmbr = resTrans?.ToString() ?? "";
+                        }
+
                         transaction.Commit();
-                        return new JsonResult(new { success = true, message = "Laporan Pengaduan berhasil dikirim!" });
+                     // === LOGIKA KIRIM EMAIL KE ADMIN dari table master email===
+                    try 
+                    {
+                        string sqlGetAdminEmails = "SELECT Email FROM MsEmailAdmin";
+                        var adminEmails = await connection.QueryAsync<string>(sqlGetAdminEmails);
+
+                        foreach (var adminEmail in adminEmails)
+                        {
+                            if (!string.IsNullOrWhiteSpace(adminEmail))
+                            {
+                                _email.Send(
+                                    adminEmail,
+                                    $"[{transNmbr}] - {Input.Title} - {selectedKavlingCode}", // Tambahkan transNmbr di Subjek
+                                    $@"
+                                    <div style='font-family: Arial, sans-serif; background:#f4f4f5; padding:20px'>
+                                        <div style='max-width:600px; margin:auto; background:#ffffff; border-radius:12px; border:1px solid #e4e4e7; overflow:hidden;'>
+                                            <div style='background:#0d9488; padding:20px; color:white'>
+                                                <h2 style='margin:0; font-size:20px'>Notifikasi Layanan Baru</h2>
+                                                <p style='margin:5px 0 0 0; opacity:0.9'>No. Referensi: <b>{transNmbr}</b></p>
+                                            </div>
+                                            <div style='padding:10px; color:#3f3f46; line-height:1.6'>
+                                                <p>Halo Admin,</p>
+                                                <p>Terdapat permintaan layanan baru dengan detail sebagai berikut:</p>
+                                                
+                                                <div style='background:#f0fdfa; border-radius:8px; padding:6px; margin:10px 0; border:1px solid #ccfbf1'>
+                                                    <table style='width:100%'>
+                                                        <tr>
+                                                            <td style='width:130px; color:#64748b'><b>No. Tiket</b></td>
+                                                            <td>: <span style='color:#0d9488; font-weight:bold'>{transNmbr}</span></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td style='color:#64748b'><b>Unit/Kavling</b></td>
+                                                            <td>: {selectedKavlingCode}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td style='color:#64748b'><b>Jenis Layanan</b></td>
+                                                            <td>: {Input.Title}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td style='vertical-align:top; color:#64748b'><b>Deskripsi</b></td>
+                                                            <td>: {Input.Description}</td>
+                                                        </tr>
+                                                    </table>
+                                                </div>
+                                                
+                                                <p>Silahkan login ke dashboard admin untuk memproses permintaan ini.</p>
+                                                <p style='font-size:12px; color:#a1a1aa; margin-top:30px; border-top:1px solid #eee; padding-top:10px'>
+                                                    Waktu Laporan: {DateTime.Now:dd MMM yyyy HH:mm}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>"
+                                );
+                            }
+                        }
                     }
-                    catch (Exception ex)
+                    catch (Exception mailEx) 
+
+                {
+                    Console.WriteLine("Email Error: " + mailEx.Message);
+                }
+
+                return new JsonResult(new { success = true, message = "Service Order Request berhasil dikirim!" });
+            }
+            catch (Exception ex)
                     {
                         transaction.Rollback();
                         return new JsonResult(new { success = false, message = "Database Error: " + ex.Message });
