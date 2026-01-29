@@ -420,7 +420,7 @@
               x-text="selectedComplaint.status">
         </span>
     </div>
-</div>  
+</div>
                 </div>
 
                 @* Deskripsi *@
@@ -676,9 +676,20 @@
                     </div>
                 </div>
 
-                <span class="px-3 py-1.5 @(item.Status == "Selesai" ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-amber-50 text-amber-600 border-amber-100") text-[10px] font-extrabold rounded-lg border uppercase tracking-wider">
+                @* <span class="px-3 py-1.5 @(item.Status == "SELESAI" ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-amber-50 text-amber-600 border-amber-100") text-[10px] font-extrabold rounded-lg border uppercase tracking-wider">
                     @item.Status
-                </span>
+                </span> *@
+
+                <span class="px-3 py-1.5 text-[10px] font-extrabold rounded-lg border uppercase tracking-wider 
+    @(item.Status == "SELESAI" || item.Status == "Selesai" ? "bg-emerald-50 text-emerald-600 border-emerald-100" : 
+      item.Status == "PROSES" || item.Status == "Proses" ? "bg-blue-50 text-blue-600 border-blue-100" : 
+      item.Status == "CANCEL" || item.Status == "Dibatalkan" ? "bg-rose-50 text-rose-600 border-rose-100" : 
+      "bg-amber-50 text-amber-600 border-amber-100")">
+    @item.Status
+</span>
+
+                
+                
             </div>
             @* End List data *@
         }
