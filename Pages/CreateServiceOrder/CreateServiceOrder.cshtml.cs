@@ -210,7 +210,7 @@ namespace TestLandingPageNet8.Pages.CreateServiceOrder
                                     <div style='font-family: Arial, sans-serif; background:#f4f4f5; padding:20px'>
                                         <div style='max-width:600px; margin:auto; background:#ffffff; border-radius:12px; border:1px solid #e4e4e7; overflow:hidden;'>
                                             <div style='background:#0d9488; padding:20px; color:white'>
-                                                <h2 style='margin:0; font-size:20px'>Notifikasi Layanan Baru</h2>
+                                                <h2 style='margin:0; font-size:20px'>Permintaan Service Request Baru</h2>
                                                 <p style='margin:5px 0 0 0; opacity:0.9'>No. Referensi: <b>{transNmbr}</b></p>
                                             </div>
                                             <div style='padding:10px; color:#3f3f46; line-height:1.6'>
@@ -238,9 +238,9 @@ namespace TestLandingPageNet8.Pages.CreateServiceOrder
                                                     </table>
                                                 </div>
                                                 
-                                                <p>Silahkan login ke dashboard admin untuk memproses permintaan ini.</p>
+                                                <p>Silahkan login ke dashboard kawasan untuk memproses permintaan ini.</p>
                                                 <p style='font-size:12px; color:#a1a1aa; margin-top:30px; border-top:1px solid #eee; padding-top:10px'>
-                                                    Waktu Laporan: {DateTime.Now:dd MMM yyyy HH:mm}
+                                                    Waktu Request   : {DateTime.Now:dd MMM yyyy HH:mm}
                                                 </p>
                                             </div>
                                         </div>
