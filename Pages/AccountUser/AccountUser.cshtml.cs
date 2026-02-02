@@ -228,6 +228,56 @@ ServiceOrders = (await connection.QueryAsync<ServiceOrderViewModel>(sqlService, 
         //End Change Password ==================
 
 
+        public async Task<IActionResult> OnPostApprovePriceAsync(int serviceId, IFormFile poFile)
+{
+    if (poFile == null || poFile.Length == 0)
+    {
+        return new JsonResult(new { success = false, message = "File PO wajib diunggah." });
+    }
+
+    try
+    {
+        // 1. Proses Simpan File
+        string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads/service_order/po_tenant");
+        if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+
+        string extension = Path.GetExtension(poFile.FileName);
+        string uniqueFileName = $"PO_{serviceId}_{Guid.NewGuid().ToString()}{extension}";
+        string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+        using (var stream = new FileStream(filePath, FileMode.Create))
+        {
+            await poFile.CopyToAsync(stream);
+        }
+
+        // 2. Update Database (Menggunakan Dapper)
+        using (var connection = Db.Connect())
+        {
+            // Update status dan kolom PoDokumen (Sesuaikan nama kolom di DB Anda)
+            string sql = @"UPDATE ServiceOrderPortal 
+                           SET Status = 'APPROVED', 
+                               PoDokumen = @PoDokumen 
+                           WHERE Id = @Id";
+
+            int affectedRows = await connection.ExecuteAsync(sql, new { 
+                PoDokumen = "/uploads/service_order/po_tenant/" + uniqueFileName, 
+                Id = serviceId 
+            });
+
+            if (affectedRows > 0)
+            {
+                return new JsonResult(new { success = true, message = "Harga disetujui dan PO berhasil diunggah!" });
+            }
+        }
+
+        return new JsonResult(new { success = false, message = "Gagal memperbarui data di database." });
+    }
+    catch (Exception ex)
+    {
+        return new JsonResult(new { success = false, message = "Terjadi kesalahan: " + ex.Message });
+    }
+}
+
+
     }
 
     // ViewModel Sederhana
@@ -290,7 +340,11 @@ public class ServiceOrderViewModel
     public DateTime Date { get; set; }
     public string KavlingName { get; set; }
     public decimal Harga { get; set; }
+    public decimal HargaSatuan { get; set; }
+    public decimal Qty { get; set; }
+    public string Item { get; set; }
     public string ImageUrl { get; set; }
+    public string PoDokumen { get; set; }
     public int PhotoCount { get; set; }
 }
 

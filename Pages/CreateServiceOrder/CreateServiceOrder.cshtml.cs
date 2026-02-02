@@ -153,9 +153,7 @@ namespace TestLandingPageNet8.Pages.CreateServiceOrder
                             {
                                 if (file.Length > 0)
                                 {
-
-
-
+                                            
                                     string ext = Path.GetExtension(file.FileName);
                                     string[] allowed = { ".jpg", ".jpeg", ".png" };
                                     if (!allowed.Contains(ext)) continue;
