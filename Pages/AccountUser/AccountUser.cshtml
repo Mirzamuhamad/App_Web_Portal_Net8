@@ -622,7 +622,7 @@ async exportToPdf(data) {
                     </div>
                 </div>
 
-                <template x-if="selectedComplaint.harga">
+              <template x-if="selectedComplaint.harga && selectedComplaint.harga != 0">         
     <div class="space-y-3 bg-slate-50 p-4 rounded-2xl border border-slate-100" x-data="{ showDetails: false }">
         <div class="flex items-center justify-between cursor-pointer" @@click="showDetails = !showDetails">
             <div class="space-y-1">
@@ -634,7 +634,7 @@ async exportToPdf(data) {
                 </div>
             </div>
 
-            <button type="button" @@click="exportToPdf(selectedComplaint)"
+            <button type="button" @@click.stop="exportToPdf(selectedComplaint)"
                         class="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 text-slate-600 rounded-lg text-[10px] font-bold hover:bg-slate-50 transition-colors uppercase tracking-tight">
                     <i class="ri-file-pdf-line text-red-500 text-sm"></i>
                     Export PDF
@@ -718,7 +718,7 @@ async exportToPdf(data) {
                     </button>
                 </template> *@
 
-                <template x-if="selectedComplaint.harga">
+                 <template x-if="selectedComplaint.harga && selectedComplaint.harga != 0"> 
     <div x-data="{ showPoUpload: false, poFileName: '', poPreview: null,isPoLoading: false }" class="w-full space-y-4">
         
         <template x-if="!showPoUpload && !selectedComplaint.poDokumen">
