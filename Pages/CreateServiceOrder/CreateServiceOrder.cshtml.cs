@@ -152,8 +152,7 @@ namespace TestLandingPageNet8.Pages.CreateServiceOrder
                             foreach (var file in Input.Photos)
                             {
                                 if (file.Length > 0)
-                                {
-                                            
+                                {                                            
                                     string ext = Path.GetExtension(file.FileName);
                                     string[] allowed = { ".jpg", ".jpeg", ".png" };
                                     if (!allowed.Contains(ext)) continue;

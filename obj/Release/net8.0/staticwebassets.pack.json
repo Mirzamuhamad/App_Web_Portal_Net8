@@ -1,7 +1,7 @@
 {
   "Files": [
     {
-      "Id": "D:\\App_Web_Portal_Kawasan_Net8\\obj\\Debug\\net8.0\\scopedcss\\projectbundle\\TestLandingPageNet8.bundle.scp.css",
+      "Id": "D:\\App_Web_Portal_Kawasan_Net8\\obj\\Release\\net8.0\\scopedcss\\projectbundle\\TestLandingPageNet8.bundle.scp.css",
       "PackagePath": "staticwebassets\\TestLandingPageNet8.bundle.scp.css"
     },
     {
@@ -621,18 +621,6 @@
       "PackagePath": "staticwebassets\\uploads\\documents\\16c88f28-072a-43de-87af-b58abd178ce2.PNG"
     },
     {
-      "Id": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\uploads\\documents\\1e5a181a-9e92-4aca-9694-1e087727055b.pdf",
-      "PackagePath": "staticwebassets\\uploads\\documents\\1e5a181a-9e92-4aca-9694-1e087727055b.pdf"
-    },
-    {
-      "Id": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\uploads\\documents\\28a7d027-e3dd-4627-ba08-60b7b88f06ff.pdf",
-      "PackagePath": "staticwebassets\\uploads\\documents\\28a7d027-e3dd-4627-ba08-60b7b88f06ff.pdf"
-    },
-    {
-      "Id": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\uploads\\documents\\2a7c368d-fda4-41ad-be39-30ff6c263392.pdf",
-      "PackagePath": "staticwebassets\\uploads\\documents\\2a7c368d-fda4-41ad-be39-30ff6c263392.pdf"
-    },
-    {
       "Id": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\uploads\\documents\\3169a682-0c7d-427e-94e8-4ee3308d4fe1.png",
       "PackagePath": "staticwebassets\\uploads\\documents\\3169a682-0c7d-427e-94e8-4ee3308d4fe1.png"
     },
@@ -661,10 +649,6 @@
       "PackagePath": "staticwebassets\\uploads\\documents\\45ff279a-3d71-4fc3-be12-7ca6462d81cb.jpg"
     },
     {
-      "Id": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\uploads\\documents\\4add97e3-d1c7-432a-af25-6ee3ae6ce34c.pdf",
-      "PackagePath": "staticwebassets\\uploads\\documents\\4add97e3-d1c7-432a-af25-6ee3ae6ce34c.pdf"
-    },
-    {
       "Id": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\uploads\\documents\\4c7ea294-5be6-4fae-bc2e-22942d3f77c9.pdf",
       "PackagePath": "staticwebassets\\uploads\\documents\\4c7ea294-5be6-4fae-bc2e-22942d3f77c9.pdf"
     },
@@ -685,24 +669,12 @@
       "PackagePath": "staticwebassets\\uploads\\documents\\5e3d333f-54b5-4932-a83c-c8fc60bc4d65.pdf"
     },
     {
-      "Id": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\uploads\\documents\\5f32c1fa-32d3-4735-a61e-9585c4388065.pdf",
-      "PackagePath": "staticwebassets\\uploads\\documents\\5f32c1fa-32d3-4735-a61e-9585c4388065.pdf"
-    },
-    {
       "Id": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\uploads\\documents\\60b23d8a-544a-4566-8403-8634e8cf7d01.jpg",
       "PackagePath": "staticwebassets\\uploads\\documents\\60b23d8a-544a-4566-8403-8634e8cf7d01.jpg"
     },
     {
       "Id": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\uploads\\documents\\63d1a9ae-b64a-4e23-8b4f-3bf2d371b383.pdf",
       "PackagePath": "staticwebassets\\uploads\\documents\\63d1a9ae-b64a-4e23-8b4f-3bf2d371b383.pdf"
-    },
-    {
-      "Id": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\uploads\\documents\\66df6d13-64f6-4a39-8d4e-ec57b4f64344.pdf",
-      "PackagePath": "staticwebassets\\uploads\\documents\\66df6d13-64f6-4a39-8d4e-ec57b4f64344.pdf"
-    },
-    {
-      "Id": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\uploads\\documents\\6702412a-2f84-4fe2-9888-688dd637f11a.pdf",
-      "PackagePath": "staticwebassets\\uploads\\documents\\6702412a-2f84-4fe2-9888-688dd637f11a.pdf"
     },
     {
       "Id": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\uploads\\documents\\7118d08d-f44c-4f04-b51e-22dccd2f791d.png",
@@ -721,20 +693,12 @@
       "PackagePath": "staticwebassets\\uploads\\documents\\92b16dab-3a5d-4b50-8819-a3050a813c73.jpg"
     },
     {
-      "Id": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\uploads\\documents\\990f5fb1-2801-4086-8dc4-fbb733d167f1.pdf",
-      "PackagePath": "staticwebassets\\uploads\\documents\\990f5fb1-2801-4086-8dc4-fbb733d167f1.pdf"
-    },
-    {
       "Id": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\uploads\\documents\\a2d08633-aa64-450d-b3a0-1c219ba30db7.pdf",
       "PackagePath": "staticwebassets\\uploads\\documents\\a2d08633-aa64-450d-b3a0-1c219ba30db7.pdf"
     },
     {
       "Id": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\uploads\\documents\\a77089d8-f450-4bcc-86ed-cec47fd40c0e.jpg",
       "PackagePath": "staticwebassets\\uploads\\documents\\a77089d8-f450-4bcc-86ed-cec47fd40c0e.jpg"
-    },
-    {
-      "Id": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\uploads\\documents\\b001430e-e56d-48e4-9691-7f2220c0aa50.pdf",
-      "PackagePath": "staticwebassets\\uploads\\documents\\b001430e-e56d-48e4-9691-7f2220c0aa50.pdf"
     },
     {
       "Id": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\uploads\\documents\\b17c2c54-3daa-4609-bd45-644745dad8e0.pdf",
@@ -747,10 +711,6 @@
     {
       "Id": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\uploads\\documents\\b9c15e25-2fee-40f9-a81e-6b1d8affdad8.PNG",
       "PackagePath": "staticwebassets\\uploads\\documents\\b9c15e25-2fee-40f9-a81e-6b1d8affdad8.PNG"
-    },
-    {
-      "Id": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\uploads\\documents\\bc54a173-c8c7-4fce-926e-617ef84b3260.pdf",
-      "PackagePath": "staticwebassets\\uploads\\documents\\bc54a173-c8c7-4fce-926e-617ef84b3260.pdf"
     },
     {
       "Id": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\uploads\\documents\\bed56ca3-5c2d-48fb-aea3-66db0992d91b.pdf",
@@ -957,10 +917,6 @@
       "PackagePath": "staticwebassets\\uploads\\service_order\\po_tenant\\PO_11_20b40a6b-5e5d-4d1e-a53d-e027b44c2043.pdf"
     },
     {
-      "Id": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\uploads\\service_order\\po_tenant\\PO_12_ed249143-0ec6-4f23-b40e-dda9363aba7f.pdf",
-      "PackagePath": "staticwebassets\\uploads\\service_order\\po_tenant\\PO_12_ed249143-0ec6-4f23-b40e-dda9363aba7f.pdf"
-    },
-    {
       "Id": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\uploads\\service_order\\po_tenant\\PO_1_e7ade192-7ff7-4381-a45f-6ba30d22674d.PNG",
       "PackagePath": "staticwebassets\\uploads\\service_order\\po_tenant\\PO_1_e7ade192-7ff7-4381-a45f-6ba30d22674d.PNG"
     },
@@ -981,19 +937,19 @@
       "PackagePath": "staticwebassets\\uploads\\service_order\\po_tenant\\PO_9_5f54e987-eccd-4f7e-acdc-aeba7a4c75cb.pdf"
     },
     {
-      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.TestLandingPageNet8.Microsoft.AspNetCore.StaticWebAssets.props",
+      "Id": "obj\\Release\\net8.0\\staticwebassets\\msbuild.TestLandingPageNet8.Microsoft.AspNetCore.StaticWebAssets.props",
       "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
     },
     {
-      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.build.TestLandingPageNet8.props",
+      "Id": "obj\\Release\\net8.0\\staticwebassets\\msbuild.build.TestLandingPageNet8.props",
       "PackagePath": "build\\TestLandingPageNet8.props"
     },
     {
-      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildMultiTargeting.TestLandingPageNet8.props",
+      "Id": "obj\\Release\\net8.0\\staticwebassets\\msbuild.buildMultiTargeting.TestLandingPageNet8.props",
       "PackagePath": "buildMultiTargeting\\TestLandingPageNet8.props"
     },
     {
-      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildTransitive.TestLandingPageNet8.props",
+      "Id": "obj\\Release\\net8.0\\staticwebassets\\msbuild.buildTransitive.TestLandingPageNet8.props",
       "PackagePath": "buildTransitive\\TestLandingPageNet8.props"
     }
   ],

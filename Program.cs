@@ -68,6 +68,6 @@ app.UseAuthorization();
 app.MapRazorPages();
 
 // Tambahkan konfigurasi ini untuk mendengarkan di semua IP di port 5134
-app.Urls.Add("http://0.0.0.0:5134"); 
+// app.Urls.Add("http://0.0.0.0:5134"); 
 
 app.Run();

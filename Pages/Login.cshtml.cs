@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
+using Microsoft.JSInterop.Infrastructure;
 
 
 
@@ -137,25 +138,25 @@ public class LoginModel : PageModel
             authProperties
         );
 
-  
-       
+
+
         return new JsonResult(new
         {
             success = true,
             message = "Login berhasil"
         });
 
-        
+
     }
     // =================END Login =================
 
 
 
     // ================= REGISTER =================
-// Register dengan multi Upload Dokumen ======================================
+    // Register dengan multi Upload Dokumen ======================================
 
 
-public IActionResult OnPostRegister()
+    public IActionResult OnPostRegister()
     {
         ModelState.Clear();
         using var conn = Db.Connect();
@@ -283,7 +284,7 @@ public IActionResult OnPostRegister()
         }
         // ================= SIMPAN FILE END =================
 
-        
+
         // ================= DATABASE TRANSACTION =================
         using var tran = conn.BeginTransaction();
 
@@ -362,12 +363,12 @@ public IActionResult OnPostRegister()
         }
 
         //  Send email register ===========
-            if (!string.IsNullOrWhiteSpace(Input.Email))
-            {
-                _email.Send(
-                    Input.Email,
-                    "Registrasi Berhasil – Menunggu Approval Admin",
-                    $@"
+        if (!string.IsNullOrWhiteSpace(Input.Email))
+        {
+            _email.Send(
+                Input.Email,
+                "Registrasi Berhasil – Menunggu Approval Admin",
+                $@"
                 <div style='font-family: Arial, sans-serif; background:#f9fafb; padding:5px'>
                 <div style='
                         max-width:600px;
@@ -426,10 +427,10 @@ public IActionResult OnPostRegister()
                 </div>
                 </div>
                 "
-                );
-            }
+            );
+        }
 
-            //  End Send email register ===========
+        //  End Send email register ===========
 
         return new JsonResult(new
         {
@@ -438,272 +439,349 @@ public IActionResult OnPostRegister()
         });
     }
 
-// Register dengan siggle Upload Dokumen ======================================
-//     public IActionResult OnPostRegister()
-//     {
-//         ModelState.Clear();
+    // UNTUK FORGOT PASSWORD =================
+       public async Task<IActionResult> OnPostForgotPassword(string email)
+{
+    if (string.IsNullOrEmpty(email))
+    {
+        return new JsonResult(new { success = false, message = "Email wajib diisi!" });
+    }
 
-//         using var conn = Db.Connect(); // Connection database
-//         conn.Open();
+    try
+    {
+        using var conn = Db.Connect();
+        await conn.OpenAsync();
 
-//         if (Input.Password != Input.RetypePassword)
-//         {
-//             ModelState.AddModelError("Input.RetypePassword", "Password tidak sama");
-//         }
+        // Cek apakah email terdaftar
+        using var cmd = new SqlCommand("SELECT UserId, Nama FROM PortalUsers WHERE Email = @Email", conn);
+        cmd.Parameters.AddWithValue("@Email", email);
+        
+        string userId = null;
+        string nama = null;
 
-//         // ===== VALIDASI EMAIL FORMAT =====
-//         if (string.IsNullOrWhiteSpace(Input.Email))
-//         {
-//             ModelState.AddModelError("Input.Email", "Email wajib diisi");
-//         }
-//         else
-//         {
-//             var emailValidator = new EmailAddressAttribute();
-//             if (!emailValidator.IsValid(Input.Email))
-//             {
-//                 ModelState.AddModelError("Input.Email", "Format email tidak valid");
-//             }
-//         }
+        using (var rd = await cmd.ExecuteReaderAsync())
+        {
+            if (rd.Read())
+            {
+                userId = rd["UserId"].ToString();
+                nama = rd["Nama"].ToString();
+            }
+        }
 
+        if (userId != null)
+        {
+            // Buat token
+            string token = Guid.NewGuid().ToString();
+            
+            // Simpan token ke database
+            using var cmdUpdate = new SqlCommand("UPDATE PortalUsers SET ResetToken = @Token WHERE UserId = @Id", conn);
+            cmdUpdate.Parameters.AddWithValue("@Token", token);
+            cmdUpdate.Parameters.AddWithValue("@Id", userId);
+            await cmdUpdate.ExecuteNonQueryAsync();
 
+             // 4. Kirim Email
+            string resetLink = $"{Request.Scheme}://{Request.Host}/ResetPassword?token={token}";
 
-//         // ===== CEK EMAIL SUDAH TERDAFTAR =====
-//         if (!string.IsNullOrWhiteSpace(Input.Email))
-//         {
-//             using var cmdCheckEmail = new SqlCommand(@"
-//                     SELECT COUNT(1)
-//                     FROM RegistrationRequests
-//                     WHERE Email = @Email
-//                 ", conn);
+            _email.Send(email, "Reset Password Portal", $@"
+            <h3>Halo {nama},</h3>
+            <p>Anda menerima email ini karena ada permintaan untuk meriset password.</p>
+            <p>Klik link di bawah ini untuk membuat password baru:</p>
+            <a href='{resetLink}' style='background: #2563eb; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;'>Reset Password Saya</a>
+            <p>Jika Anda tidak merasa meminta ini, abaikan saja email ini.</p>
+        ");
+            
 
-//             cmdCheckEmail.Parameters.Add("@Email", SqlDbType.NVarChar, 100)
-//             .Value = string.IsNullOrWhiteSpace(Input.Email)
-//                 ? DBNull.Value
-//                 : Input.Email;
+            return new JsonResult(new { 
+                success = true, 
+                message = "Link reset telah dikirim ke email Anda." 
+            });
+        }
+        else
+        {
+            return new JsonResult(new { 
+                success = false, 
+                message = "Email anda tidak terdaftar di sistem kami." 
+            });
+        }
+    }
+    catch (Exception ex)
+    {
+        // return new JsonResult(new { success = false, message = "Terjadi kesalahan saat mengirim email reset password: " + ex.Message });
+        return new JsonResult(new { 
+                success = false, 
+                message = "Terjadi kesalahan saat mengirim email reset password. Silakan coba lagi nanti." + ex.Message 
+            });
+    }
+}
 
-//             // conn.Open();
-//             int exists = (int)cmdCheckEmail.ExecuteScalar();
+    // UNTUK FORGOT PASSWORD END =================
 
-//             if (exists > 0)
-//             {
-//                 ModelState.AddModelError("Input.Email", "Email sudah pernah didaftarkan");
-//             }
-//         }
+    // Register dengan siggle Upload Dokumen ======================================
+    //     public IActionResult OnPostRegister()
+    //     {
+    //         ModelState.Clear();
 
-//         // ===== VALIDASI FILE =====
-//         if (Input.OwnerDocument == null || Input.OwnerDocument.Length == 0)
-//         {
-//             ModelState.AddModelError("Input.OwnerDocument", "Dokumen wajib diupload");
-//         }
-//         else
-//         {
-//             var allowedExt = new[] { ".pdf", ".jpg", ".jpeg", ".png" };
-//             var ext = Path.GetExtension(Input.OwnerDocument.FileName).ToLower();
+    //         using var conn = Db.Connect(); // Connection database
+    //         conn.Open();
 
-//             if (!allowedExt.Contains(ext))
-//             {
-//                 ModelState.AddModelError(
-//                     "Input.OwnerDocument",
-//                     "Format file harus PDF / JPG / PNG"
-//                 );
-//             }
+    //         if (Input.Password != Input.RetypePassword)
+    //         {
+    //             ModelState.AddModelError("Input.RetypePassword", "Password tidak sama");
+    //         }
 
-//             // max 2MB
-//             if (Input.OwnerDocument.Length > 2 * 1024 * 1024)
-//             {
-//                 ModelState.AddModelError(
-//                     "Input.OwnerDocument",
-//                     "Ukuran file maksimal 2MB"
-//                 );
-//             }
-//         }
-//         // ===== VALIDASI FILE  END=====
-
-
-
-
-
-//         // keluar jika error
-//         // 🔑 VALIDASI KHUSUS LOGIN SAJA            
-
-//         if (!TryValidateModel(Input, nameof(Input)))
-//         {
-//             var errors = ModelState
-//                 .Where(x => x.Value.Errors.Any())
-//                 .ToDictionary(
-//                     k => k.Key,
-//                     v => v.Value.Errors.Select(e => e.ErrorMessage).ToArray()
-//                 );
-
-//             return new JsonResult(new
-//             {
-//                 success = false,
-//                 errors
-//             });
-//         }
-
-
-//         // ===== SIMPAN FILE =====
-//         string filePath = null;
-
-//         if (Input.OwnerDocument != null)
-//         {
-//             var uploadsDir = Path.Combine(
-//                 Directory.GetCurrentDirectory(),
-//                 "wwwroot",
-//                 "uploads",
-//                 "documents"
-//             );
-
-//             if (!Directory.Exists(uploadsDir))
-//                 Directory.CreateDirectory(uploadsDir);
-
-//             var fileName = $"{Guid.NewGuid()}{Path.GetExtension(Input.OwnerDocument.FileName)}";
-//             filePath = $"/uploads/documents/{fileName}";
-
-//             var fullPath = Path.Combine(uploadsDir, fileName);
-
-//             using var stream = new FileStream(fullPath, FileMode.Create);
-//             Input.OwnerDocument.CopyTo(stream);
-//         }
-
-//         // ===== SIMPAN FILE END=====
+    //         // ===== VALIDASI EMAIL FORMAT =====
+    //         if (string.IsNullOrWhiteSpace(Input.Email))
+    //         {
+    //             ModelState.AddModelError("Input.Email", "Email wajib diisi");
+    //         }
+    //         else
+    //         {
+    //             var emailValidator = new EmailAddressAttribute();
+    //             if (!emailValidator.IsValid(Input.Email))
+    //             {
+    //                 ModelState.AddModelError("Input.Email", "Format email tidak valid");
+    //             }
+    //         }
 
 
 
+    //         // ===== CEK EMAIL SUDAH TERDAFTAR =====
+    //         if (!string.IsNullOrWhiteSpace(Input.Email))
+    //         {
+    //             using var cmdCheckEmail = new SqlCommand(@"
+    //                     SELECT COUNT(1)
+    //                     FROM RegistrationRequests
+    //                     WHERE Email = @Email
+    //                 ", conn);
 
-//         //Database Connect Insert data
-//         var passwordHash = HashPassword(Input.Password);
-//         using var cmd = new SqlCommand(@"
-//             INSERT INTO RegistrationRequests
-//             (
-//                 RoleType, Email, PasswordHash,
-//                 FullName,KavlingDesc, DocumentPath,FileName, FileType
-//             )
-//             VALUES
-//             (
-//                 @RoleType, @Email, @PasswordHash,
-//                 @FullName,@KavlingDesc, @DocumentPath,@FileName, @FileType
+    //             cmdCheckEmail.Parameters.Add("@Email", SqlDbType.NVarChar, 100)
+    //             .Value = string.IsNullOrWhiteSpace(Input.Email)
+    //                 ? DBNull.Value
+    //                 : Input.Email;
 
-//             )
-//              ", conn);
+    //             // conn.Open();
+    //             int exists = (int)cmdCheckEmail.ExecuteScalar();
 
-//         // ================= ROLE =================
-//         cmd.Parameters.Add("@RoleType", SqlDbType.VarChar, 20)
-//             .Value = Input.UserType;
+    //             if (exists > 0)
+    //             {
+    //                 ModelState.AddModelError("Input.Email", "Email sudah pernah didaftarkan");
+    //             }
+    //         }
 
-//         // ================= EMAIL =================
-//         cmd.Parameters.Add("@Email", SqlDbType.NVarChar, 100)
-//             .Value = string.IsNullOrWhiteSpace(Input.Email)
-//                 ? DBNull.Value
-//                 : Input.Email;
+    //         // ===== VALIDASI FILE =====
+    //         if (Input.OwnerDocument == null || Input.OwnerDocument.Length == 0)
+    //         {
+    //             ModelState.AddModelError("Input.OwnerDocument", "Dokumen wajib diupload");
+    //         }
+    //         else
+    //         {
+    //             var allowedExt = new[] { ".pdf", ".jpg", ".jpeg", ".png" };
+    //             var ext = Path.GetExtension(Input.OwnerDocument.FileName).ToLower();
 
-//         // ================= PASSWORD =================
-//         cmd.Parameters.Add("@PasswordHash", SqlDbType.NVarChar, 255)
-//             .Value = passwordHash;
+    //             if (!allowedExt.Contains(ext))
+    //             {
+    //                 ModelState.AddModelError(
+    //                     "Input.OwnerDocument",
+    //                     "Format file harus PDF / JPG / PNG"
+    //                 );
+    //             }
 
-//         // ================= FULL NAME (OWNER) =================
-//         cmd.Parameters.Add("@FullName", SqlDbType.NVarChar, 100)
-//             .Value = string.IsNullOrWhiteSpace(Input.OwnerName)
-//                 ? DBNull.Value
-//                 : Input.OwnerName;
-
-
-//         cmd.Parameters.Add("@KavlingDesc", SqlDbType.NVarChar, 300)
-//             .Value = string.IsNullOrWhiteSpace(Input.KavlingDesc)
-//                 ? DBNull.Value
-//                 : Input.KavlingDesc;
-
-//         cmd.Parameters.Add("@DocumentPath", SqlDbType.NVarChar, 255)
-// .Value = (object?)filePath ?? DBNull.Value;
-
-//         cmd.Parameters.AddWithValue("@FileName", Input.OwnerDocument.FileName);
-//         cmd.Parameters.AddWithValue("@FileType", Input.OwnerDocument.ContentType);
-
-
-
-//         // conn.Open();
-//         cmd.ExecuteNonQuery(); // Execute query
-
-//         //Send email register
-//         if (!string.IsNullOrWhiteSpace(Input.Email))
-//         {
-//             _email.Send(
-//                 Input.Email,
-//                 "Registrasi Berhasil – Menunggu Approval Admin",
-//                 $@"
-//             <div style='font-family: Arial, sans-serif; background:#f9fafb; padding:5px'>
-//             <div style='
-//                     max-width:600px;
-//                     margin:auto;
-//                     background:#ffffff;
-//                     border-radius:8px;
-//                     border:1px solid #e5e7eb;
-//                     overflow:hidden'>
-
-//                 <!-- HEADER -->
-//                 <div style='background:#16a34a; padding:16px; color:white'>
-//                 <h2 style='margin:0; font-size:18px'>
-//                     Registrasi Berhasil
-//                 </h2>
-//                 </div>
-
-//                 <!-- BODY -->
-//                 <div style='padding:20px; color:#374151'>
-
-//                 <p>Halo <b>{Input.OwnerName}</b>,</p>
-
-//                 <p>
-//                     Terima kasih telah melakukan registrasi di portal khusus penghuni kawasan kami.
-//                 </p>
-
-//                 <div style='
-//                     background:#ecfdf5;
-//                     border-left:4px solid #16a34a;
-//                     padding:12px;
-//                     margin:16px 0;
-//                     border-radius:4px;
-//                     color:#065f46'>
-//                     <b>Status Registrasi</b><br>
-//                     Registrasi Anda telah <b>berhasil dikirim</b> dan saat ini
-//                     <b>sedang diproses oleh admin kami</b>.
-//                 </div>
-
-//                 <p>
-//                     Anda akan menerima email lanjutan setelah akun Anda
-//                     disetujui dan diaktifkan.
-//                 </p>
-
-//                 <p style='margin-top:24px'>
-//                     Salam,<br>
-//                     <b>Pengelola Kawasan</b>
-//                 </p>
-
-//                 <hr style='margin:24px 0; border:none; border-top:1px solid #e5e7eb'>
-
-//                 <p style='font-size:12px; color:#6b7280'>
-//                     Email ini dikirim secara otomatis.<br>
-//                     Mohon tidak membalas email ini.
-//                 </p>
-
-//                 </div>
-//             </div>
-//             </div>
-//             "
-//             );
-//         }
+    //             // max 2MB
+    //             if (Input.OwnerDocument.Length > 2 * 1024 * 1024)
+    //             {
+    //                 ModelState.AddModelError(
+    //                     "Input.OwnerDocument",
+    //                     "Ukuran file maksimal 2MB"
+    //                 );
+    //             }
+    //         }
+    //         // ===== VALIDASI FILE  END=====
 
 
-//         return new JsonResult(new
-//         {
-//             success = true,
-//             message = "Registrasi berhasil. Menunggu approval admin."
-//         });
 
-//         // TempData["Success"] = "Registrasi berhasil. Menunggu approval admin.";
-//         // return RedirectToPage("/Login");
 
-//     }
+
+    //         // keluar jika error
+    //         // 🔑 VALIDASI KHUSUS LOGIN SAJA            
+
+    //         if (!TryValidateModel(Input, nameof(Input)))
+    //         {
+    //             var errors = ModelState
+    //                 .Where(x => x.Value.Errors.Any())
+    //                 .ToDictionary(
+    //                     k => k.Key,
+    //                     v => v.Value.Errors.Select(e => e.ErrorMessage).ToArray()
+    //                 );
+
+    //             return new JsonResult(new
+    //             {
+    //                 success = false,
+    //                 errors
+    //             });
+    //         }
+
+
+    //         // ===== SIMPAN FILE =====
+    //         string filePath = null;
+
+    //         if (Input.OwnerDocument != null)
+    //         {
+    //             var uploadsDir = Path.Combine(
+    //                 Directory.GetCurrentDirectory(),
+    //                 "wwwroot",
+    //                 "uploads",
+    //                 "documents"
+    //             );
+
+    //             if (!Directory.Exists(uploadsDir))
+    //                 Directory.CreateDirectory(uploadsDir);
+
+    //             var fileName = $"{Guid.NewGuid()}{Path.GetExtension(Input.OwnerDocument.FileName)}";
+    //             filePath = $"/uploads/documents/{fileName}";
+
+    //             var fullPath = Path.Combine(uploadsDir, fileName);
+
+    //             using var stream = new FileStream(fullPath, FileMode.Create);
+    //             Input.OwnerDocument.CopyTo(stream);
+    //         }
+
+    //         // ===== SIMPAN FILE END=====
+
+
+
+
+    //         //Database Connect Insert data
+    //         var passwordHash = HashPassword(Input.Password);
+    //         using var cmd = new SqlCommand(@"
+    //             INSERT INTO RegistrationRequests
+    //             (
+    //                 RoleType, Email, PasswordHash,
+    //                 FullName,KavlingDesc, DocumentPath,FileName, FileType
+    //             )
+    //             VALUES
+    //             (
+    //                 @RoleType, @Email, @PasswordHash,
+    //                 @FullName,@KavlingDesc, @DocumentPath,@FileName, @FileType
+
+    //             )
+    //              ", conn);
+
+    //         // ================= ROLE =================
+    //         cmd.Parameters.Add("@RoleType", SqlDbType.VarChar, 20)
+    //             .Value = Input.UserType;
+
+    //         // ================= EMAIL =================
+    //         cmd.Parameters.Add("@Email", SqlDbType.NVarChar, 100)
+    //             .Value = string.IsNullOrWhiteSpace(Input.Email)
+    //                 ? DBNull.Value
+    //                 : Input.Email;
+
+    //         // ================= PASSWORD =================
+    //         cmd.Parameters.Add("@PasswordHash", SqlDbType.NVarChar, 255)
+    //             .Value = passwordHash;
+
+    //         // ================= FULL NAME (OWNER) =================
+    //         cmd.Parameters.Add("@FullName", SqlDbType.NVarChar, 100)
+    //             .Value = string.IsNullOrWhiteSpace(Input.OwnerName)
+    //                 ? DBNull.Value
+    //                 : Input.OwnerName;
+
+
+    //         cmd.Parameters.Add("@KavlingDesc", SqlDbType.NVarChar, 300)
+    //             .Value = string.IsNullOrWhiteSpace(Input.KavlingDesc)
+    //                 ? DBNull.Value
+    //                 : Input.KavlingDesc;
+
+    //         cmd.Parameters.Add("@DocumentPath", SqlDbType.NVarChar, 255)
+    // .Value = (object?)filePath ?? DBNull.Value;
+
+    //         cmd.Parameters.AddWithValue("@FileName", Input.OwnerDocument.FileName);
+    //         cmd.Parameters.AddWithValue("@FileType", Input.OwnerDocument.ContentType);
+
+
+
+    //         // conn.Open();
+    //         cmd.ExecuteNonQuery(); // Execute query
+
+    //         //Send email register
+    //         if (!string.IsNullOrWhiteSpace(Input.Email))
+    //         {
+    //             _email.Send(
+    //                 Input.Email,
+    //                 "Registrasi Berhasil – Menunggu Approval Admin",
+    //                 $@"
+    //             <div style='font-family: Arial, sans-serif; background:#f9fafb; padding:5px'>
+    //             <div style='
+    //                     max-width:600px;
+    //                     margin:auto;
+    //                     background:#ffffff;
+    //                     border-radius:8px;
+    //                     border:1px solid #e5e7eb;
+    //                     overflow:hidden'>
+
+    //                 <!-- HEADER -->
+    //                 <div style='background:#16a34a; padding:16px; color:white'>
+    //                 <h2 style='margin:0; font-size:18px'>
+    //                     Registrasi Berhasil
+    //                 </h2>
+    //                 </div>
+
+    //                 <!-- BODY -->
+    //                 <div style='padding:20px; color:#374151'>
+
+    //                 <p>Halo <b>{Input.OwnerName}</b>,</p>
+
+    //                 <p>
+    //                     Terima kasih telah melakukan registrasi di portal khusus penghuni kawasan kami.
+    //                 </p>
+
+    //                 <div style='
+    //                     background:#ecfdf5;
+    //                     border-left:4px solid #16a34a;
+    //                     padding:12px;
+    //                     margin:16px 0;
+    //                     border-radius:4px;
+    //                     color:#065f46'>
+    //                     <b>Status Registrasi</b><br>
+    //                     Registrasi Anda telah <b>berhasil dikirim</b> dan saat ini
+    //                     <b>sedang diproses oleh admin kami</b>.
+    //                 </div>
+
+    //                 <p>
+    //                     Anda akan menerima email lanjutan setelah akun Anda
+    //                     disetujui dan diaktifkan.
+    //                 </p>
+
+    //                 <p style='margin-top:24px'>
+    //                     Salam,<br>
+    //                     <b>Pengelola Kawasan</b>
+    //                 </p>
+
+    //                 <hr style='margin:24px 0; border:none; border-top:1px solid #e5e7eb'>
+
+    //                 <p style='font-size:12px; color:#6b7280'>
+    //                     Email ini dikirim secara otomatis.<br>
+    //                     Mohon tidak membalas email ini.
+    //                 </p>
+
+    //                 </div>
+    //             </div>
+    //             </div>
+    //             "
+    //             );
+    //         }
+
+
+    //         return new JsonResult(new
+    //         {
+    //             success = true,
+    //             message = "Registrasi berhasil. Menunggu approval admin."
+    //         });
+
+    //         // TempData["Success"] = "Registrasi berhasil. Menunggu approval admin.";
+    //         // return RedirectToPage("/Login");
+
+    //     }
 
 
 
