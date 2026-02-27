@@ -440,79 +440,102 @@ public class LoginModel : PageModel
     }
 
     // UNTUK FORGOT PASSWORD =================
-       public async Task<IActionResult> OnPostForgotPassword(string email)
-{
-    if (string.IsNullOrEmpty(email))
+    public async Task<IActionResult> OnPostForgotPassword(string email)
     {
-        return new JsonResult(new { success = false, message = "Email wajib diisi!" });
-    }
-
-    try
-    {
-        using var conn = Db.Connect();
-        await conn.OpenAsync();
-
-        // Cek apakah email terdaftar
-        using var cmd = new SqlCommand("SELECT UserId, Nama FROM PortalUsers WHERE Email = @Email", conn);
-        cmd.Parameters.AddWithValue("@Email", email);
-        
-        string userId = null;
-        string nama = null;
-
-        using (var rd = await cmd.ExecuteReaderAsync())
+        if (string.IsNullOrEmpty(email))
         {
-            if (rd.Read())
-            {
-                userId = rd["UserId"].ToString();
-                nama = rd["Nama"].ToString();
-            }
+            return new JsonResult(new { success = false, message = "Email wajib diisi!" });
         }
 
-        if (userId != null)
+        try
         {
-            // Buat token
-            string token = Guid.NewGuid().ToString();
-            
-            // Simpan token ke database
-            using var cmdUpdate = new SqlCommand("UPDATE PortalUsers SET ResetToken = @Token WHERE UserId = @Id", conn);
-            cmdUpdate.Parameters.AddWithValue("@Token", token);
-            cmdUpdate.Parameters.AddWithValue("@Id", userId);
-            await cmdUpdate.ExecuteNonQueryAsync();
+            using var conn = Db.Connect();
+            await conn.OpenAsync();
 
-             // 4. Kirim Email
-            string resetLink = $"{Request.Scheme}://{Request.Host}/ResetPassword?token={token}";
+            // 1. Ambil Base URL dari fungsi database
+        string baseUrl = "";
+        using (var cmdUrl = new SqlCommand("SELECT dbo.Portal_ImageUrl('')", conn))
+        {
+            var result = await cmdUrl.ExecuteScalarAsync();
+            baseUrl = result?.ToString() ?? "";
+        }
 
-            _email.Send(email, "Reset Password Portal", $@"
+        // Pastikan baseUrl tidak kosong dan bersihkan slash di akhir jika ada
+        if (string.IsNullOrEmpty(baseUrl))
+        {
+            // Fallback jika database return kosong (opsional)
+            baseUrl = $"{Request.Scheme}://{Request.Host}";
+        }
+        baseUrl = baseUrl.TrimEnd('/');
+
+
+            // 2 Cek apakah email terdaftar
+            using var cmd = new SqlCommand("SELECT UserId, Nama FROM PortalUsers WHERE Email = @Email", conn);
+            cmd.Parameters.AddWithValue("@Email", email);
+
+            string userId = null;
+            string nama = null;
+
+            using (var rd = await cmd.ExecuteReaderAsync())
+            {
+                if (rd.Read())
+                {
+                    userId = rd["UserId"].ToString();
+                    nama = rd["Nama"].ToString();
+                }
+            }
+
+            if (userId != null)
+            {
+                // Buat token
+                string token = Guid.NewGuid().ToString();
+
+                // Simpan token ke database
+                using var cmdUpdate = new SqlCommand("UPDATE PortalUsers SET ResetToken = @Token WHERE UserId = @Id", conn);
+                cmdUpdate.Parameters.AddWithValue("@Token", token);
+                cmdUpdate.Parameters.AddWithValue("@Id", userId);
+                await cmdUpdate.ExecuteNonQueryAsync();
+
+                // 4. Kirim Email
+                // string resetLink = $"{Request.Scheme}://{Request.Host}/ResetPassword?token={token}";
+
+                // BASE URL dari database + endpoint reset password dengan query string token
+                string resetLink = $"{baseUrl}/ResetPassword?token={token}";
+
+                _email.Send(email, "Reset Password Portal", $@"
             <h3>Halo {nama},</h3>
             <p>Anda menerima email ini karena ada permintaan untuk meriset password.</p>
             <p>Klik link di bawah ini untuk membuat password baru:</p>
             <a href='{resetLink}' style='background: #2563eb; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;'>Reset Password Saya</a>
             <p>Jika Anda tidak merasa meminta ini, abaikan saja email ini.</p>
         ");
-            
 
-            return new JsonResult(new { 
-                success = true, 
-                message = "Link reset telah dikirim ke email Anda." 
-            });
+
+                return new JsonResult(new
+                {
+                    success = true,
+                    message = "Link reset telah dikirim ke email Anda."
+                });
+            }
+            else
+            {
+                return new JsonResult(new
+                {
+                    success = false,
+                    message = "Email anda tidak terdaftar di sistem kami."
+                });
+            }
         }
-        else
+        catch (Exception ex)
         {
-            return new JsonResult(new { 
-                success = false, 
-                message = "Email anda tidak terdaftar di sistem kami." 
+            // return new JsonResult(new { success = false, message = "Terjadi kesalahan saat mengirim email reset password: " + ex.Message });
+            return new JsonResult(new
+            {
+                success = false,
+                message = "Terjadi kesalahan saat mengirim email reset password. Silakan coba lagi nanti." + ex.Message
             });
         }
     }
-    catch (Exception ex)
-    {
-        // return new JsonResult(new { success = false, message = "Terjadi kesalahan saat mengirim email reset password: " + ex.Message });
-        return new JsonResult(new { 
-                success = false, 
-                message = "Terjadi kesalahan saat mengirim email reset password. Silakan coba lagi nanti." + ex.Message 
-            });
-    }
-}
 
     // UNTUK FORGOT PASSWORD END =================
 

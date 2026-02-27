@@ -2832,6 +2832,22 @@
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\uploads\documents\7118d08d-f44c-4f04-b51e-22dccd2f791d.png))</OriginalItemSpec>
     </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\uploads\documents\789733c2-6f2e-4c1b-a368-87a3a656358a.pdf))">
+      <SourceType>Package</SourceType>
+      <SourceId>TestLandingPageNet8</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/TestLandingPageNet8</BasePath>
+      <RelativePath>uploads/documents/789733c2-6f2e-4c1b-a368-87a3a656358a.pdf</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\uploads\documents\789733c2-6f2e-4c1b-a368-87a3a656358a.pdf))</OriginalItemSpec>
+    </StaticWebAsset>
     <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\uploads\documents\87803b40-dc2c-48f7-bd2d-7b1d9a7907d7.pdf))">
       <SourceType>Package</SourceType>
       <SourceId>TestLandingPageNet8</SourceId>
@@ -3696,6 +3712,22 @@
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\uploads\service_order\78e83144-e8d0-442e-9206-24b40b293bdf.jpg))</OriginalItemSpec>
     </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\uploads\service_order\7d10342b-3c73-4558-a526-ea3d7337416e.jpeg))">
+      <SourceType>Package</SourceType>
+      <SourceId>TestLandingPageNet8</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/TestLandingPageNet8</BasePath>
+      <RelativePath>uploads/service_order/7d10342b-3c73-4558-a526-ea3d7337416e.jpeg</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\uploads\service_order\7d10342b-3c73-4558-a526-ea3d7337416e.jpeg))</OriginalItemSpec>
+    </StaticWebAsset>
     <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\uploads\service_order\8a20d710-e905-4003-ab9a-271fa0fc4379.jpg))">
       <SourceType>Package</SourceType>
       <SourceId>TestLandingPageNet8</SourceId>
@@ -3839,6 +3871,22 @@
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\uploads\service_order\po_tenant\PO_12_ed249143-0ec6-4f23-b40e-dda9363aba7f.pdf))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\uploads\service_order\po_tenant\PO_13_04bb658c-d2c7-4e93-a0ad-390ee0fb200e.pdf))">
+      <SourceType>Package</SourceType>
+      <SourceId>TestLandingPageNet8</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/TestLandingPageNet8</BasePath>
+      <RelativePath>uploads/service_order/po_tenant/PO_13_04bb658c-d2c7-4e93-a0ad-390ee0fb200e.pdf</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\uploads\service_order\po_tenant\PO_13_04bb658c-d2c7-4e93-a0ad-390ee0fb200e.pdf))</OriginalItemSpec>
     </StaticWebAsset>
     <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\uploads\service_order\po_tenant\PO_1_e7ade192-7ff7-4381-a45f-6ba30d22674d.PNG))">
       <SourceType>Package</SourceType>

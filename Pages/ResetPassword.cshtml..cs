@@ -30,12 +30,28 @@ public class ResetPasswordModel : PageModel
 
     // Saat halaman dibuka melalui link email
     public IActionResult OnGet(string token)
+{
+    if (string.IsNullOrEmpty(token)) return RedirectToPage("/Login");
+
+    using var conn = Db.Connect();
+    conn.Open();
+
+    // Cek apakah token masih valid dan belum digunakan (ResetToken tidak NULL)
+    using var cmd = new SqlCommand("SELECT UserId FROM PortalUsers WHERE ResetToken = @Token", conn);
+    cmd.Parameters.AddWithValue("@Token", token);
+    
+    var userId = cmd.ExecuteScalar();
+
+    if (userId == null)
     {
-        if (string.IsNullOrEmpty(token)) return RedirectToPage("/Login");
-        
-        Token = token;
-        return Page();
+        // Jika token tidak ditemukan atau sudah NULL di DB, 
+        // arahkan ke halaman error atau kembali ke login dengan pesan khusus
+        return RedirectToPage("/Login", new { message = "Tautan reset password sudah tidak berlaku atau sudah pernah digunakan." });
     }
+
+    Token = token;
+    return Page();
+}
 
     // Saat form disubmit
     public async Task<IActionResult> OnPostAsync()
