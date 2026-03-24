@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "l/9KpoS50IdJMyCkLsjcuYLSip0cZe1ParMCwx1zjT8=",
+  "Hash": "a8MJDHSKL6Vzeg74K9yib2S+co5UCViEgnzIisPEYyE=",
   "Source": "TestLandingPageNet8",
   "BasePath": "_content/TestLandingPageNet8",
   "Mode": "Default",
@@ -4083,6 +4083,25 @@
       "OriginalItemSpec": "wwwroot\\uploads\\profiles\\15f3d980-9709-49fb-9fff-31a2578cc33e.jpg"
     },
     {
+      "Identity": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\uploads\\profiles\\183fe1f7-4827-46a0-9ed3-3dd5f55bb9c4.jpg",
+      "SourceId": "TestLandingPageNet8",
+      "SourceType": "Discovered",
+      "ContentRoot": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\",
+      "BasePath": "_content/TestLandingPageNet8",
+      "RelativePath": "uploads/profiles/183fe1f7-4827-46a0-9ed3-3dd5f55bb9c4.jpg",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\uploads\\profiles\\183fe1f7-4827-46a0-9ed3-3dd5f55bb9c4.jpg"
+    },
+    {
       "Identity": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\uploads\\profiles\\2697a175-074b-48ec-828b-94048046cd3d.png",
       "SourceId": "TestLandingPageNet8",
       "SourceType": "Discovered",
@@ -4102,6 +4121,25 @@
       "OriginalItemSpec": "wwwroot\\uploads\\profiles\\2697a175-074b-48ec-828b-94048046cd3d.png"
     },
     {
+      "Identity": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\uploads\\profiles\\2fe3c845-6d8a-473b-aab3-d77b52f5f3be.PNG",
+      "SourceId": "TestLandingPageNet8",
+      "SourceType": "Discovered",
+      "ContentRoot": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\",
+      "BasePath": "_content/TestLandingPageNet8",
+      "RelativePath": "uploads/profiles/2fe3c845-6d8a-473b-aab3-d77b52f5f3be.PNG",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\uploads\\profiles\\2fe3c845-6d8a-473b-aab3-d77b52f5f3be.PNG"
+    },
+    {
       "Identity": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\uploads\\profiles\\31920607-9d6c-4b51-988e-c59b71a1689b.gif",
       "SourceId": "TestLandingPageNet8",
       "SourceType": "Discovered",
@@ -4119,6 +4157,25 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\uploads\\profiles\\31920607-9d6c-4b51-988e-c59b71a1689b.gif"
+    },
+    {
+      "Identity": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\uploads\\profiles\\4c3749c3-0c24-4143-9270-f349317d4db7.jpg",
+      "SourceId": "TestLandingPageNet8",
+      "SourceType": "Discovered",
+      "ContentRoot": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\",
+      "BasePath": "_content/TestLandingPageNet8",
+      "RelativePath": "uploads/profiles/4c3749c3-0c24-4143-9270-f349317d4db7.jpg",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\uploads\\profiles\\4c3749c3-0c24-4143-9270-f349317d4db7.jpg"
     },
     {
       "Identity": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\uploads\\profiles\\66903142-0140-4725-8f04-157579e89161.jpg",
@@ -4577,6 +4634,25 @@
       "OriginalItemSpec": "wwwroot\\uploads\\service_order\\db9d3d01-31b5-483c-a8f2-874dbffc19fa.png"
     },
     {
+      "Identity": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\uploads\\service_order\\ee42997f-7534-4668-b936-4e51e1b69b84.jpg",
+      "SourceId": "TestLandingPageNet8",
+      "SourceType": "Discovered",
+      "ContentRoot": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\",
+      "BasePath": "_content/TestLandingPageNet8",
+      "RelativePath": "uploads/service_order/ee42997f-7534-4668-b936-4e51e1b69b84.jpg",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\uploads\\service_order\\ee42997f-7534-4668-b936-4e51e1b69b84.jpg"
+    },
+    {
       "Identity": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\uploads\\service_order\\po_tenant\\PO_1_e7ade192-7ff7-4381-a45f-6ba30d22674d.PNG",
       "SourceId": "TestLandingPageNet8",
       "SourceType": "Discovered",
@@ -4670,6 +4746,25 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\uploads\\service_order\\po_tenant\\PO_13_04bb658c-d2c7-4e93-a0ad-390ee0fb200e.pdf"
+    },
+    {
+      "Identity": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\uploads\\service_order\\po_tenant\\PO_15_2413425e-c780-445f-b96a-dc5cf2a23acb.pdf",
+      "SourceId": "TestLandingPageNet8",
+      "SourceType": "Discovered",
+      "ContentRoot": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\",
+      "BasePath": "_content/TestLandingPageNet8",
+      "RelativePath": "uploads/service_order/po_tenant/PO_15_2413425e-c780-445f-b96a-dc5cf2a23acb.pdf",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\uploads\\service_order\\po_tenant\\PO_15_2413425e-c780-445f-b96a-dc5cf2a23acb.pdf"
     },
     {
       "Identity": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\uploads\\service_order\\po_tenant\\PO_2_f38df97a-4630-4798-8e82-d65dc1319a34.pdf",

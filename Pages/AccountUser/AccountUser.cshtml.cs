@@ -6,6 +6,7 @@ using Dapper; // Sangat disarankan untuk mempermudah mapping data
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace TestLandingPageNet8.Pages.AccountUser
 {
@@ -25,6 +26,8 @@ namespace TestLandingPageNet8.Pages.AccountUser
         public TenantViewModel Tenant { get; set; }
         public List<TicketViewModel> Complaints { get; set; }
         public List<InvoiceViewModel> Invoices { get; set; }
+        // // Tambahkan ini untuk menampung data SELECT dari ServiceOrderPortaldt
+        // public List<ServiceOrderDetail> SubDetails { get; set; } = new();
                         
         // Di dalam class AccountUserModel
         public List<ServiceOrderViewModel> ServiceOrders { get; set; } = new();
@@ -63,10 +66,36 @@ namespace TestLandingPageNet8.Pages.AccountUser
 
 
 
-// Di dalam OnGetAsync, tambahkan query:
-var sqlService = "SELECT * FROM V_ServiceOrderList WHERE UserId = @Uid ORDER BY Date DESC";
-ServiceOrders = (await connection.QueryAsync<ServiceOrderViewModel>(sqlService, new { Uid = userId })).ToList();
+                // // Di dalam OnGetAsync, tambahkan query:
+                // var sqlService = "SELECT * FROM V_ServiceOrderList WHERE UserId = @Uid ORDER BY Date DESC";
+                // ServiceOrders = (await connection.QueryAsync<ServiceOrderViewModel>(sqlService, new { Uid = userId })).ToList();
+
+
+                // 1. Ambil Header Service Orders
+                var sqlService = "SELECT * FROM V_ServiceOrderList WHERE UserId = @Uid ORDER BY Date DESC";
+                var headers = (await connection.QueryAsync<ServiceOrderViewModel>(sqlService, new { Uid = userId })).ToList();
+
+                // 2. TAMBAHKAN: Ambil Semua Detail (Milestone)
+                var sqlDetails = "SELECT * FROM V_GetServiceOrderListDt WHERE UserId = @Uid ";
+                var allDetails = (await connection.QueryAsync<ServiceOrderDetail>(sqlDetails, new { Uid = userId })).ToList();
+
+                // 3. TAMBAHKAN: Gabungkan Detail ke masing-masing Header
+                foreach (var header in headers)
+                {
+                    header.SubDetails = allDetails.Where(d => d.transNmbr == header.TransNmbr).ToList();
+                }
+
+                ServiceOrders = headers;
+
+                // TAMBAHKAN INI UNTUK DEBUG DI TERMINAL:
+                Console.WriteLine($"Total data di allDetails: {allDetails.Count}");
+                if(allDetails.Count > 0) {
+                    Console.WriteLine($"Contoh ServiceId di Detail: '{allDetails[0].serviceId}'");
+                    Console.WriteLine($"Contoh ServiceId di Header: '{headers[0].ServiceId}'");}
+
+                
             }
+
 
 
             // Data Dummy Tagihan
@@ -76,6 +105,8 @@ ServiceOrders = (await connection.QueryAsync<ServiceOrderViewModel>(sqlService, 
                 new InvoiceViewModel { Period = "Desember 2025", Amount = 5500000, Status = "Lunas" },
                 new InvoiceViewModel { Period = "November 2025", Amount = 5500000, Status = "Lunas" }
             };
+
+            
         }
         //end get data portal users ===================
 
@@ -316,6 +347,7 @@ ServiceOrders = (await connection.QueryAsync<ServiceOrderViewModel>(sqlService, 
         public int ImageCount => string.IsNullOrWhiteSpace(ImageUrl)
                                 ? 0
                                 : ImageUrl.Split(',').Length;
+                                
     }
     public class InvoiceViewModel { public string Period, Status; public decimal Amount; }
 
@@ -346,6 +378,21 @@ public class ServiceOrderViewModel
     public string ImageUrl { get; set; }
     public string PoDokumen { get; set; }
     public int PhotoCount { get; set; }
+    public string TransNmbr { get; set; }
+    public string NoHp { get; set; }
+
+
+    // TAMBAHKAN INI:
+    [JsonPropertyName("SubDetails")]
+    public List<ServiceOrderDetail> SubDetails { get; set; } = new();
+}
+
+public class ServiceOrderDetail {
+    public string transNmbr { get; set; } // Penting untuk mapping
+    public string mtemno { get; set; }
+    public string milesStone { get; set; }
+    public decimal amount { get; set; }
+    public string serviceId { get; set; }
 }
 
 }
