@@ -819,16 +819,16 @@ async exportToPdf(data) {
             </div>
 
             <button type="button" 
-        :disabled="isPoLoading" 
-        @@click="submitPoApproval(selectedComplaint.ServiceId || selectedComplaint.serviceid)"
-        class="w-full min-h-[48px] py-3 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-md transition-all flex items-center justify-center gap-3 active:scale-[0.98]">
-    
-    <template x-if="isPoLoading">
-        <i class="ri-loader-4-line animate-spin text-lg"></i>
-    </template>
+                    :disabled="isPoLoading" 
+                    @@click="submitPoApproval(selectedComplaint.ServiceId || selectedComplaint.serviceid)"
+                    class="w-full min-h-[48px] py-3 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-md transition-all flex items-center justify-center gap-3 active:scale-[0.98]">
+                
+                <template x-if="isPoLoading">
+                    <i class="ri-loader-4-line animate-spin text-lg"></i>
+                </template>
 
-    <span x-text="isPoLoading ? 'Sedang Mengirim...' : 'Konfirmasi Harga'"></span>
-</button>
+                <span x-text="isPoLoading ? 'Sedang Mengirim...' : 'Konfirmasi Harga'"></span>
+            </button>
         </div>
     </div>
 </div>

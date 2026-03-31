@@ -7,6 +7,8 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json.Serialization;
+using System.Data;           // Untuk CommandType dan ParameterDirection
+using Microsoft.Data.SqlClient; // Atau System.Data.SqlClient (untuk koneksi DB)
 
 namespace TestLandingPageNet8.Pages.AccountUser
 {
@@ -28,7 +30,7 @@ namespace TestLandingPageNet8.Pages.AccountUser
         public List<InvoiceViewModel> Invoices { get; set; }
         // // Tambahkan ini untuk menampung data SELECT dari ServiceOrderPortaldt
         // public List<ServiceOrderDetail> SubDetails { get; set; } = new();
-                        
+
         // Di dalam class AccountUserModel
         public List<ServiceOrderViewModel> ServiceOrders { get; set; } = new();
 
@@ -89,11 +91,13 @@ namespace TestLandingPageNet8.Pages.AccountUser
 
                 // TAMBAHKAN INI UNTUK DEBUG DI TERMINAL:
                 Console.WriteLine($"Total data di allDetails: {allDetails.Count}");
-                if(allDetails.Count > 0) {
+                if (allDetails.Count > 0)
+                {
                     Console.WriteLine($"Contoh ServiceId di Detail: '{allDetails[0].serviceId}'");
-                    Console.WriteLine($"Contoh ServiceId di Header: '{headers[0].ServiceId}'");}
+                    Console.WriteLine($"Contoh ServiceId di Header: '{headers[0].ServiceId}'");
+                }
 
-                
+
             }
 
 
@@ -106,7 +110,7 @@ namespace TestLandingPageNet8.Pages.AccountUser
                 new InvoiceViewModel { Period = "November 2025", Amount = 5500000, Status = "Lunas" }
             };
 
-            
+
         }
         //end get data portal users ===================
 
@@ -260,53 +264,72 @@ namespace TestLandingPageNet8.Pages.AccountUser
 
 
         public async Task<IActionResult> OnPostApprovePriceAsync(int serviceId, IFormFile poFile)
-{
-    if (poFile == null || poFile.Length == 0)
-    {
-        return new JsonResult(new { success = false, message = "File PO wajib diunggah." });
-    }
-
-    try
-    {
-        // 1. Proses Simpan File
-        string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads/service_order/po_tenant");
-        if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
-
-        string extension = Path.GetExtension(poFile.FileName);
-        string uniqueFileName = $"PO_{serviceId}_{Guid.NewGuid().ToString()}{extension}";
-        string filePath = Path.Combine(uploadsFolder, uniqueFileName);
-        using (var stream = new FileStream(filePath, FileMode.Create))
         {
-            await poFile.CopyToAsync(stream);
-        }
-
-        // 2. Update Database (Menggunakan Dapper)
-        using (var connection = Db.Connect())
-        {
-            // Update status dan kolom PoDokumen (Sesuaikan nama kolom di DB Anda)
-            string sql = @"UPDATE ServiceOrderPortal 
-                           SET Status = 'APPROVED', 
-                               PoDokumen = @PoDokumen 
-                           WHERE Id = @Id";
-
-            int affectedRows = await connection.ExecuteAsync(sql, new { 
-                PoDokumen = "/uploads/service_order/po_tenant/" + uniqueFileName, 
-                Id = serviceId 
-            });
-
-            if (affectedRows > 0)
+            if (poFile == null || poFile.Length == 0)
             {
-                return new JsonResult(new { success = true, message = "Harga disetujui dan PO berhasil diunggah!" });
+                return new JsonResult(new { success = false, message = "File PO wajib diunggah." });
+            }
+
+            try
+            {
+                // 1. Proses Simpan File
+                string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads/service_order/po_tenant");
+                if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+
+                string extension = Path.GetExtension(poFile.FileName);
+                string uniqueFileName = $"PO_{serviceId}_{Guid.NewGuid().ToString()}{extension}";
+                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await poFile.CopyToAsync(stream);
+                }
+
+                string dbPath = "/uploads/service_order/po_tenant/" + uniqueFileName;
+
+                // 2. Eksekusi Stored Procedure & Update Status (Dapper)
+                using (var connection = Db.Connect())
+                {
+                    // Ambil UserId dari session/claims
+                    var userIdStr = User.FindFirst("UserId")?.Value ?? "0";
+                    int currentUserId = int.Parse(userIdStr);
+
+                    // Menyiapkan Parameter untuk SP (Termasuk Output Parameter)
+                    var parameters = new DynamicParameters();
+                    parameters.Add("@Id", serviceId);
+                    parameters.Add("@Status", "ACCEPT"); // Status untuk Approve
+                    parameters.Add("@Note", "Approved by Tenant with PO");
+                    parameters.Add("@UserId", currentUserId);
+                    parameters.Add("@EMessage", dbType: DbType.String, direction: ParameterDirection.Output, size: 255);
+
+                    // Eksekusi SP
+                    await connection.ExecuteAsync("S_ServiceOrder_TenantSubmit", parameters, commandType: CommandType.StoredProcedure);
+
+                    // Ambil pesan dari Output Parameter
+                    string eMessage = parameters.Get<string>("@EMessage");
+
+                    // Cek jika SP mengembalikan pesan sukses (biasanya jika kosong atau 'OK')
+                    // Sesuaikan logika pengecekan eMessage ini dengan isi SP Anda
+                    if (string.IsNullOrEmpty(eMessage) || eMessage.ToUpper().Contains("SUCCESS") || eMessage.ToUpper() == "OK")
+                    {
+                        // Jika SP Sukses, kita juga update path dokumen PO-nya
+                        string sqlUpdateDoc = "UPDATE ServiceOrderPortal SET PoDokumen = @PoDokumen WHERE Id = @Id";
+                        await connection.ExecuteAsync(sqlUpdateDoc, new { PoDokumen = dbPath, Id = serviceId });
+
+                        return new JsonResult(new { success = true, message = "Konfirmasi berhasil diproses: " + eMessage });
+                    }
+                    else
+                    {
+                        // Jika SP memberikan pesan error/gagal
+                        return new JsonResult(new { success = false, message = "Gagal diproses oleh sistem: " + eMessage });
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return new JsonResult(new { success = false, message = "Terjadi kesalahan: " + ex.Message });
             }
         }
-
-        return new JsonResult(new { success = false, message = "Gagal memperbarui data di database." });
-    }
-    catch (Exception ex)
-    {
-        return new JsonResult(new { success = false, message = "Terjadi kesalahan: " + ex.Message });
-    }
-}
 
 
     }
@@ -328,7 +351,7 @@ namespace TestLandingPageNet8.Pages.AccountUser
         public string DocumentPathUsers { get; set; }
         public string RoleType { get; set; }
         // Properti tambahan untuk tampilan unit (jika diperlukan)
-        public string PropertyUnit { get; set; } 
+        public string PropertyUnit { get; set; }
     }
     public class TicketViewModel
     {
@@ -347,7 +370,7 @@ namespace TestLandingPageNet8.Pages.AccountUser
         public int ImageCount => string.IsNullOrWhiteSpace(ImageUrl)
                                 ? 0
                                 : ImageUrl.Split(',').Length;
-                                
+
     }
     public class InvoiceViewModel { public string Period, Status; public decimal Amount; }
 
@@ -362,37 +385,38 @@ namespace TestLandingPageNet8.Pages.AccountUser
     }
 
     // Tambahkan di dalam namespace yang sama
-public class ServiceOrderViewModel
-{
-    public string ServiceId { get; set; }
-    public string Id { get; set; } // TransNmbr
-    public string TypeService { get; set; }
-    public string Description { get; set; }
-    public string Status { get; set; }
-    public DateTime Date { get; set; }
-    public string KavlingName { get; set; }
-    public decimal Harga { get; set; }
-    public decimal HargaSatuan { get; set; }
-    public decimal Qty { get; set; }
-    public string Item { get; set; }
-    public string ImageUrl { get; set; }
-    public string PoDokumen { get; set; }
-    public int PhotoCount { get; set; }
-    public string TransNmbr { get; set; }
-    public string NoHp { get; set; }
+    public class ServiceOrderViewModel
+    {
+        public string ServiceId { get; set; }
+        public string Id { get; set; } // TransNmbr
+        public string TypeService { get; set; }
+        public string Description { get; set; }
+        public string Status { get; set; }
+        public DateTime Date { get; set; }
+        public string KavlingName { get; set; }
+        public decimal Harga { get; set; }
+        public decimal HargaSatuan { get; set; }
+        public decimal Qty { get; set; }
+        public string Item { get; set; }
+        public string ImageUrl { get; set; }
+        public string PoDokumen { get; set; }
+        public int PhotoCount { get; set; }
+        public string TransNmbr { get; set; }
+        public string NoHp { get; set; }
 
 
-    // TAMBAHKAN INI:
-    [JsonPropertyName("SubDetails")]
-    public List<ServiceOrderDetail> SubDetails { get; set; } = new();
-}
+        // TAMBAHKAN INI:
+        [JsonPropertyName("SubDetails")]
+        public List<ServiceOrderDetail> SubDetails { get; set; } = new();
+    }
 
-public class ServiceOrderDetail {
-    public string transNmbr { get; set; } // Penting untuk mapping
-    public string mtemno { get; set; }
-    public string milesStone { get; set; }
-    public decimal amount { get; set; }
-    public string serviceId { get; set; }
-}
+    public class ServiceOrderDetail
+    {
+        public string transNmbr { get; set; } // Penting untuk mapping
+        public string mtemno { get; set; }
+        public string milesStone { get; set; }
+        public decimal amount { get; set; }
+        public string serviceId { get; set; }
+    }
 
 }
