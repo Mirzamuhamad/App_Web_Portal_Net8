@@ -48,6 +48,20 @@
     const tgl = data.Date || data.date || new Date();
     doc.text(`${new Date(tgl).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`, 196, 55, { align: 'right' });
 
+
+    // --- MASA BERLAKU (Hanya Tanggal) ---
+    // Bagian Kanan Bawah: Masa Berlaku
+    doc.setFont(undefined, 'bold');
+    doc.text('BERLAKU HINGGA :', 196, 62, { align: 'right' }); // Koordinat Y diturunkan ke 62
+    doc.setFont(undefined, 'normal');
+    const tglExpRaw = data.ValidityDate || data.validityDate || new Date();
+    const validityDateStr = new Date(tglExpRaw).toLocaleDateString('id-ID', { 
+        day: 'numeric', 
+        month: 'long', 
+        year: 'numeric' 
+    });
+    doc.text(validityDateStr, 196, 67, { align: 'right' }); // Koordinat Y diturunkan ke 67
+
     // --- 3. DESKRIPSI REQUEST (KOTAK BIRU MUDA) ---
     doc.setFillColor(248, 250, 252);
     doc.rect(14, 75, 182, 35, 'F');
@@ -70,7 +84,7 @@
     const qty = data.Qty || data.qty || 1;
 
     const tableData = [[
-        data.Item || data.item || 'Jasa konsultasi pembagunan Pbrik', 
+        data.Item || data.item || '', 
         qty, 
         `Rp ${hargaSatuan.toLocaleString('id-ID')}`, 
         `Rp ${totalHarga.toLocaleString('id-ID')}`
@@ -98,7 +112,10 @@
     });
 
     // --- 5. TABEL DETAIL (MILESTONE) JIKA ADA ---
-    if (data.SubDetails && data.SubDetails.length > 0) {
+    // --- 5. TABEL DETAIL (MILESTONE) - BERDASARKAN BILLING MODEL ---
+    const billingModel = (data.BillingModel || data.billingModel || "").toUpperCase();
+
+    if (billingModel === "PROJECT") {
         const detailY = doc.lastAutoTable.finalY + 10;
         doc.setFont(undefined, 'bold');
         doc.setTextColor(0);
@@ -140,7 +157,15 @@
     doc.setFontSize(8);
     doc.setFont(undefined, 'normal');
     doc.setTextColor(150);
-    doc.text('* Ini adalah dokumen penawaran resmi. Silahkan lakukan persetujuan melalui portal.', 14, footerY + 5);
+
+    // Kalimat Profesional untuk Pajak
+    const taxNote = "* Nilai penawaran di atas belum termasuk PPN dan PPh sesuai dengan ketentuan perpajakan yang berlaku.";
+    doc.text(taxNote, 14, footerY + 5);
+
+    // Disclaimer Portal
+    doc.setTextColor(150); // Abu-abu lebih muda untuk disclaimer
+    doc.text('* Ini adalah dokumen penawaran resmi. Silahkan lakukan persetujuan melalui portal.', 14, footerY + 10);
+    @* doc.text('* Ini adalah dokumen penawaran resmi. Silahkan lakukan persetujuan melalui portal.', 14, footerY + 5); *@
     //doc.text('* Harga sudah termasuk pajak dan biaya layanan building management.', 14, footerY + 10);
     }
 

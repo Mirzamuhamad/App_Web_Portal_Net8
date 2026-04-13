@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "+e0NlRgGyRktqbxrm67BihhtEDEPhf2hfmskmx1uv8g=",
+  "Hash": "ycYDllyjjcdOEka3eCJ7fBU9vNWCfIbHksODfTW0EY4=",
   "Source": "TestLandingPageNet8",
   "BasePath": "_content/TestLandingPageNet8",
   "Mode": "Default",
@@ -4803,6 +4803,25 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\uploads\\service_order\\po_tenant\\PO_4_ab11ec46-7b66-4880-9f95-ef5a3580be1b.pdf"
+    },
+    {
+      "Identity": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\uploads\\service_order\\po_tenant\\PO_6_28739ac0-bb8b-42af-b6aa-5d55c653c596.pdf",
+      "SourceId": "TestLandingPageNet8",
+      "SourceType": "Discovered",
+      "ContentRoot": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\",
+      "BasePath": "_content/TestLandingPageNet8",
+      "RelativePath": "uploads/service_order/po_tenant/PO_6_28739ac0-bb8b-42af-b6aa-5d55c653c596.pdf",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\uploads\\service_order\\po_tenant\\PO_6_28739ac0-bb8b-42af-b6aa-5d55c653c596.pdf"
     },
     {
       "Identity": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\uploads\\service_order\\po_tenant\\PO_7_f3f6515d-10f9-4f0d-b185-fb0ebfe852c7.pdf",

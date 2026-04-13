@@ -403,6 +403,9 @@ namespace TestLandingPageNet8.Pages.AccountUser
         public int PhotoCount { get; set; }
         public string TransNmbr { get; set; }
         public string NoHp { get; set; }
+        public string BillingModel { get; set; }
+        public DateTime ValidityDate { get; set; }
+
 
 
         // TAMBAHKAN INI:
