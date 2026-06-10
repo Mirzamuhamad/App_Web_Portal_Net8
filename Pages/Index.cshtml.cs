@@ -3,7 +3,14 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Data.SqlClient;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using Dapper;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json.Serialization;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Authorization; // Tambahkan ini
 
 
 namespace TestLandingPageNet8.Pages
@@ -22,14 +29,59 @@ namespace TestLandingPageNet8.Pages
         public List<ItemCaraouselAcara> Acara { get; set; } = new(); // list acara buat carousel membuat data
         public List<HomeMenuItem> HomeMenuItems { get; set; } = new();
 
+        public UserBillingViewModel BillingInfo { get; set; }
+
         public void OnGet()
         {
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdStr))
+            {
+                // Jika user tidak terautentikasi, arahkan ke halaman login atau tampilkan pesan error
+                // return RedirectToPage("/Login");
+                Console.WriteLine("User tidak terautentikasi. Harap login terlebih dahulu.");
+                return;
+            }
+            string currentUserId = userIdStr;
+            LoadBillingInfo(currentUserId);
             LoadDummyTerkini();
             LoadItemsFromDatabase(); // contoh ambil data dari database 
             LoadDummyProperties();   // nanti ganti SQL juga
             LoadDummyAcara();
             LoadItemsMenu();
         }
+
+        private void LoadBillingInfo(string userId)
+        {
+            try
+            {
+                using var conn = Db.Connect();
+                // Menggunakan TOP 1 agar jika tagihan banyak, yang diambil adalah yang paling mendesak/terbaru
+                string sql = @"
+                    SELECT TOP 1 
+                        A.CustCode, 
+                        A.BaseForex, 
+                        B.UserId, 
+                        A.DueDate 
+                    FROM TenantBillingInvoiceHd A
+                    INNER JOIN PortalUsers B ON A.CustCode = B.CustCode
+                    WHERE B.UserId = @UserId
+                    ORDER BY A.DueDate ASC"; //Urutkan berdasarkan tanggal jatuh tempo terdekat
+
+                BillingInfo = conn.Query<UserBillingViewModel>(sql, new { UserId = userId }).FirstOrDefault();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error loading billing info: " + ex.Message);
+            }
+        }
+
+        public class UserBillingViewModel
+    {
+        public string CustCode { get; set; } = string.Empty;
+        public decimal BaseForex { get; set; } // Menggunakan decimal untuk nominal uang
+        public string UserId { get; set; } = string.Empty;
+        public DateTime? DueDate { get; set; } // Nullable jika sewaktu-waktu database kosong
+    }
 
         private void LoadItemsFromDatabase() // contoh ambil data dari database loadnya
         {

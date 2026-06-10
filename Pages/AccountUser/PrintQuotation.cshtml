@@ -148,6 +148,7 @@
         valign: 'middle' // Membuat teks rata tengah secara vertikal
     }
 });
+}
 
  // --- 6. FOOTER & TANDA TANGAN ---
     const footerY = 250;
@@ -167,8 +168,7 @@
     doc.text('* Ini adalah dokumen penawaran resmi. Silahkan lakukan persetujuan melalui portal.', 14, footerY + 10);
     @* doc.text('* Ini adalah dokumen penawaran resmi. Silahkan lakukan persetujuan melalui portal.', 14, footerY + 5); *@
     //doc.text('* Harga sudah termasuk pajak dan biaya layanan building management.', 14, footerY + 10);
-    }
-
+    
     // --- 6. SAVE & CLOSE ---
     doc.save(`Quotation_${data.TransNmbr || 'Draft'}.pdf`);
     

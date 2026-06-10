@@ -1,7 +1,7 @@
 ﻿@page
 @model IndexModel
 @{
-   if (Request.Headers.ContainsKey("HX-Request"))
+    if (Request.Headers.ContainsKey("HX-Request"))
     {
         Layout = null; // hanya kirim konten BODY tanpa layout
     }
@@ -10,8 +10,8 @@
 
 @* <div class="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4">
     <div class="max-w-md w-full mb-8">
-        <img src="https://img.freepik.com/free-vector/modern-coming-soon-background-with-flat-design_23-2148866100.jpg" 
-             alt="On Develop" 
+        <img src="https://img.freepik.com/free-vector/modern-coming-soon-background-with-flat-design_23-2148866100.jpg"
+             alt="On Develop"
              class="w-full h-auto rounded-2xl shadow-2xl">
     </div>
 
@@ -28,9 +28,9 @@
 <!-- ========================= -->
 
 <section class="relative px-1 sm:px-6  lg:px-10 pt-48 sm:pt-30 pb-10 sm:pb-6
-                bg-cover bg-center bg-no-repeat bg-[url('/Image/Image9.jpg')]
-               overflow-visible rounded-t-2xl sm:rounded-t-3xl ">
-    @* rounded-2xl sm:rounded-3xl  *@ @*Untuk Rounded Image*@
+    bg-cover bg-center bg-no-repeat bg-[url('/Image/Image9.jpg')]
+    overflow-visible rounded-t-2xl sm:rounded-t-3xl ">
+    @* rounded-2xl sm:rounded-3xl *@ @*Untuk Rounded Image*@
 
     <div class="absolute inset-0 bg-black/45 rounded-t-2xl sm:rounded-t-3xl "></div>
 
@@ -48,8 +48,8 @@
         </div>
 
         <!-- Dropdown Menu -->
-        <div id="profileMenu" class="hidden absolute right-2 mt-2 
-            w-32 sm:w-40            <!-- Mobile lebih kecil -->
+        <div id="profileMenu" class="hidden absolute right-2 mt-2
+            w-32 sm:w-40 <!-- Mobile lebih kecil -->
             bg-white shadow-lg rounded-md py-2 z-50
             opacity-0 translate-y-2 transition-all duration-200">
 
@@ -110,7 +110,7 @@
                     </div>
                 </div>
 
-                <button class="mt-5 bg-black text-white w-full py-3 rounded-xl font-medium 
+                <button class="mt-5 bg-black text-white w-full py-3 rounded-xl font-medium
                        text-sm sm:text-base">
                     Search Properties
                 </button>
@@ -130,22 +130,41 @@
 
                     <!-- Nominal diperkecil di HP -->
                     <p class="text-lg sm:text-2xl font-bold text-gray-900 leading-tight">
-                        Rp 2.500.000
+                        @if (Model.BillingInfo != null)
+                        {
+                            // Format ke Rupiah tanpa desimal sen (C0) dengan kultur Indonesia
+                            @Model.BillingInfo.BaseForex.ToString("C0", new System.Globalization.CultureInfo("id-ID"))
+                        }
+                        else
+                        {
+                            <span>Rp 0</span>
+                        }
                     </p>
 
                     <!-- Badge diperkecil -->
-                    <span class="inline-block bg-yellow-300 text-gray-800 
-                         text-[8px] sm:text-xs font-semibold mt-2 
-                         px-2 py-0.5 sm:px-3 sm:py-1 rounded-full">
-                        JATUH TEMPO 20 Nov 2025
-                    </span>
+                    @if (Model.BillingInfo?.DueDate != null)
+                    {
+                        <span class="inline-block bg-yellow-300 text-gray-800 
+                            text-[8px] sm:text-xs font-semibold mt-2 
+                            px-2 py-0.5 sm:px-3 sm:py-1 rounded-full">
+                            JATUH TEMPO @Model.BillingInfo.DueDate.Value.ToString("dd MMM yyyy")
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="inline-block bg-green-200 text-gray-800 
+                            text-[8px] sm:text-xs font-semibold mt-2 
+                            px-2 py-0.5 sm:px-3 sm:py-1 rounded-full">
+                            TIDAK ADA TAGIHAN
+                        </span>
+                    }
                 </div>
 
                 <!-- Button lebih kecil di HP -->
                 <button onclick="window.location.href='/UnitList/unitList'" class="bg-white text-blue-600 font-semibold 
-                       text-xs sm:text-sm 
-                       px-2 py-1.5 sm:px-4 sm:py-2 
-                       rounded-full shadow whitespace-nowrap">
+                    text-xs sm:text-sm 
+                    px-2 py-1.5 sm:px-4 sm:py-2 
+                    rounded-full shadow whitespace-nowrap">
                     Lihat Semua Unit
                 </button>
             </div>
@@ -164,20 +183,20 @@
             <a href="@menuItem.Url" class="group flex flex-col items-center space-y-2 cursor-pointer">
 
                 <div class="w-14 h-14 sm:w-24 sm:h-24
-                                    bg-gray-100 rounded-full flex items-center justify-center shadow-md
-                                    transition duration-500 ease-out
-                                    hover:bg-gray-200
-                                    group-hover:scale-110        <!-- zoom smooth -->
-                                    ">
+                    bg-gray-100 rounded-full flex items-center justify-center shadow-md
+                    transition duration-500 ease-out
+                    hover:bg-gray-200
+                    group-hover:scale-110        <!-- zoom smooth -->
+                    ">
 
                     <img src="@menuItem.IconPath"
-                        class="w-7 h-7 sm:w-16 sm:h-16 transition duration-500 ease-out group-hover:scale-125" />
+                         class="w-7 h-7 sm:w-16 sm:h-16 transition duration-500 ease-out group-hover:scale-125" />
                 </div>
 
                 <span class=" text-xs sm:text-lg font-medium text-gray-700
-                                    transition duration-500 ease-out
-                                    group-hover:scale-125          <!-- font ikut ngezoom -->
-                                    ">
+                    transition duration-500 ease-out
+                    group-hover:scale-125          <!-- font ikut ngezoom -->
+                    ">
                     @menuItem.Title
                 </span>
             </a>
@@ -188,7 +207,8 @@
 
         @* <a href="/properti" class="flex flex-col items-center space-y-2 cursor-pointer">
             <div
-                class="w-14  h-14 bg-gray-100 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-200 transition">
+                class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-200
+        transition">
                 <img src="/icons/home.png" class="w-7 h-7" />
             </div>
             <span class="text-sm font-medium text-gray-700">Unit Saya</span>
@@ -197,7 +217,8 @@
         <!-- Item 2 -->
         <a href="/darurat" class="flex flex-col items-center space-y-2 cursor-pointer">
             <div
-                class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-200 transition">
+                class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-200
+        transition">
                 <img src="/icons/mechanic.png" class="w-7 h-7" />
             </div>
             <span class="text-sm font-medium text-gray-700">Service Order</span>
@@ -206,7 +227,8 @@
         <!-- Item 3 -->
         <a href="/acara" class="flex flex-col items-center space-y-2 cursor-pointer">
             <div
-                class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-200 transition">
+                class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-200
+        transition">
                 <img src="/icons/house.png" class="w-7 h-7" />
             </div>
             <span class="text-sm font-medium text-gray-700">For Sale or Lease</span>
@@ -215,7 +237,8 @@
         <!-- Item 4 -->
         <a href="/transportasi" class="flex flex-col items-center space-y-2 cursor-pointer">
             <div
-                class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-200 transition">
+                class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-200
+        transition">
                 <img src="/icons/bill.png" class="w-7 h-7" />
             </div>
             <span class="text-sm font-medium text-gray-700">Tagihan</span>
@@ -224,7 +247,8 @@
         <!-- Item 5 -->
         <a href="/unit" class="flex flex-col items-center space-y-2 cursor-pointer">
             <div
-                class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-200 transition">
+                class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-200
+        transition">
                 <img src="/icons/hand-paper-check.png" class="w-7 h-7" />
             </div>
             <span class="text-sm font-medium text-gray-700">Izin & upload</span>
@@ -233,7 +257,8 @@
         <!-- Item 6 -->
         <a href="/bantuan" class="flex flex-col items-center space-y-2 cursor-pointer">
             <div
-                class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-200 transition">
+                class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-200
+        transition">
                 <img src="/icons/complaint.png" class="w-7 h-7" />
             </div>
             <span class="text-sm font-medium text-gray-700">Complaint</span>
@@ -242,7 +267,8 @@
         <!-- Item 7 -->
         <a href="/cctv" class="flex flex-col items-center space-y-2 cursor-pointer">
             <div
-                class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-200 transition">
+                class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-200
+        transition">
                 <img src="/icons/handcuffs.png" class="w-7 h-7" />
             </div>
             <span class="text-sm font-medium text-gray-700">Pelanggaran</span>
@@ -251,7 +277,8 @@
         <!-- Item 8 -->
         <a href="/semua" class="flex flex-col items-center space-y-2 cursor-pointer">
             <div
-                class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-200 transition">
+                class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-200
+        transition">
                 <img src="/icons/asset.png" class="w-7 h-7" />
             </div>
             <span class="text-sm font-medium text-gray-700">Asset Booking</span>
@@ -259,7 +286,8 @@
         <!-- Item 1 -->
         <a href="/properti" class="flex flex-col items-center space-y-2 cursor-pointer">
             <div
-                class="w-14  h-14 bg-gray-100 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-200 transition">
+                class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-200
+        transition">
                 <img src="/icons/faq.png" class="w-7 h-7" />
             </div>
             <span class="text-sm font-medium text-gray-700">FAQ</span>
@@ -268,7 +296,8 @@
         <!-- Item 2 -->
         <a href="/darurat" class="flex flex-col items-center space-y-2 cursor-pointer">
             <div
-                class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-200 transition">
+                class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-200
+        transition">
                 <img src="/icons/sos.png" class="w-7 h-7" />
             </div>
             <span class="text-sm font-medium text-gray-700">Darurat</span>
@@ -277,7 +306,8 @@
         <!-- Item 3 -->
         <a href="/acara" class="flex flex-col items-center space-y-2 cursor-pointer">
             <div
-                class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-200 transition">
+                class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-200
+        transition">
                 <img src="/icons/diagram.png" class="w-7 h-7" />
             </div>
             <span class="text-sm font-medium text-gray-700">Acara</span>
@@ -286,7 +316,8 @@
         <!-- Item 4 -->
         <a href="/transportasi" class="flex flex-col items-center space-y-2 cursor-pointer">
             <div
-                class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-200 transition">
+                class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-200
+        transition">
                 <img src="/icons/car.png" class="w-7 h-7" />
             </div>
             <span class="text-sm font-medium text-gray-700">Transportasi</span>
@@ -295,7 +326,8 @@
         <!-- Item 5 -->
         <a href="/unit" class="flex flex-col items-center space-y-2 cursor-pointer">
             <div
-                class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-200 transition">
+                class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-200
+        transition">
                 <img src="/icons/info.png" class="w-7 h-7" />
             </div>
             <span class="text-sm font-medium text-gray-700">Information Center</span>
@@ -304,7 +336,8 @@
         <!-- Item 6 -->
         <a href="/bantuan" class="flex flex-col items-center space-y-2 cursor-pointer">
             <div
-                class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-200 transition">
+                class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-200
+        transition">
                 <img src="/icons/help.png" class="w-7 h-7" />
             </div>
             <span class="text-sm font-medium text-gray-700">Bantuan</span>
@@ -313,7 +346,8 @@
         <!-- Item 7 -->
         <a href="/cctv" class="flex flex-col items-center space-y-2 cursor-pointer">
             <div
-                class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-200 transition">
+                class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-200
+        transition">
                 <img src="/icons/cctv.png" class="w-7 h-7" />
             </div>
             <span class="text-sm font-medium text-gray-700">CCTV</span>
@@ -322,7 +356,8 @@
         <!-- Item 8 -->
         <a href="/semua" class="flex flex-col items-center space-y-2 cursor-pointer">
             <div
-                class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-200 transition">
+                class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-200
+        transition">
                 <img src="/icons/more.png" class="w-7 h-7" />
             </div>
             <span class="text-sm font-medium text-gray-700">Semua</span>
@@ -345,22 +380,23 @@
 
         <!-- BUTTON — Prev -->
         <button id="btnPrev"
-            class="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-black/70 text-white w-10 h-10 flex items-center justify-center rounded-full hover:bg-black transition hidden md:flex">
+                class="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-black/70 text-white w-10 h-10 flex items-center justify-center rounded-full hover:bg-black transition hidden md:flex">
             ‹
         </button>
 
         <!-- BUTTON — Next -->
         <button id="btnNext"
-            class="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-black/70 text-white w-10 h-10 flex items-center justify-center rounded-full hover:bg-black transition hidden md:flex">
+                class="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-black/70 text-white w-10 h-10 flex items-center justify-center rounded-full hover:bg-black transition hidden md:flex">
             ›
         </button>
 
         <!-- Carousel -->
-        <div id="verticalCarousel" class="flex overflow-x-auto gap-2 sm:gab-5 snap-x snap-mandatory scrollbar-hide scroll-smooth px-1 sm:px-2 pb-5 ">
+        <div id="verticalCarousel"
+             class="flex overflow-x-auto gap-2 sm:gab-5 snap-x snap-mandatory scrollbar-hide scroll-smooth px-1 sm:px-2 pb-5 ">
             @foreach (var propertyItemTerkini in Model.Terkini)
             {
                 <a href="/DetailTerkini/DetailTerkini?id=@propertyItemTerkini.Id"
-                    class="min-w-[355px] sm:min-w-[405px] snap-start rounded-2xl sm:rounded-3xl mt-6 sm:mt-10 overflow-hidden border border-gray-200 shadow-sm bg-white hover:shadow-lg hover:-translate-y-1 transition">
+                   class="min-w-[355px] sm:min-w-[405px] snap-start rounded-2xl sm:rounded-3xl mt-6 sm:mt-10 overflow-hidden border border-gray-200 shadow-sm bg-white hover:shadow-lg hover:-translate-y-1 transition">
                     <img src="@propertyItemTerkini.ImageUrl" class="w-full h-40 sm:h-48 object-cover" />
                     <div class="p-2 sm:p-4">
                         <h3 class="text-sm sm:text-2xl font-bold mb-0 sm:mb-1 text-gray-700">@propertyItemTerkini.Title</h3>
@@ -391,29 +427,29 @@
 
         <!-- BUTTON — Prev -->
         <button id="btnPrevAcara"
-            class="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-black/70 text-white w-10 h-10 flex items-center justify-center rounded-full hover:bg-black transition hidden md:flex">
+                class="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-black/70 text-white w-10 h-10 flex items-center justify-center rounded-full hover:bg-black transition hidden md:flex">
             ‹
         </button>
 
         <!-- BUTTON — Next -->
         <button id="btnNextAcara"
-            class="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-black/70 text-white w-10 h-10 flex items-center justify-center rounded-full hover:bg-black transition hidden md:flex">
+                class="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-black/70 text-white w-10 h-10 flex items-center justify-center rounded-full hover:bg-black transition hidden md:flex">
             ›
         </button>
 
         <!-- Carousel -->
         <div id="verticalCarouselAcara" class="flex overflow-x-auto gap-2 sm:gab-3 snap-x snap-mandatory scrollbar-hide 
-                    scroll-smooth px-1 sm:px-2 pb-5">
+            scroll-smooth px-1 sm:px-2 pb-5">
 
             @foreach (var ItemCaraouselAcara in Model.Acara)
             {
                 <a href="/DetailAcara/DetailAcara?id=@ItemCaraouselAcara.Id"
-                    class="min-w-[355px] sm:min-w-[405px] snap-start rounded-none sm:rounded-3xl 
-                                                                                                                          mt-6 sm:mt-10 overflow-hidden sm:border sm:border-gray-200 sm:shadow-sm bg-white 
-                                                                                                                          hover:shadow-lg hover:-translate-y-1 transition">
+                   class="min-w-[355px] sm:min-w-[405px] snap-start rounded-none sm:rounded-3xl 
+                    mt-6 sm:mt-10 overflow-hidden sm:border sm:border-gray-200 sm:shadow-sm bg-white 
+                    hover:shadow-lg hover:-translate-y-1 transition">
 
                     <img src="@ItemCaraouselAcara.ImageUrl"
-                        class="w-full h-56 sm:h-48 object-cover rounded-2xl sm:rounded-none" />
+                         class="w-full h-56 sm:h-48 object-cover rounded-2xl sm:rounded-none" />
 
                     <div class="pt-2 sm:p-4">
                         <h3 class="text-sm sm:text-2xl font-bold mb-0 sm:mb-1 text-gray-700">@ItemCaraouselAcara.Title</h3>
@@ -451,12 +487,12 @@
                     <img src="@item.ImageUrl" class="w-full h-44 sm:h-56 object-cover" />
 
                     <span class="absolute top-3 left-3 bg-white px-3 py-1 rounded-xl 
-                           text-xs sm:text-sm font-semibold text-gray-700">
+                        text-xs sm:text-sm font-semibold text-gray-700">
                         @item.Tag
                     </span>
 
                     <span class="absolute bottom-3 right-3 bg-black text-white px-3 sm:px-1 
-                           py-2 rounded-xl font-semibold text-xs sm:text-sm">
+                        py-2 rounded-xl font-semibold text-xs sm:text-sm">
                         @item.Price
                     </span>
                 </div>
@@ -527,7 +563,7 @@
     </div>
 
     <!-- Categories -->
-    <div class="mt-10 sm:mt-14 bg-black text-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl 
+    <div class="mt-10 sm:mt-14 bg-black text-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl
                 flex flex-wrap justify-between text-base sm:text-xl gap-4">
 
         <span class="flex items-center gap-2"><i class="ri-map-pin-line"></i> Townhouse</span>
