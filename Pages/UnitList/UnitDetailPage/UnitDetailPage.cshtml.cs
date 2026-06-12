@@ -4,6 +4,7 @@ using Dapper;
 using Microsoft.Data.SqlClient;
 using System.Security.Claims;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.VisualBasic;
 
 
 namespace TestLandingPageNet8.Pages.UnitList.UnitDetailPage
@@ -12,9 +13,15 @@ namespace TestLandingPageNet8.Pages.UnitList.UnitDetailPage
     {
         // Properti untuk menampung data yang akan ditampilkan di UI
         public KavlingInfo Unit { get; set; } = new KavlingInfo();
+
+        public List<KavlingInfoDetail> UnitDetailTagihan { get; set; } = new();
+        public decimal TotalSemuaTagihan => UnitDetailTagihan?.Sum(x => x.AmountPerKavling) ?? 0;
+        public DateTime? DueDateUtama => UnitDetailTagihan?.FirstOrDefault()?.DueDate;
+        public string StatusUtama => UnitDetailTagihan?.FirstOrDefault()?.Status ?? "Kosong";
+
         public List<TicketViewModel> Complaints { get; set; } = new List<TicketViewModel>();
 
-         [BindProperty]
+        [BindProperty]
         public ComplaintInput Input { get; set; } = new ComplaintInput();
 
         public class ComplaintInput
@@ -61,6 +68,13 @@ namespace TestLandingPageNet8.Pages.UnitList.UnitDetailPage
                     return RedirectToPage("/Index");
                 }
 
+                // Ambil detail tagihan untuk unit tersebut
+                string sqlUnitDetail = "SELECT * FROM V_GetTagihanDetailKavling WHERE UserId = @UserId AND KavlingId = @KavlingId";
+                // PERBAIKAN: Gunakan QueryAsync (Tanpa FirstOrDefault) lalu konversi ke ToList()
+                var resultDetail = await connection.QueryAsync<KavlingInfoDetail>(sqlUnitDetail, new { UserId = userId, KavlingId = id });
+                UnitDetailTagihan = resultDetail.ToList();
+
+
                 // Baris ini sering menjadi penyebab error jika mapping-nya tidak pas
                 string sqlComplaints = "SELECT * FROM V_ComplaintList WHERE KavlingId = @KavlingId and UserId = @UserId ORDER BY date DESC";
                 var result = await connection.QueryAsync<TicketViewModel>(sqlComplaints, new { KavlingId = id, UserId = userId });
@@ -70,7 +84,7 @@ namespace TestLandingPageNet8.Pages.UnitList.UnitDetailPage
         }
 
 
-          public async Task<IActionResult> OnPostAsync()
+        public async Task<IActionResult> OnPostAsync()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -153,8 +167,8 @@ namespace TestLandingPageNet8.Pages.UnitList.UnitDetailPage
             }
         }
 
-        
-    
+
+
 
         // Deklarasikan class pembantu DI LUAR method OnGetAsync
         public class KavlingInfo
@@ -163,6 +177,21 @@ namespace TestLandingPageNet8.Pages.UnitList.UnitDetailPage
             public string KavlingCode { get; set; }
             public string Kawasan { get; set; }
         }
+
+        public class KavlingInfoDetail
+        {
+            public int KavlingId { get; set; }
+            public string TransNmbr { get; set; }
+            public string CustCode { get; set; }
+            public string UserId { get; set; }
+            public DateTime? DueDate { get; set; }
+            public string CommercialItem { get; set; }
+            public string CommercialDesc { get; set; }
+            public decimal AmountPerKavling { get; set; }
+            public decimal TotalAmountKavling { get; set; }
+            public string Status { get; set; }
+        }
+
 
         public class TicketViewModel
         {
@@ -176,6 +205,6 @@ namespace TestLandingPageNet8.Pages.UnitList.UnitDetailPage
             public int PhotoCount { get; set; }
         }
 
-        
+
     }
 }

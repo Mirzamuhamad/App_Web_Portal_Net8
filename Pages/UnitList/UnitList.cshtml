@@ -19,55 +19,52 @@
     <!-- GRID CARD -->
     <div class="grid grid-cols-1 md:grid-cols-2 pt-2 gap-3">
 
-        @foreach (var item in Model.UnitItems)
-        {
-            <!-- PILIH WARNA BADGE -->
-            var badgeColor = item.OwnerType.ToLower() == "penyewa"
-            ? "bg-yellow-400 text-gray-800"
-            : "bg-green-500 text-white";
+    @foreach (var item in Model.UnitItems)
+    {
+        var badgeColor = item.OwnerType.ToLower() == "penyewa"
+        ? "bg-yellow-400 text-gray-800"
+        : "bg-green-500 text-white";
 
-            <!-- PILIH ICON WARNA -->
-            var iconColor = item.OwnerType.ToLower() == "penyewa"
-            ? "text-blue-600 bg-blue-50"
-            : "text-purple-600 bg-purple-50";
+        var iconColor = item.OwnerType.ToLower() == "penyewa"
+        ? "text-blue-600 bg-blue-50"
+        : "text-purple-600 bg-purple-50";
 
-            <a asp-page="/UnitList/UnitDetailPage/UnitDetailPage" 
-   asp-route-id="@item.KavlingId" 
-   class="block transform hover:scale-[1.02] transition duration-200">
-                <div class="bg-white rounded-3xl shadow-md overflow-hidden border border-gray-200">
+        <a asp-page="/UnitList/UnitDetailPage/UnitDetailPage" 
+           asp-route-id="@item.KavlingId" 
+           class="block transform hover:scale-[1.02] transition duration-200">
+            <div class="bg-white rounded-3xl shadow-md overflow-hidden border border-gray-200">
 
-                    <!-- IMAGE -->
-                    <div class="relative">
-                        <img src="@item.ImagePath" class="w-full h-48 object-cover" />
+                <div class="relative">
+                    <img src="@item.ImagePath" class="w-full h-48 object-cover" />
 
-                        <div class="absolute top-3 right-3 @badgeColor
-                            text-xs font-semibold px-3 py-1 rounded-full shadow text-gray-500">
-                            @item.OwnerType.ToUpper()
-                        </div>
-                    </div>
-
-                    <!-- CONTENT -->
-                    <div class="p-4 flex items-start gap-4">
-                        <!-- ICON ROUND -->
-                        <div class="w-12 h-12 rounded-full flex items-center justify-center @iconColor">
-                            <img src="/icons/building.png" class="w-7 h-7" />
-                        </div>
-                        
-
-                        <div class="flex-grow">
-                            <h3 class="text-xl font-bold text-gray-700">@item.KavlingCode</h3>
-                            <p class="text-gray-500 text-sm">@item.kawasan</p>
-                        </div>
-
-                        <div class="text-gray-500 text-sm font-medium whitespace-nowrap">
-                            @item.TicketKavlingCount 
-                        </div>
+                    <div class="absolute top-3 right-3 @badgeColor text-xs font-semibold px-3 py-1 rounded-full shadow text-gray-500">
+                        @item.OwnerType.ToUpper()
                     </div>
                 </div>
 
-            </a>
+                <div class="p-4 flex items-center justify-between gap-4">
+                    
+                    <div class="flex items-start gap-4">
+                        <div class="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 @iconColor">
+                            <img src="/icons/building.png" class="w-7 h-7" />
+                        </div>
+                        
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-700">@item.KavlingCode</h3>
+                            <p class="text-gray-500 text-sm">@item.kawasan</p>
+                        </div>
+                    </div>
 
-        }
+                    <div class="text-right flex-shrink-0">
+                        <p class="text-[9px] sm:text-[10px] text-slate-400 uppercase tracking-widest mb-0.5 font-semibold">Total Tagihan</p>
+                        <div class="text-base sm:text-lg font-bold text-slate-700 tracking-tight">
+                            <span class="text-xs sm:text-sm font-bold text-teal-500 mr-0.5">Rp</span>@item.TotalAmountKavling.ToString("N0", new System.Globalization.CultureInfo("id-ID"))
+                        </div>
+                    </div>
 
-    </div>
+                </div>
+            </div>
+        </a>
+    }
+</div>
 </div>

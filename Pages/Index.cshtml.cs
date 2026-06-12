@@ -57,15 +57,8 @@ namespace TestLandingPageNet8.Pages
                 using var conn = Db.Connect();
                 // Menggunakan TOP 1 agar jika tagihan banyak, yang diambil adalah yang paling mendesak/terbaru
                 string sql = @"
-                    SELECT TOP 1 
-                        A.CustCode, 
-                        A.BaseForex, 
-                        B.UserId, 
-                        A.DueDate 
-                    FROM TenantBillingInvoiceHd A
-                    INNER JOIN PortalUsers B ON A.CustCode = B.CustCode
-                    WHERE B.UserId = @UserId
-                    ORDER BY A.DueDate ASC"; //Urutkan berdasarkan tanggal jatuh tempo terdekat
+                    SELECT TOP 1 * FROM   V_GetTotalTagihan WHERE UserId = @UserId
+                    ORDER BY DueDate ASC"; //Urutkan berdasarkan tanggal jatuh tempo terdekat
 
                 BillingInfo = conn.Query<UserBillingViewModel>(sql, new { UserId = userId }).FirstOrDefault();
             }
