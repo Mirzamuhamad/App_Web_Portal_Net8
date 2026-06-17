@@ -1,428 +1,260 @@
 @page
 @model TestLandingPageNet8.Pages.VendorPortal.IndexModel
 @{
-    Layout = null; // Menghilangkan navbar merah (EstatePro) dari _Layout utama
+    Layout = null;
+    var jsonOptions = new System.Text.Json.JsonSerializerOptions
+    {
+        PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+    };
 }
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal Vendor - @Model.VendorName</title>
-    
-    <script src="https://cdn.jsdelivr.net/npm/@@alpinejs/persist@@3.x.x/dist/cdn.min.js" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@@3.x.x/dist/cdn.min.js" defer></script>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Supplier Connect - @Model.VendorName</title>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css?family=Muli:400,600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@@4.2.0/fonts/remixicon.css" rel="stylesheet" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@@3.x.x/dist/cdn.min.js" defer></script>
+
     <style>
         [x-cloak] { display: none !important; }
 
         body {
-            font-family: 'Muli', 'Mulish';
+            font-family: 'Muli', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: #f5f8fb;
         }
     </style>
+
     <script>
-        window.vendorPortalRpoList = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.RpoList, new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }));
+        window.vendorPortalPoList = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.PoList, jsonOptions));
+        window.vendorPortalRpoList = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.RpoList, jsonOptions));
 
         function vendorPortalData() {
             return {
+                activeTab: 'po',
+                poList: window.vendorPortalPoList || [],
                 rpoList: window.vendorPortalRpoList || [],
-                selectedRpo: null,
-                showModal: false,
-                openDetail(rpo) {
-                    this.selectedRpo = rpo;
-                    this.showModal = true;
+                searchTerm: '',
+                statusFilter: 'all',
+                dateFrom: '',
+                dateTo: '',
+                currentPage: 1,
+                pageSize: 10,
+                showDetail: false,
+                detailType: 'po',
+                selectedDoc: null,
+                isSubmitting: false,
+
+                switchTab(tab) {
+                    this.activeTab = tab;
+                    this.resetFilters();
+                },
+
+                resetFilters() {
+                    this.searchTerm = '';
+                    this.statusFilter = 'all';
+                    this.dateFrom = '';
+                    this.dateTo = '';
+                    this.currentPage = 1;
+                },
+
+                currentList() {
+                    return this.activeTab === 'po' ? this.poList : this.rpoList;
+                },
+
+                filteredItems() {
+                    const search = this.searchTerm.trim().toLowerCase();
+                    return this.currentList().filter((item) => {
+                        const docDate = this.toDateInputValue(item.transDate);
+                        const statusOk = this.statusFilter === 'all'
+                            || (this.activeTab === 'po' && this.poStatusKey(item) === this.statusFilter)
+                            || (this.activeTab === 'rrpo' && (item.status || '').toUpperCase() === this.statusFilter);
+                        const fromOk = !this.dateFrom || docDate >= this.dateFrom;
+                        const toOk = !this.dateTo || docDate <= this.dateTo;
+                        const text = this.activeTab === 'po'
+                            ? [item.transNmbr, item.supplier, item.attn, item.remark, item.rrpoNo].join(' ')
+                            : [item.transNmbr, item.poNo, item.suppCode, item.remark].join(' ');
+
+                        return statusOk && fromOk && toOk && (!search || text.toLowerCase().includes(search));
+                    });
+                },
+
+                pagedItems() {
+                    const items = this.filteredItems();
+                    const maxPage = this.pageCount();
+                    if (this.currentPage > maxPage) this.currentPage = maxPage;
+                    const start = (this.currentPage - 1) * this.pageSize;
+                    return items.slice(start, start + this.pageSize);
+                },
+
+                pageCount() {
+                    return Math.max(1, Math.ceil(this.filteredItems().length / this.pageSize));
+                },
+
+                pageStart() {
+                    if (this.filteredItems().length === 0) return 0;
+                    return ((this.currentPage - 1) * this.pageSize) + 1;
+                },
+
+                pageEnd() {
+                    return Math.min(this.currentPage * this.pageSize, this.filteredItems().length);
+                },
+
+                nextPage() {
+                    this.currentPage = Math.min(this.currentPage + 1, this.pageCount());
+                },
+
+                prevPage() {
+                    this.currentPage = Math.max(this.currentPage - 1, 1);
+                },
+
+                openDetail(item, type = this.activeTab) {
+                    this.selectedDoc = item;
+                    this.detailType = type;
+                    this.showDetail = true;
                     document.body.style.overflow = 'hidden';
                 },
+
                 closeDetail() {
-                    this.showModal = false;
+                    this.showDetail = false;
+                    this.selectedDoc = null;
                     document.body.style.overflow = 'auto';
                 },
-                getStatusLabel(status) {
-                    if (status === 'D') return 'Deleted';
-                    if (status === 'P') return 'Diterima';
-                    if (status === 'G') return 'Proses';
-                    if (status === 'H') return 'Draft';
-                    return status || '-';
+
+                poStatusKey(po) {
+                    return po.hasRrpo ? 'done' : 'open';
                 },
-                getStatusClass(status) {
-                    if (status === 'D') return 'bg-slate-100 text-slate-700 border-slate-200';
-                    if (status === 'P') return 'bg-green-50 text-green-700 border-green-200';
-                    if (status === 'G' || status === 'H') return 'bg-emerald-50 text-emerald-700 border-emerald-200';
-                    return 'bg-blue-50 text-blue-700 border-blue-200';
+
+                poStatusLabel(po) {
+                    return po.hasRrpo ? 'RRPO Dibuat' : 'Siap RRPO';
                 },
+
+                rrpoStatusLabel(status) {
+                    const value = (status || '').toUpperCase();
+                    if (value === 'P') return 'Selesai';
+                    if (value === 'G') return 'Proses';
+                    if (value === 'H') return 'Draft';
+                    if (value === 'D') return 'Deleted';
+                    return value || '-';
+                },
+
+                statusClass(item) {
+                    if (this.activeTab === 'po' || this.detailType === 'po') {
+                        return item.hasRrpo
+                            ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
+                            : 'bg-amber-100 text-amber-800 border-amber-200';
+                    }
+
+                    const status = (item.status || '').toUpperCase();
+                    if (status === 'P') return 'bg-emerald-100 text-emerald-700 border-emerald-200';
+                    if (status === 'G') return 'bg-blue-100 text-blue-700 border-blue-200';
+                    if (status === 'H') return 'bg-slate-100 text-slate-700 border-slate-200';
+                    return 'bg-slate-100 text-slate-700 border-slate-200';
+                },
+
                 formatRupiah(amount) {
                     if (amount === null || amount === undefined) return 'Rp 0';
-                    return 'Rp ' + Number(amount).toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+                    return 'Rp ' + Number(amount).toLocaleString('id-ID', { maximumFractionDigits: 0 });
                 },
+
+                formatNumber(amount) {
+                    if (amount === null || amount === undefined) return '0';
+                    return Number(amount).toLocaleString('id-ID', { maximumFractionDigits: 4 });
+                },
+
                 formatDate(dateStr) {
                     if (!dateStr) return '-';
-                    const date = new Date(dateStr);
-                    return date.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
+                    return new Date(dateStr).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
                 },
-                triggerDownload() {
-                    window.downloadRpoPdf(this.selectedRpo, this.formatDate, this.formatRupiah);
-                }
-            };
-        }
-    </script>
-</head>
-<body class="bg-slate-50 antialiased">
 
-<div class="max-w-7xl mx-auto p-2 sm:pt-5 pb-30" x-data="vendorPortalData()">
+                toDateInputValue(dateStr) {
+                    if (!dateStr) return '';
+                    const date = new Date(dateStr);
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    return `${year}-${month}-${day}`;
+                },
 
-    <div class="relative bg-gradient-to-r from-blue-700 via-indigo-600 to-teal-500 rounded-[2rem] p-6 sm:p-10 text-white shadow-xl overflow-hidden mb-8 mt-4">
-        <div class="absolute right-0 top-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16"></div>
-        <div class="absolute left-1/3 bottom-0 w-48 h-48 bg-teal-300/20 rounded-full blur-2xl"></div>
-        
-        <div class="relative flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-            <div>
-                <p class="text-xs sm:text-sm font-bold uppercase tracking-wider text-blue-200">Kawasan Portal Vendor</p>
-                <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight mt-1">@Model.VendorName</h1>
-                <div class="flex flex-wrap items-center gap-3 mt-4">
-                    <span class="inline-flex items-center gap-1.5 bg-white/15 px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-sm">
-                        <i class="ri-hashtag text-teal-300"></i> Kode Vendor: @Model.VendorCode
-                    </span>
-                    <span class="inline-flex items-center gap-1.5 bg-white/15 px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-sm">
-                        <i class="ri-shield-user-line text-teal-300"></i> Peran: VENDOR
-                    </span>
-                </div>
-            </div>
-            
-            <button type="button" id="btnVendorLogout" class="flex items-center gap-2 bg-white hover:bg-rose-50 text-rose-600 px-6 py-3 rounded-2xl text-xs sm:text-sm font-extrabold shadow-lg transition active:scale-95">
-                <i class="ri-logout-box-r-line"></i> Keluar Portal
-            </button>
-        </div>
-    </div>
+                docTotalQty(doc) {
+                    const details = doc?.details || [];
+                    return details.reduce((sum, item) => sum + Number(item.qty || 0), 0);
+                },
 
-    @if (Model.IsDemoMode)
-    {
-        <div class="bg-amber-50 border border-amber-200 rounded-3xl p-5 flex gap-4 items-start text-amber-800 shadow-sm mb-8">
-            <div class="w-10 h-10 rounded-2xl bg-amber-100 flex items-center justify-center flex-shrink-0 text-amber-600">
-                <i class="ri-information-line text-xl"></i>
-            </div>
-            <div>
-                <h3 class="text-sm font-bold">Mode Demo Aktif</h3>
-                <p class="text-xs text-amber-700 mt-1 leading-normal">
-                    Vendor dengan kode <strong>@Model.VendorCode</strong> belum memiliki data RPO di database. Kami menampilkan data 10 RPO umum agar Anda dapat melihat tampilan dan menguji detail transaksi.
-                </p>
-            </div>
-        </div>
-    }
+                async createRrpo(po) {
+                    if (!po || po.hasRrpo || this.isSubmitting) return;
 
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div class="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm flex items-center justify-between gap-4">
-            <div>
-                <p class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-400">Total RPO</p>
-                <h3 class="text-xl sm:text-3xl font-extrabold text-slate-700 mt-1">@Model.RpoList.Count</h3>
-            </div>
-            <div class="w-10 h-10 sm:w-12 sm:h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center flex-shrink-0">
-                <i class="ri-file-list-3-line text-xl sm:text-2xl"></i>
-            </div>
-        </div>
-        
-        <div class="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm flex items-center justify-between gap-4">
-            <div>
-                <p class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-400">Diterima</p>
-                <h3 class="text-xl sm:text-3xl font-extrabold text-emerald-600 mt-1">
-                    @Model.RpoList.Count(x => x.Status == "G" || x.Status == "H")
-                </h3>
-            </div>
-            <div class="w-10 h-10 sm:w-12 sm:h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center flex-shrink-0">
-                <i class="ri-checkbox-circle-line text-xl sm:text-2xl"></i>
-            </div>
-        </div>
+                    const confirm = await Swal.fire({
+                        title: 'Buat RRPO?',
+                        text: `PO ${po.transNmbr} akan dibuatkan RRPO.`,
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#00766b',
+                        cancelButtonColor: '#64748b',
+                        confirmButtonText: 'Ya, Buat RRPO',
+                        cancelButtonText: 'Batal'
+                    });
 
-        <div class="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm flex items-center justify-between gap-4">
-            <div>
-                <p class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-400">Diproses</p>
-                <h3 class="text-xl sm:text-3xl font-extrabold text-amber-600 mt-1">
-                    @Model.RpoList.Count(x => x.Status == "P")
-                </h3>
-            </div>
-            <div class="w-10 h-10 sm:w-12 sm:h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center flex-shrink-0">
-                <i class="ri-time-line text-xl sm:text-2xl"></i>
-            </div>
-        </div>
+                    if (!confirm.isConfirmed) return;
 
-        <div class="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm flex items-center justify-between gap-4">
-            <div>
-                <p class="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-400">Draft</p>
-                <h3 class="text-xl sm:text-3xl font-extrabold text-slate-500 mt-1">
-                    @Model.RpoList.Count(x => x.Status == "D")
-                </h3>
-            </div>
-            <div class="w-10 h-10 sm:w-12 sm:h-12 bg-slate-50 text-slate-500 rounded-2xl flex items-center justify-center flex-shrink-0">
-                <i class="ri-edit-line text-xl sm:text-2xl"></i>
-            </div>
-        </div>
-    </div>
+                    this.isSubmitting = true;
+                    try {
+                        const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                        const response = await fetch('?handler=CreateRrpo', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                                'RequestVerificationToken': token
+                            },
+                            body: new URLSearchParams({ poNo: po.transNmbr })
+                        });
 
-    <div class="bg-white rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-100/50 overflow-hidden">
-        <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-            <h2 class="text-base sm:text-lg font-bold text-slate-700 flex items-center gap-2">
-                <i class="ri-receipt-line text-blue-600"></i> Daftar Penerimaan RPO Terkini
-            </h2>
-            <span class="text-xs text-slate-400 font-semibold uppercase tracking-wider">Menampilkan 10 RPO Teratas</span>
-        </div>
+                        const data = await response.json();
+                        if (!response.ok || !data.success) {
+                            throw new Error(data.message || 'Gagal membuat RRPO.');
+                        }
 
-        <div class="hidden md:block overflow-x-auto">
-            <table class="w-full text-left border-collapse">
-                <thead>
-                    <tr class="bg-slate-50/50 text-[10px] sm:text-xs font-bold text-slate-400 uppercase border-b border-slate-100">
-                        <th class="py-4 px-6">No. RPO</th>
-                        <th class="py-4 px-6">Tanggal</th>
-                        <th class="py-4 px-6">No. PO</th>
-                        <th class="py-4 px-6">Supplier</th>
-                        <th class="py-4 px-6">Total Nilai</th>
-                        <th class="py-4 px-6 text-center">Status</th>
-                        <th class="py-4 px-6">Keterangan</th>
-                        <th class="py-4 px-6 text-center">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100 text-sm text-slate-600">
-                    <tr x-show="rpoList.length === 0" x-cloak>
-                        <td colspan="8" class="py-10 px-6 text-center text-slate-400 font-semibold">
-                            Belum ada data RPO untuk vendor ini.
-                        </td>
-                    </tr>
-                    <template x-for="rpo in rpoList" :key="rpo.transNmbr">
-                        <tr class="hover:bg-slate-50/40 transition duration-150">
-                            <td class="py-4 px-6 font-bold text-blue-600" x-text="rpo.transNmbr"></td>
-                            <td class="py-4 px-6" x-text="formatDate(rpo.transDate)"></td>
-                            <td class="py-4 px-6 font-semibold text-slate-700" x-text="rpo.poNo"></td>
-                            <td class="py-4 px-6" x-text="rpo.suppCode"></td>
-                            <td class="py-4 px-6 font-bold text-slate-800" x-text="formatRupiah(rpo.totalForex)"></td>
-                            <td class="py-4 px-6 text-center">
-                                <span :class="getStatusClass(rpo.status)" class="inline-block px-3 py-1 rounded-xl text-[10px] font-extrabold uppercase tracking-wide border" x-text="getStatusLabel(rpo.status)"></span>
-                            </td>
-                            <td class="py-4 px-6 max-w-xs truncate" x-text="rpo.remark || '-'"></td>
-                            <td class="py-4 px-6 text-center">
-                                <button type="button" @@click="openDetail(rpo)" class="inline-flex items-center justify-center gap-1.5 px-4 py-2 border border-slate-200 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 text-slate-600 rounded-xl transition font-bold text-xs shadow-sm">
-                                    <i class="ri-eye-line text-sm"></i> Detail
-                                </button>
-                            </td>
-                        </tr>
-                    </template>
-                </tbody>
-            </table>
-        </div>
+                        await Swal.fire({
+                            title: 'Berhasil',
+                            text: data.message,
+                            icon: 'success',
+                            confirmButtonColor: '#00766b'
+                        });
+                        window.location.reload();
+                    } catch (error) {
+                        Swal.fire({
+                            title: 'Gagal',
+                            text: error.message,
+                            icon: 'error',
+                            confirmButtonColor: '#00766b'
+                        });
+                    } finally {
+                        this.isSubmitting = false;
+                    }
+                },
 
-        <div class="block md:hidden divide-y divide-slate-100">
-            <div x-show="rpoList.length === 0" x-cloak class="p-8 text-center text-slate-400 font-semibold text-sm">
-                Belum ada data RPO untuk vendor ini.
-            </div>
-            <template x-for="rpo in rpoList" :key="rpo.transNmbr">
-                <div class="p-4 flex flex-col gap-3">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wide" x-text="formatDate(rpo.transDate)"></span>
-                            <h3 class="text-sm font-bold text-blue-600 mt-0.5" x-text="rpo.transNmbr"></h3>
-                        </div>
-                        <span :class="getStatusClass(rpo.status)" class="inline-block px-2.5 py-0.5 rounded-lg text-[9px] font-extrabold uppercase tracking-wide border" x-text="getStatusLabel(rpo.status)"></span>
-                    </div>
-                    
-                    <div class="h-px bg-slate-100"></div>
+                async logout() {
+                    const confirm = await Swal.fire({
+                        title: 'Keluar Portal?',
+                        text: 'Sesi vendor akan diakhiri.',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#dc2626',
+                        cancelButtonColor: '#64748b',
+                        confirmButtonText: 'Ya, Keluar',
+                        cancelButtonText: 'Batal'
+                    });
 
-                    <div class="grid grid-cols-2 gap-y-2 text-xs">
-                        <div>
-                            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">No. PO</span>
-                            <p class="font-semibold text-slate-700 mt-0.5" x-text="rpo.poNo"></p>
-                        </div>
-                        <div>
-                            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Total Nilai</span>
-                            <p class="font-bold text-slate-800 mt-0.5" x-text="formatRupiah(rpo.totalForex)"></p>
-                        </div>
-                        <div class="col-span-2">
-                            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Keterangan</span>
-                            <p class="text-slate-600 mt-0.5" x-text="rpo.remark || '-'"></p>
-                        </div>
-                    </div>
-                    
-                    <button type="button" @@click="openDetail(rpo)" class="w-full mt-2 py-2.5 border border-slate-200 hover:bg-blue-50 hover:text-blue-600 text-slate-700 rounded-xl transition font-extrabold text-xs shadow-sm flex items-center justify-center gap-1.5">
-                        <i class="ri-eye-line"></i> Lihat Detail Transaksi
-                    </button>
-                </div>
-            </template>
-        </div>
-    </div>
+                    if (!confirm.isConfirmed) return;
 
-    <div id="modal-rpo-detail" class="fixed inset-0 z-50 flex items-center justify-center px-4 overflow-y-auto" 
-         x-show="showModal" x-cloak
-         x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
-        
-        <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" @@click="closeDetail()"></div>
-        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-
-        <div class="relative inline-block w-full max-w-4xl bg-white rounded-3xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 border border-slate-100"
-             x-show="showModal"
-             x-transition:enter="transition ease-out duration-300 transform"
-             x-transition:enter-start="opacity-0 scale-95 translate-y-4"
-             x-transition:enter-end="opacity-100 scale-100 translate-y-0">
-            
-            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-                <div class="flex items-center gap-2">
-                    <i class="ri-receipt-line text-blue-600 text-xl"></i>
-                    <h3 class="text-base font-bold text-slate-800">Rincian Dokumen Penerimaan (RPO)</h3>
-                </div>
-                <button type="button" @@click="closeDetail()" class="text-slate-400 hover:text-slate-600 rounded-lg p-1 hover:bg-slate-100 transition-all">
-                    <i class="ri-close-line text-xl"></i>
-                </button>
-            </div>
-
-            <template x-if="selectedRpo">
-                <div>
-                    <div class="p-6 space-y-6">
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 bg-slate-50/70 p-5 rounded-2xl text-xs">
-                            <div>
-                                <span class="text-slate-400 font-bold uppercase tracking-wider block mb-0.5">No. RPO</span>
-                                <span class="font-bold text-blue-600 text-sm" x-text="selectedRpo.transNmbr"></span>
-                            </div>
-                            <div>
-                                <span class="text-slate-400 font-bold uppercase tracking-wider block mb-0.5">No. PO Referensi</span>
-                                <span class="font-semibold text-slate-700 text-sm" x-text="selectedRpo.poNo"></span>
-                            </div>
-                            <div>
-                                <span class="text-slate-400 font-bold uppercase tracking-wider block mb-0.5">Tanggal Masuk</span>
-                                <span class="font-semibold text-slate-700" x-text="formatDate(selectedRpo.transDate)"></span>
-                            </div>
-                            <div>
-                                <span class="text-slate-400 font-bold uppercase tracking-wider block mb-0.5">Status</span>
-                                <div class="mt-0.5">
-                                    <span :class="getStatusClass(selectedRpo.status)" class="inline-block px-2.5 py-0.5 rounded-lg text-[9px] font-extrabold uppercase tracking-wide border" x-text="getStatusLabel(selectedRpo.status)"></span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="space-y-3">
-                            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Item Barang yang Diterima</h4>
-                            <div class="border border-slate-100 rounded-2xl overflow-hidden">
-                                <table class="w-full text-left text-xs border-collapse">
-                                    <thead>
-                                        <tr class="bg-slate-50 text-[10px] font-bold text-slate-400 uppercase border-b border-slate-100">
-                                            <th class="py-3 px-4">Kode Barang</th>
-                                            <th class="py-3 px-4">Keterangan / Deskripsi</th>
-                                            <th class="py-3 px-4 text-center">Jumlah</th>
-                                            <th class="py-3 px-4 text-center">Satuan</th>
-                                            <th class="py-3 px-4 text-right">Harga Satuan</th>
-                                            <th class="py-3 px-4 text-right">Total</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="divide-y divide-slate-100 text-slate-600">
-                                        <template x-for="item in selectedRpo.details" :key="item.productCode + '-' + item.qty">
-                                            <tr class="hover:bg-slate-50/20">
-                                                <td class="py-3 px-4 font-bold text-slate-700" x-text="item.productCode"></td>
-                                                <td class="py-3 px-4" x-text="item.remark || selectedRpo.remark || '-'"></td>
-                                                <td class="py-3 px-4 text-center font-semibold text-slate-800" x-text="Number(item.qty).toLocaleString('id-ID')"></td>
-                                                <td class="py-3 px-4 text-center uppercase" x-text="item.unit"></td>
-                                                <td class="py-3 px-4 text-right font-medium" x-text="formatRupiah(item.priceForex)"></td>
-                                                <td class="py-3 px-4 text-right font-bold text-slate-700" x-text="formatRupiah(item.amountForex)"></td>
-                                            </tr>
-                                        </template>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <div class="pt-4 border-t border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                            <div class="text-xs text-slate-400">
-                                <p>Disiapkan oleh: <strong class="text-slate-600" x-text="selectedRpo.userPrep"></strong> pada <span class="text-slate-500" x-text="formatDate(selectedRpo.datePrep)"></span></p>
-                            </div>
-                            <div class="text-right w-full sm:w-auto">
-                                <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Total Keseluruhan</span>
-                                <span class="text-xl sm:text-2xl font-black text-blue-600" x-text="formatRupiah(selectedRpo.totalForex || selectedRpo.details.reduce((sum, d) => sum + d.amountForex, 0))"></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="px-6 py-4 bg-slate-50/50 border-t border-slate-100 flex flex-col sm:flex-row gap-3 justify-end">
-                        <button type="button" @@click="triggerDownload()" class="w-full sm:w-auto px-5 py-3 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 active:scale-95 transition rounded-xl flex items-center justify-center gap-2 shadow-md shadow-blue-100">
-                            <i class="ri-file-download-line text-base"></i> Unduh PDF
-                        </button>
-                        <button type="button" @@click="closeDetail()" class="w-full sm:w-auto px-5 py-3 text-sm font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 active:scale-95 transition rounded-xl flex items-center justify-center">
-                            Tutup
-                        </button>
-                    </div>
-                </div>
-            </template>
-        </div>
-    </div>
-</div>
-
-<form id="logoutForm" method="post" asp-page-handler="Logout" style="display:none;">
-    @Html.AntiForgeryToken()
-</form>
-
-<script>
-    // Fungsi PDF dipisah global untuk keamanan HTML escaping teks
-    window.downloadRpoPdf = function(selectedRpo, formatDateFn, formatRupiahFn) {
-        if (!selectedRpo) return;
-
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(20);
-        doc.text('RECEIVING PURCHASE ORDER (RPO)', 14, 20);
-        
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'normal');
-        doc.text('No. RPO: ' + selectedRpo.transNmbr, 14, 30);
-        doc.text('No. PO: ' + selectedRpo.poNo, 14, 35);
-        doc.text('Tanggal: ' + formatDateFn(selectedRpo.transDate), 14, 40);
-        doc.text('Supplier: ' + selectedRpo.suppCode, 14, 45);
-        doc.text('Prepared By: ' + selectedRpo.userPrep, 14, 50);
-        
-        doc.line(14, 53, 196, 53);
-        
-        const headers = [['Kode Barang', 'Keterangan', 'Jumlah', 'Satuan', 'Harga', 'Total']];
-        const data = selectedRpo.details.map(d => [
-            d.productCode,
-            d.remark || selectedRpo.remark || '-',
-            Number(d.qty).toLocaleString('id-ID'),
-            d.unit,
-            formatRupiahFn(d.priceForex),
-            formatRupiahFn(d.amountForex)
-        ]);
-        
-        doc.autoTable({
-            head: headers,
-            body: data,
-            startY: 58,
-            theme: 'striped',
-            headStyles: { fillColor: [37, 99, 235] }
-        });
-        
-        const finalY = doc.lastAutoTable.finalY + 10;
-        doc.setFont('helvetica', 'bold');
-        const grandTotal = selectedRpo.totalForex || selectedRpo.details.reduce((sum, d) => sum + d.amountForex, 0);
-        doc.text('Total Keseluruhan: ' + formatRupiahFn(grandTotal), 14, finalY);
-        
-        doc.save('RPO-' + selectedRpo.transNmbr.replace(/\//g, '-') + '.pdf');
-    };
-
-    // Handler Logout Alert & Request
-    document.getElementById('btnVendorLogout').addEventListener('click', () => {
-        Swal.fire({
-            title: 'Konfirmasi Keluar',
-            text: 'Apakah Anda yakin ingin keluar dari Portal Vendor?',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#ef4444',
-            cancelButtonColor: '#6b7280',
-            confirmButtonText: 'Ya, Keluar!',
-            cancelButtonText: 'Batal'
-        }).then(async (result) => {
-            if (result.isConfirmed) {
-                const form = document.getElementById('logoutForm');
-                const formData = new FormData(form);
-                try {
+                    const form = document.getElementById('logoutForm');
+                    const formData = new FormData(form);
                     const response = await fetch('?handler=Logout', {
                         method: 'POST',
                         body: formData,
@@ -434,13 +266,322 @@
                     if (data.success) {
                         window.location.href = data.redirect;
                     }
-                } catch (error) {
-                    console.error('Logout error:', error);
                 }
-            }
-        });
-    });
-</script>
+            };
+        }
+    </script>
+</head>
+<body class="text-slate-950 antialiased" x-data="vendorPortalData()">
+    <aside class="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-slate-700/40 bg-[#526178] text-slate-200 lg:flex">
+        <div class="px-6 py-7">
+            <h1 class="text-xl font-extrabold text-cyan-100">@Model.VendorName</h1>
+            <p class="mt-1 text-sm font-semibold tracking-wide text-slate-300">Supplier ID: @Model.VendorCode</p>
+        </div>
 
+        <nav class="mt-8 space-y-1">
+            <button type="button" @@click="switchTab('po')" class="flex w-full items-center gap-4 border-l-4 px-6 py-4 text-left text-sm font-bold transition"
+                    :class="activeTab === 'po' ? 'border-teal-500 bg-slate-100/90 text-slate-700' : 'border-transparent text-slate-300 hover:bg-white/10 hover:text-white'">
+                <i class="ri-shopping-cart-2-line text-2xl"></i>
+                <span>Daftar PO</span>
+            </button>
+            <button type="button" @@click="switchTab('rrpo')" class="flex w-full items-center gap-4 border-l-4 px-6 py-4 text-left text-sm font-bold transition"
+                    :class="activeTab === 'rrpo' ? 'border-teal-500 bg-slate-100/90 text-slate-700' : 'border-transparent text-slate-300 hover:bg-white/10 hover:text-white'">
+                <i class="ri-inbox-archive-line text-2xl"></i>
+                <span>RRPO</span>
+            </button>
+        </nav>
+
+        <div class="mt-auto border-t border-white/10 p-6">
+            <button type="button" @@click="logout()" class="flex w-full items-center gap-4 rounded-md px-1 py-3 text-left text-sm font-bold text-slate-300 hover:text-white">
+                <i class="ri-logout-box-r-line text-2xl"></i>
+                <span>Log Out</span>
+            </button>
+        </div>
+    </aside>
+
+    <div class="min-h-screen lg:pl-64">
+        <header class="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-slate-300 bg-white px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center gap-3">
+                <div class="flex h-9 w-9 items-center justify-center rounded-md bg-teal-700 text-white lg:hidden">
+                    <i class="ri-store-2-line text-xl"></i>
+                </div>
+                <h2 class="text-lg font-extrabold text-teal-800 sm:text-xl">Supplier Connect</h2>
+            </div>
+
+            <div class="hidden w-full max-w-md items-center gap-3 rounded-xl border border-slate-300 bg-slate-100 px-4 py-2 sm:flex">
+                <i class="ri-search-line text-xl text-slate-700"></i>
+                <input type="search" x-model="searchTerm" @@input="currentPage = 1" placeholder="Cari nomor PO / RRPO..." class="w-full bg-transparent text-sm font-semibold outline-none placeholder:text-slate-500">
+            </div>
+
+            <div class="flex items-center gap-3 text-slate-800">
+                <button type="button" class="hidden h-10 w-10 items-center justify-center rounded-full hover:bg-slate-100 sm:flex">
+                    <i class="ri-notification-3-line text-xl"></i>
+                </button>
+                <button type="button" class="hidden h-10 w-10 items-center justify-center rounded-full hover:bg-slate-100 sm:flex">
+                    <i class="ri-question-line text-xl"></i>
+                </button>
+                <button type="button" class="flex h-10 w-10 items-center justify-center rounded-full border border-teal-700 text-teal-800">
+                    <i class="ri-user-3-line text-xl"></i>
+                </button>
+            </div>
+        </header>
+
+        <main class="px-4 py-6 sm:px-6 lg:px-8">
+            <div class="mb-6 flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+                <div>
+                    <div class="mb-4 flex gap-2 lg:hidden">
+                        <button type="button" @@click="switchTab('po')" class="flex-1 rounded-md border px-4 py-2 text-sm font-bold"
+                                :class="activeTab === 'po' ? 'border-teal-700 bg-teal-700 text-white' : 'border-slate-300 bg-white text-slate-700'">
+                            Daftar PO
+                        </button>
+                        <button type="button" @@click="switchTab('rrpo')" class="flex-1 rounded-md border px-4 py-2 text-sm font-bold"
+                                :class="activeTab === 'rrpo' ? 'border-teal-700 bg-teal-700 text-white' : 'border-slate-300 bg-white text-slate-700'">
+                            RRPO
+                        </button>
+                    </div>
+                    <h5 class="text-3xl font-black tracking-tight text-slate-950 sm:text-4xl" x-text="activeTab === 'po' ? 'Daftar PO' : 'Daftar RRPO'"></h5>
+                    <p class="mt-2 max-w-2xl text-base font-semibold text-slate-600"
+                       x-text="activeTab === 'po' ? 'Kelola PO yang sudah posting dan buat RRPO dari detail pesanan.' : 'Pantau dokumen RRPO yang sudah dibuat untuk supplier ini.'"></p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 sm:flex">
+                    <div class="rounded-md border border-slate-300 bg-white px-4 py-3">
+                        <p class="text-[11px] font-black uppercase tracking-widest text-slate-500">PO Posting</p>
+                        <p class="mt-1 text-xl font-black text-teal-800" x-text="poList.length"></p>
+                    </div>
+                    <div class="rounded-md border border-slate-300 bg-white px-4 py-3">
+                        <p class="text-[11px] font-black uppercase tracking-widest text-slate-500">RRPO</p>
+                        <p class="mt-1 text-xl font-black text-teal-800" x-text="rpoList.length"></p>
+                    </div>
+                </div>
+            </div>
+
+            <section class="mb-6 rounded border border-slate-300 bg-white p-4">
+                <div class="grid gap-4 xl:grid-cols-[1fr_1.4fr_auto] xl:items-end">
+                    <label class="block">
+                        <span class="mb-2 block text-xs font-black tracking-widest text-slate-800">Filter Status</span>
+                        <select x-model="statusFilter" @@change="currentPage = 1" class="h-11 w-full rounded border border-slate-300 bg-slate-50 px-4 text-sm font-semibold outline-none focus:border-teal-700">
+                            <option value="all">Semua Status</option>
+                            <template x-if="activeTab === 'po'">
+                                <option value="open">Siap RRPO</option>
+                            </template>
+                            <template x-if="activeTab === 'po'">
+                                <option value="done">RRPO Dibuat</option>
+                            </template>
+                            <template x-if="activeTab === 'rrpo'">
+                                <option value="P">Selesai</option>
+                            </template>
+                            <template x-if="activeTab === 'rrpo'">
+                                <option value="G">Proses</option>
+                            </template>
+                            <template x-if="activeTab === 'rrpo'">
+                                <option value="H">Draft</option>
+                            </template>
+                        </select>
+                    </label>
+
+                    <div>
+                        <span class="mb-2 block text-xs font-black tracking-widest text-slate-800">Rentang Tanggal</span>
+                        <div class="grid gap-3 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
+                            <input type="date" x-model="dateFrom" @@change="currentPage = 1" class="h-11 rounded border border-slate-300 bg-slate-50 px-4 text-sm font-semibold outline-none focus:border-teal-700">
+                            <span class="hidden text-slate-500 sm:block">-</span>
+                            <input type="date" x-model="dateTo" @@change="currentPage = 1" class="h-11 rounded border border-slate-300 bg-slate-50 px-4 text-sm font-semibold outline-none focus:border-teal-700">
+                        </div>
+                    </div>
+
+                    <button type="button" @@click="resetFilters()" class="h-11 rounded bg-slate-200 px-5 text-sm font-black text-slate-700 transition hover:bg-slate-300">
+                        Reset Filter
+                    </button>
+                </div>
+
+                <div class="mt-4 flex items-center gap-3 rounded-xl border border-slate-300 bg-slate-100 px-4 py-2 sm:hidden">
+                    <i class="ri-search-line text-xl text-slate-700"></i>
+                    <input type="search" x-model="searchTerm" @@input="currentPage = 1" placeholder="Cari nomor PO / RRPO..." class="w-full bg-transparent text-sm font-semibold outline-none placeholder:text-slate-500">
+                </div>
+            </section>
+
+            <section class="overflow-hidden rounded border border-slate-300 bg-white">
+                <div class="overflow-x-auto">
+                    <table class="w-full min-w-[940px] border-collapse text-left">
+                        <thead class="bg-slate-100 text-xs font-black tracking-widest text-slate-800">
+                            <tr>
+                                <th class="px-6 py-5" x-text="activeTab === 'po' ? 'Nomor Pesanan (PO)' : 'Nomor RRPO'"></th>
+                                <th class="px-6 py-5" x-text="activeTab === 'po' ? 'Supplier' : 'Nomor PO'"></th>
+                                <th class="px-6 py-5">Tanggal</th>
+                                <th class="px-6 py-5 text-center">Total Item</th>
+                                <th class="px-6 py-5 text-right">Nilai Transaksi</th>
+                                <th class="px-6 py-5">Status</th>
+                                <th class="px-6 py-5 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-300">
+                            <tr x-show="filteredItems().length === 0" x-cloak>
+                                <td colspan="7" class="px-6 py-14 text-center text-sm font-bold text-slate-500">
+                                    Tidak ada data yang sesuai filter.
+                                </td>
+                            </tr>
+
+                            <template x-for="item in pagedItems()" :key="activeTab + '-' + item.transNmbr">
+                                <tr class="text-sm font-semibold text-slate-800 hover:bg-slate-50">
+                                    <td class="px-6 py-5">
+                                        <button type="button" @@click="openDetail(item)" class="font-black text-teal-800 hover:underline" x-text="item.transNmbr"></button>
+                                    </td>
+                                    <td class="px-6 py-5">
+                                        <template x-if="activeTab === 'po'">
+                                            <div class="flex items-center gap-3">
+                                                <span class="flex h-9 w-9 items-center justify-center rounded-full bg-cyan-100 text-xs font-black text-teal-800" x-text="(item.supplier || '-').slice(0, 2)"></span>
+                                                <div>
+                                                    <p class="font-bold" x-text="item.supplier"></p>
+                                                    <p class="text-xs text-slate-500" x-text="item.attn || '-'"></p>
+                                                </div>
+                                            </div>
+                                        </template>
+                                        <template x-if="activeTab === 'rrpo'">
+                                            <span class="font-black text-teal-800" x-text="item.poNo || '-'"></span>
+                                        </template>
+                                    </td>
+                                    <td class="px-6 py-5" x-text="formatDate(item.transDate)"></td>
+                                    <td class="px-6 py-5 text-center" x-text="item.totalItems || (item.details ? item.details.length : 0)"></td>
+                                    <td class="px-6 py-5 text-right font-black" x-text="formatRupiah(item.totalForex)"></td>
+                                    <td class="px-6 py-5">
+                                        <span class="inline-flex rounded-full border px-3 py-1 text-xs font-black" :class="statusClass(item)"
+                                              x-text="activeTab === 'po' ? poStatusLabel(item) : rrpoStatusLabel(item.status)"></span>
+                                    </td>
+                                    <td class="px-6 py-5 text-center">
+                                        <button type="button" @@click="openDetail(item)" class="inline-flex h-9 w-9 items-center justify-center rounded border border-slate-300 text-slate-900 transition hover:border-teal-700 hover:text-teal-800">
+                                            <i class="ri-arrow-down-s-line text-xl"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="flex flex-col gap-4 border-t border-slate-300 px-6 py-4 text-sm font-semibold text-slate-700 sm:flex-row sm:items-center sm:justify-between">
+                    <p>
+                        Menampilkan <span x-text="pageStart()"></span>-<span x-text="pageEnd()"></span>
+                        dari <span x-text="filteredItems().length"></span>
+                        <span x-text="activeTab === 'po' ? 'pesanan' : 'RRPO'"></span>
+                    </p>
+                    <div class="flex items-center gap-2">
+                        <button type="button" @@click="prevPage()" :disabled="currentPage === 1" class="h-10 w-10 rounded border border-slate-300 text-lg disabled:cursor-not-allowed disabled:opacity-40">
+                            <i class="ri-arrow-left-s-line"></i>
+                        </button>
+                        <span class="flex h-10 w-10 items-center justify-center rounded bg-teal-700 font-black text-white" x-text="currentPage"></span>
+                        <span class="px-2">/</span>
+                        <span class="font-black" x-text="pageCount()"></span>
+                        <button type="button" @@click="nextPage()" :disabled="currentPage === pageCount()" class="h-10 w-10 rounded border border-slate-300 text-lg disabled:cursor-not-allowed disabled:opacity-40">
+                            <i class="ri-arrow-right-s-line"></i>
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div x-show="showDetail" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4">
+        <div class="absolute inset-0" @@click="closeDetail()"></div>
+        <section class="relative max-h-[92vh] w-full max-w-5xl overflow-hidden rounded bg-white shadow-2xl">
+            <header class="flex items-start justify-between border-b border-slate-200 bg-slate-50 px-6 py-5">
+                <div>
+                    <p class="text-xs font-black uppercase tracking-widest text-teal-800" x-text="detailType === 'po' ? 'Detail Purchase Order' : 'Detail RRPO'"></p>
+                    <h3 class="mt-1 text-xl font-black text-slate-950" x-text="selectedDoc?.transNmbr || '-'"></h3>
+                </div>
+                <button type="button" @@click="closeDetail()" class="flex h-10 w-10 items-center justify-center rounded hover:bg-slate-200">
+                    <i class="ri-close-line text-2xl"></i>
+                </button>
+            </header>
+
+            <div class="max-h-[calc(92vh-88px)] overflow-y-auto p-6" x-show="selectedDoc">
+                <div class="grid gap-4 md:grid-cols-4">
+                    <div class="rounded border border-slate-200 bg-white p-4">
+                        <p class="text-[11px] font-black uppercase tracking-widest text-slate-500" x-text="detailType === 'po' ? 'No. PO' : 'No. RRPO'"></p>
+                        <p class="mt-1 text-sm font-black text-teal-800" x-text="selectedDoc?.transNmbr"></p>
+                    </div>
+                    <div class="rounded border border-slate-200 bg-white p-4">
+                        <p class="text-[11px] font-black uppercase tracking-widest text-slate-500" x-text="detailType === 'po' ? 'Tanggal PO' : 'Tanggal RRPO'"></p>
+                        <p class="mt-1 text-sm font-bold text-slate-800" x-text="formatDate(selectedDoc?.transDate)"></p>
+                    </div>
+                    <div class="rounded border border-slate-200 bg-white p-4">
+                        <p class="text-[11px] font-black uppercase tracking-widest text-slate-500">Total Nilai</p>
+                        <p class="mt-1 text-sm font-black text-slate-950" x-text="formatRupiah(selectedDoc?.totalForex)"></p>
+                    </div>
+                    <div class="rounded border border-slate-200 bg-white p-4">
+                        <p class="text-[11px] font-black uppercase tracking-widest text-slate-500">Status</p>
+                        <span class="mt-2 inline-flex rounded-full border px-3 py-1 text-xs font-black" :class="statusClass(selectedDoc)"
+                              x-text="detailType === 'po' ? poStatusLabel(selectedDoc) : rrpoStatusLabel(selectedDoc?.status)"></span>
+                    </div>
+                </div>
+
+                <div class="mt-5 rounded border border-slate-200 bg-slate-50 p-4 text-sm font-semibold text-slate-700">
+                    <template x-if="detailType === 'po'">
+                        <div class="grid gap-3 md:grid-cols-2">
+                            <p><span class="font-black text-slate-500">Supplier:</span> <span x-text="selectedDoc?.supplier || '-'"></span></p>
+                            <p><span class="font-black text-slate-500">RRPO:</span> <span x-text="selectedDoc?.rrpoNo || '-'"></span></p>
+                            <p class="md:col-span-2"><span class="font-black text-slate-500">Alamat Kirim:</span> <span x-text="[selectedDoc?.deliveryAddr, selectedDoc?.deliveryCity].filter(Boolean).join(', ') || '-'"></span></p>
+                            <p class="md:col-span-2"><span class="font-black text-slate-500">Remark:</span> <span x-text="selectedDoc?.remark || '-'"></span></p>
+                        </div>
+                    </template>
+                    <template x-if="detailType === 'rrpo'">
+                        <div class="grid gap-3 md:grid-cols-2">
+                            <p><span class="font-black text-slate-500">No. PO:</span> <span x-text="selectedDoc?.poNo || '-'"></span></p>
+                            <p><span class="font-black text-slate-500">Supplier:</span> <span x-text="selectedDoc?.suppCode || '-'"></span></p>
+                            <p><span class="font-black text-slate-500">User Prep:</span> <span x-text="selectedDoc?.userPrep || '-'"></span></p>
+                            <p><span class="font-black text-slate-500">Tanggal Prep:</span> <span x-text="formatDate(selectedDoc?.datePrep)"></span></p>
+                            <p class="md:col-span-2"><span class="font-black text-slate-500">Remark:</span> <span x-text="selectedDoc?.remark || '-'"></span></p>
+                        </div>
+                    </template>
+                </div>
+
+                <div class="mt-6 overflow-hidden rounded border border-slate-200">
+                    <table class="w-full min-w-[760px] border-collapse text-left text-sm">
+                        <thead class="bg-slate-100 text-xs font-black uppercase tracking-widest text-slate-700">
+                            <tr>
+                                <th class="px-4 py-3">Kode Barang</th>
+                                <th class="px-4 py-3">Keterangan</th>
+                                <th class="px-4 py-3 text-right">Qty</th>
+                                <th class="px-4 py-3">Unit</th>
+                                <th class="px-4 py-3 text-right">Harga</th>
+                                <th class="px-4 py-3 text-right">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-200">
+                            <template x-for="detail in (selectedDoc?.details || [])" :key="(detail.product || detail.productCode) + '-' + detail.qty">
+                                <tr>
+                                    <td class="px-4 py-3 font-black text-slate-800" x-text="detail.product || detail.productCode"></td>
+                                    <td class="px-4 py-3 text-slate-700" x-text="detail.specification || detail.remark || '-'"></td>
+                                    <td class="px-4 py-3 text-right font-bold" x-text="formatNumber(detail.qty)"></td>
+                                    <td class="px-4 py-3 font-bold" x-text="detail.unit"></td>
+                                    <td class="px-4 py-3 text-right" x-text="formatRupiah(detail.priceForex)"></td>
+                                    <td class="px-4 py-3 text-right font-black" x-text="formatRupiah(detail.nettoForex ?? detail.totalForex ?? detail.amountForex)"></td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+
+                <footer class="mt-6 flex flex-col gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:items-center sm:justify-between">
+                    <div class="text-sm font-bold text-slate-600">
+                        <span>Total Qty: </span><span class="text-slate-950" x-text="formatNumber(docTotalQty(selectedDoc))"></span>
+                    </div>
+                    <div class="flex flex-col gap-3 sm:flex-row">
+                        <button type="button" @@click="closeDetail()" class="rounded border border-slate-300 px-5 py-3 text-sm font-black text-slate-700 hover:bg-slate-50">
+                            Tutup
+                        </button>
+                        <button type="button" x-show="detailType === 'po' && selectedDoc && !selectedDoc.hasRrpo" @@click="createRrpo(selectedDoc)" :disabled="isSubmitting"
+                                class="rounded bg-teal-700 px-5 py-3 text-sm font-black text-white shadow-sm hover:bg-teal-800 disabled:cursor-not-allowed disabled:opacity-60">
+                            <span x-show="!isSubmitting">Done - Buat RRPO</span>
+                            <span x-show="isSubmitting">Memproses...</span>
+                        </button>
+                    </div>
+                </footer>
+            </div>
+        </section>
+    </div>
+
+    <form id="logoutForm" method="post" asp-page-handler="Logout" class="hidden">
+        @Html.AntiForgeryToken()
+    </form>
 </body>
 </html>
