@@ -27,7 +27,98 @@
 
         body {
             font-family: 'Muli', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            background: #f5f8fb;
+            background: #f8fafc;
+        }
+
+        .vendor-portal {
+            font-size: calc(70% + 2pt);
+        }
+
+        .vendor-portal .text-\[11px\] { font-size: calc(7.7px + 2pt); line-height: 1.15; }
+        .vendor-portal .text-xs { font-size: calc(0.525rem + 2pt); line-height: 1rem; }
+        .vendor-portal .text-sm { font-size: calc(0.6125rem + 2pt); line-height: 1.15rem; }
+        .vendor-portal .text-base { font-size: calc(0.7rem + 2pt); line-height: 1.25rem; }
+        .vendor-portal .text-lg { font-size: calc(0.7875rem + 2pt); line-height: 1.3rem; }
+        .vendor-portal .text-xl { font-size: calc(0.875rem + 2pt); line-height: 1.4rem; }
+        .vendor-portal .text-2xl { font-size: calc(1.05rem + 2pt); line-height: 1.55rem; }
+        .vendor-portal .text-3xl { font-size: calc(1.3125rem + 2pt); line-height: 1.75rem; }
+        .vendor-portal .text-4xl { font-size: calc(1.575rem + 2pt); line-height: 2rem; }
+
+        .vendor-portal table {
+            font-size: calc(0.6125rem + 2pt);
+        }
+
+        .vendor-portal input,
+        .vendor-portal select,
+        .vendor-portal button {
+            font-size: inherit;
+        }
+
+        .vendor-portal .vendor-summary-card {
+            min-width: 8.5rem;
+        }
+
+        .vendor-portal .vendor-table-wrap {
+            max-height: calc(100vh - 17rem);
+        }
+
+        .vendor-sidebar {
+            width: min(18rem, calc(100vw - 2rem));
+            transform: translateX(-100%);
+            background: #ffffff;
+            color: #475569;
+        }
+
+        .vendor-sidebar.is-open {
+            transform: translateX(0);
+        }
+
+        .vendor-shell {
+            transition: padding-left 180ms ease;
+        }
+
+        @@media (min-width: 1024px) {
+            .vendor-sidebar {
+                width: 16rem;
+                transform: translateX(0);
+            }
+
+            .vendor-sidebar.is-collapsed {
+                width: 5rem;
+            }
+
+            .vendor-shell {
+                padding-left: 16rem;
+            }
+
+            .vendor-shell.is-collapsed {
+                padding-left: 5rem;
+            }
+
+            .vendor-sidebar.is-collapsed .vendor-sidebar-label {
+                display: none;
+            }
+
+            .vendor-sidebar.is-collapsed .vendor-sidebar-item {
+                justify-content: center;
+                gap: 0;
+                padding-left: 0.75rem;
+                padding-right: 0.75rem;
+            }
+
+            .vendor-sidebar.is-collapsed .vendor-sidebar-brand {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+
+            .vendor-sidebar.is-collapsed .vendor-sidebar-brand button {
+                justify-content: center;
+            }
+
+            .vendor-sidebar.is-collapsed .vendor-sidebar-footer {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
         }
     </style>
 
@@ -50,10 +141,19 @@
                 detailType: 'po',
                 selectedDoc: null,
                 isSubmitting: false,
+                sidebarOpen: false,
+                sidebarCollapsed: false,
 
                 switchTab(tab) {
                     this.activeTab = tab;
                     this.resetFilters();
+                    this.sidebarOpen = false;
+                },
+
+                toggleSidebarCollapse() {
+                    if (window.matchMedia('(min-width: 1024px)').matches) {
+                        this.sidebarCollapsed = !this.sidebarCollapsed;
+                    }
                 },
 
                 resetFilters() {
@@ -271,59 +371,74 @@
         }
     </script>
 </head>
-<body class="text-slate-950 antialiased" x-data="vendorPortalData()">
-    <aside class="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-slate-700/40 bg-[#526178] text-slate-200 lg:flex">
-        <div class="px-6 py-7">
-            <h1 class="text-xl font-extrabold text-cyan-100">@Model.VendorName</h1>
-            <p class="mt-1 text-sm font-semibold tracking-wide text-slate-300">Supplier ID: @Model.VendorCode</p>
+<body class="vendor-portal text-slate-800 antialiased" x-data="vendorPortalData()">
+    <div x-show="sidebarOpen" x-cloak @@click="sidebarOpen = false"
+         class="fixed inset-0 z-30 bg-slate-950/50 backdrop-blur-[1px] lg:hidden"></div>
+
+    <aside class="vendor-sidebar fixed inset-y-0 left-0 z-40 flex flex-col border-r border-slate-200 shadow-2xl transition-all duration-200 lg:shadow-none"
+           :class="{ 'is-open': sidebarOpen, 'is-collapsed': sidebarCollapsed }">
+        <div class="vendor-sidebar-brand flex items-start gap-2 px-5 py-5">
+            <button type="button" @@click="toggleSidebarCollapse()" class="flex min-w-0 flex-1 items-center gap-3 rounded-lg px-1 py-1 text-left transition hover:bg-slate-50" title="Collapse sidebar">
+                <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+                    <i class="ri-store-2-line text-xl"></i>
+                </span>
+                <span class="vendor-sidebar-label min-w-0">
+                    <span class="block truncate text-xl font-extrabold text-slate-700">@Model.VendorName</span>
+                    <span class="mt-1 block truncate text-sm font-semibold tracking-wide text-slate-500">Supplier ID: @Model.VendorCode</span>
+                </span>
+                <i class="vendor-sidebar-label ri-menu-fold-line ml-auto hidden text-xl text-slate-400 lg:block"></i>
+            </button>
+            <button type="button" @@click="sidebarOpen = false" class="flex h-9 w-9 shrink-0 items-center justify-center rounded text-slate-500 hover:bg-slate-100 lg:hidden" aria-label="Tutup sidebar">
+                <i class="ri-close-line text-2xl"></i>
+            </button>
         </div>
 
         <nav class="mt-8 space-y-1">
-            <button type="button" @@click="switchTab('po')" class="flex w-full items-center gap-4 border-l-4 px-6 py-4 text-left text-sm font-bold transition"
-                    :class="activeTab === 'po' ? 'border-teal-500 bg-slate-100/90 text-slate-700' : 'border-transparent text-slate-300 hover:bg-white/10 hover:text-white'">
-                <i class="ri-shopping-cart-2-line text-2xl"></i>
-                <span>Daftar PO</span>
+            <button type="button" @@click="switchTab('po')" title="Daftar PO" class="vendor-sidebar-item flex w-full items-center gap-4 border-l-4 px-6 py-4 text-left text-sm font-bold transition"
+                    :class="activeTab === 'po' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-transparent text-slate-600 hover:bg-slate-50 hover:text-blue-700'">
+                <i class="ri-shopping-cart-2-line shrink-0 text-2xl"></i>
+                <span class="vendor-sidebar-label">Daftar PO</span>
             </button>
-            <button type="button" @@click="switchTab('rrpo')" class="flex w-full items-center gap-4 border-l-4 px-6 py-4 text-left text-sm font-bold transition"
-                    :class="activeTab === 'rrpo' ? 'border-teal-500 bg-slate-100/90 text-slate-700' : 'border-transparent text-slate-300 hover:bg-white/10 hover:text-white'">
-                <i class="ri-inbox-archive-line text-2xl"></i>
-                <span>RRPO</span>
+            <button type="button" @@click="switchTab('rrpo')" title="RRPO" class="vendor-sidebar-item flex w-full items-center gap-4 border-l-4 px-6 py-4 text-left text-sm font-bold transition"
+                    :class="activeTab === 'rrpo' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-transparent text-slate-600 hover:bg-slate-50 hover:text-blue-700'">
+                <i class="ri-inbox-archive-line shrink-0 text-2xl"></i>
+                <span class="vendor-sidebar-label">RRPO</span>
             </button>
         </nav>
 
-        <div class="mt-auto border-t border-white/10 p-6">
-            <button type="button" @@click="logout()" class="flex w-full items-center gap-4 rounded-md px-1 py-3 text-left text-sm font-bold text-slate-300 hover:text-white">
-                <i class="ri-logout-box-r-line text-2xl"></i>
-                <span>Log Out</span>
+        <div class="vendor-sidebar-footer mt-auto border-t border-slate-100 p-6">
+            <button type="button" @@click="logout()" title="Log Out" class="vendor-sidebar-item flex w-full items-center gap-4 rounded-md px-1 py-3 text-left text-sm font-bold text-slate-500 hover:bg-slate-50 hover:text-blue-700">
+                <i class="ri-logout-box-r-line shrink-0 text-2xl"></i>
+                <span class="vendor-sidebar-label">Log Out</span>
             </button>
         </div>
     </aside>
 
-    <div class="min-h-screen lg:pl-64">
-        <header class="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-slate-300 bg-white px-4 sm:px-6 lg:px-8">
+    <div class="vendor-shell min-h-screen" :class="{ 'is-collapsed': sidebarCollapsed }">
+        <header class="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-slate-200 bg-white px-4 sm:px-6 lg:px-8">
             <div class="flex items-center gap-3">
-                <div class="flex h-9 w-9 items-center justify-center rounded-md bg-teal-700 text-white lg:hidden">
-                    <i class="ri-store-2-line text-xl"></i>
-                </div>
-                <h2 class="text-lg font-extrabold text-teal-800 sm:text-xl">Supplier Connect</h2>
+                <button type="button" @@click="sidebarOpen = true" class="flex h-9 w-9 items-center justify-center rounded-md bg-blue-600 text-white lg:hidden" aria-label="Buka sidebar">
+                    <i class="ri-menu-2-line text-xl"></i>
+                </button>
+                <h2 class="text-lg font-extrabold text-slate-700 sm:text-xl">Supplier Connect</h2>
             </div>
 
-            <div class="hidden w-full max-w-md items-center gap-3 rounded-xl border border-slate-300 bg-slate-100 px-4 py-2 sm:flex">
-                <i class="ri-search-line text-xl text-slate-700"></i>
+            <div class="hidden w-full max-w-md items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 sm:flex">
+                <i class="ri-search-line text-xl text-slate-500"></i>
                 <input type="search" x-model="searchTerm" @@input="currentPage = 1" placeholder="Cari nomor PO / RRPO..." class="w-full bg-transparent text-sm font-semibold outline-none placeholder:text-slate-500">
             </div>
 
-            <div class="flex items-center gap-3 text-slate-800">
+            <!-- <div class="flex items-center gap-3 text-slate-800">
                 <button type="button" class="hidden h-10 w-10 items-center justify-center rounded-full hover:bg-slate-100 sm:flex">
                     <i class="ri-notification-3-line text-xl"></i>
                 </button>
                 <button type="button" class="hidden h-10 w-10 items-center justify-center rounded-full hover:bg-slate-100 sm:flex">
                     <i class="ri-question-line text-xl"></i>
                 </button>
-                <button type="button" class="flex h-10 w-10 items-center justify-center rounded-full border border-teal-700 text-teal-800">
+                <button type="button" class="flex h-10 w-10 items-center justify-center rounded-full border border-blue-200 bg-blue-50 text-blue-600">
                     <i class="ri-user-3-line text-xl"></i>
                 </button>
-            </div>
+            </div> -->
         </header>
 
         <main class="px-4 py-6 sm:px-6 lg:px-8">
@@ -331,36 +446,36 @@
                 <div>
                     <div class="mb-4 flex gap-2 lg:hidden">
                         <button type="button" @@click="switchTab('po')" class="flex-1 rounded-md border px-4 py-2 text-sm font-bold"
-                                :class="activeTab === 'po' ? 'border-teal-700 bg-teal-700 text-white' : 'border-slate-300 bg-white text-slate-700'">
+                                :class="activeTab === 'po' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 bg-white text-slate-600'">
                             Daftar PO
                         </button>
                         <button type="button" @@click="switchTab('rrpo')" class="flex-1 rounded-md border px-4 py-2 text-sm font-bold"
-                                :class="activeTab === 'rrpo' ? 'border-teal-700 bg-teal-700 text-white' : 'border-slate-300 bg-white text-slate-700'">
+                                :class="activeTab === 'rrpo' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 bg-white text-slate-600'">
                             RRPO
                         </button>
                     </div>
-                    <h5 class="text-3xl font-black tracking-tight text-slate-950 sm:text-4xl" x-text="activeTab === 'po' ? 'Daftar PO' : 'Daftar RRPO'"></h5>
+                    <h5 class="text-3xl font-black tracking-tight text-slate-800 sm:text-4xl" x-text="activeTab === 'po' ? 'Daftar PO' : 'Daftar RRPO'"></h5>
                     <p class="mt-2 max-w-2xl text-base font-semibold text-slate-600"
                        x-text="activeTab === 'po' ? 'Kelola PO yang sudah posting dan buat RRPO dari detail pesanan.' : 'Pantau dokumen RRPO yang sudah dibuat untuk supplier ini.'"></p>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3 sm:flex">
-                    <div class="rounded-md border border-slate-300 bg-white px-4 py-3">
+                    <div class="vendor-summary-card rounded-md border border-slate-200 bg-white px-4 py-3 shadow-sm shadow-slate-200/40">
                         <p class="text-[11px] font-black uppercase tracking-widest text-slate-500">PO Posting</p>
-                        <p class="mt-1 text-xl font-black text-teal-800" x-text="poList.length"></p>
+                        <p class="mt-1 text-xl font-black text-blue-600" x-text="poList.length"></p>
                     </div>
-                    <div class="rounded-md border border-slate-300 bg-white px-4 py-3">
+                    <div class="vendor-summary-card rounded-md border border-slate-200 bg-white px-4 py-3 shadow-sm shadow-slate-200/40">
                         <p class="text-[11px] font-black uppercase tracking-widest text-slate-500">RRPO</p>
-                        <p class="mt-1 text-xl font-black text-teal-800" x-text="rpoList.length"></p>
+                        <p class="mt-1 text-xl font-black text-blue-600" x-text="rpoList.length"></p>
                     </div>
                 </div>
             </div>
 
-            <section class="mb-6 rounded border border-slate-300 bg-white p-4">
+            <section class="mb-6 rounded border border-slate-200 bg-white p-4 shadow-sm shadow-slate-200/40">
                 <div class="grid gap-4 xl:grid-cols-[1fr_1.4fr_auto] xl:items-end">
                     <label class="block">
                         <span class="mb-2 block text-xs font-black tracking-widest text-slate-800">Filter Status</span>
-                        <select x-model="statusFilter" @@change="currentPage = 1" class="h-11 w-full rounded border border-slate-300 bg-slate-50 px-4 text-sm font-semibold outline-none focus:border-teal-700">
+                        <select x-model="statusFilter" @@change="currentPage = 1" class="h-11 w-full rounded border border-slate-200 bg-slate-50 px-4 text-sm font-semibold outline-none focus:border-blue-400">
                             <option value="all">Semua Status</option>
                             <template x-if="activeTab === 'po'">
                                 <option value="open">Siap RRPO</option>
@@ -383,27 +498,27 @@
                     <div>
                         <span class="mb-2 block text-xs font-black tracking-widest text-slate-800">Rentang Tanggal</span>
                         <div class="grid gap-3 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
-                            <input type="date" x-model="dateFrom" @@change="currentPage = 1" class="h-11 rounded border border-slate-300 bg-slate-50 px-4 text-sm font-semibold outline-none focus:border-teal-700">
+                            <input type="date" x-model="dateFrom" @@change="currentPage = 1" class="h-11 rounded border border-slate-200 bg-slate-50 px-4 text-sm font-semibold outline-none focus:border-blue-400">
                             <span class="hidden text-slate-500 sm:block">-</span>
-                            <input type="date" x-model="dateTo" @@change="currentPage = 1" class="h-11 rounded border border-slate-300 bg-slate-50 px-4 text-sm font-semibold outline-none focus:border-teal-700">
+                            <input type="date" x-model="dateTo" @@change="currentPage = 1" class="h-11 rounded border border-slate-200 bg-slate-50 px-4 text-sm font-semibold outline-none focus:border-blue-400">
                         </div>
                     </div>
 
-                    <button type="button" @@click="resetFilters()" class="h-11 rounded bg-slate-200 px-5 text-sm font-black text-slate-700 transition hover:bg-slate-300">
+                    <button type="button" @@click="resetFilters()" class="h-11 rounded bg-slate-100 px-5 text-sm font-black text-slate-600 transition hover:bg-slate-200">
                         Reset Filter
                     </button>
                 </div>
 
-                <div class="mt-4 flex items-center gap-3 rounded-xl border border-slate-300 bg-slate-100 px-4 py-2 sm:hidden">
-                    <i class="ri-search-line text-xl text-slate-700"></i>
+                <div class="mt-4 flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 sm:hidden">
+                    <i class="ri-search-line text-xl text-slate-500"></i>
                     <input type="search" x-model="searchTerm" @@input="currentPage = 1" placeholder="Cari nomor PO / RRPO..." class="w-full bg-transparent text-sm font-semibold outline-none placeholder:text-slate-500">
                 </div>
             </section>
 
-            <section class="overflow-hidden rounded border border-slate-300 bg-white">
-                <div class="overflow-x-auto">
+            <section class="overflow-hidden rounded border border-slate-200 bg-white shadow-sm shadow-slate-200/40">
+                <div class="vendor-table-wrap overflow-auto">
                     <table class="w-full min-w-[940px] border-collapse text-left">
-                        <thead class="bg-slate-100 text-xs font-black tracking-widest text-slate-800">
+                        <thead class="bg-slate-50 text-xs font-black tracking-widest text-slate-700">
                             <tr>
                                 <th class="px-6 py-5" x-text="activeTab === 'po' ? 'Nomor Pesanan (PO)' : 'Nomor RRPO'"></th>
                                 <th class="px-6 py-5" x-text="activeTab === 'po' ? 'Supplier' : 'Nomor PO'"></th>
@@ -414,7 +529,7 @@
                                 <th class="px-6 py-5 text-center">Aksi</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-300">
+                        <tbody class="divide-y divide-slate-100">
                             <tr x-show="filteredItems().length === 0" x-cloak>
                                 <td colspan="7" class="px-6 py-14 text-center text-sm font-bold text-slate-500">
                                     Tidak ada data yang sesuai filter.
@@ -424,12 +539,12 @@
                             <template x-for="item in pagedItems()" :key="activeTab + '-' + item.transNmbr">
                                 <tr class="text-sm font-semibold text-slate-800 hover:bg-slate-50">
                                     <td class="px-6 py-5">
-                                        <button type="button" @@click="openDetail(item)" class="font-black text-teal-800 hover:underline" x-text="item.transNmbr"></button>
+                                        <button type="button" @@click="openDetail(item)" class="font-black text-blue-600 hover:underline" x-text="item.transNmbr"></button>
                                     </td>
                                     <td class="px-6 py-5">
                                         <template x-if="activeTab === 'po'">
                                             <div class="flex items-center gap-3">
-                                                <span class="flex h-9 w-9 items-center justify-center rounded-full bg-cyan-100 text-xs font-black text-teal-800" x-text="(item.supplier || '-').slice(0, 2)"></span>
+                                                <span class="flex h-9 w-9 items-center justify-center rounded-full bg-blue-50 text-xs font-black text-blue-600" x-text="(item.supplier || '-').slice(0, 2)"></span>
                                                 <div>
                                                     <p class="font-bold" x-text="item.supplier"></p>
                                                     <p class="text-xs text-slate-500" x-text="item.attn || '-'"></p>
@@ -437,7 +552,7 @@
                                             </div>
                                         </template>
                                         <template x-if="activeTab === 'rrpo'">
-                                            <span class="font-black text-teal-800" x-text="item.poNo || '-'"></span>
+                                            <span class="font-black text-blue-600" x-text="item.poNo || '-'"></span>
                                         </template>
                                     </td>
                                     <td class="px-6 py-5" x-text="formatDate(item.transDate)"></td>
@@ -448,7 +563,7 @@
                                               x-text="activeTab === 'po' ? poStatusLabel(item) : rrpoStatusLabel(item.status)"></span>
                                     </td>
                                     <td class="px-6 py-5 text-center">
-                                        <button type="button" @@click="openDetail(item)" class="inline-flex h-9 w-9 items-center justify-center rounded border border-slate-300 text-slate-900 transition hover:border-teal-700 hover:text-teal-800">
+                                        <button type="button" @@click="openDetail(item)" class="inline-flex h-9 w-9 items-center justify-center rounded border border-slate-200 text-slate-600 transition hover:border-blue-300 hover:text-blue-600">
                                             <i class="ri-arrow-down-s-line text-xl"></i>
                                         </button>
                                     </td>
@@ -458,20 +573,20 @@
                     </table>
                 </div>
 
-                <div class="flex flex-col gap-4 border-t border-slate-300 px-6 py-4 text-sm font-semibold text-slate-700 sm:flex-row sm:items-center sm:justify-between">
+                <div class="flex flex-col gap-4 border-t border-slate-100 px-6 py-4 text-sm font-semibold text-slate-600 sm:flex-row sm:items-center sm:justify-between">
                     <p>
                         Menampilkan <span x-text="pageStart()"></span>-<span x-text="pageEnd()"></span>
                         dari <span x-text="filteredItems().length"></span>
                         <span x-text="activeTab === 'po' ? 'pesanan' : 'RRPO'"></span>
                     </p>
                     <div class="flex items-center gap-2">
-                        <button type="button" @@click="prevPage()" :disabled="currentPage === 1" class="h-10 w-10 rounded border border-slate-300 text-lg disabled:cursor-not-allowed disabled:opacity-40">
+                        <button type="button" @@click="prevPage()" :disabled="currentPage === 1" class="h-10 w-10 rounded border border-slate-200 text-lg disabled:cursor-not-allowed disabled:opacity-40">
                             <i class="ri-arrow-left-s-line"></i>
                         </button>
-                        <span class="flex h-10 w-10 items-center justify-center rounded bg-teal-700 font-black text-white" x-text="currentPage"></span>
+                        <span class="flex h-10 w-10 items-center justify-center rounded bg-blue-600 font-black text-white" x-text="currentPage"></span>
                         <span class="px-2">/</span>
                         <span class="font-black" x-text="pageCount()"></span>
-                        <button type="button" @@click="nextPage()" :disabled="currentPage === pageCount()" class="h-10 w-10 rounded border border-slate-300 text-lg disabled:cursor-not-allowed disabled:opacity-40">
+                        <button type="button" @@click="nextPage()" :disabled="currentPage === pageCount()" class="h-10 w-10 rounded border border-slate-200 text-lg disabled:cursor-not-allowed disabled:opacity-40">
                             <i class="ri-arrow-right-s-line"></i>
                         </button>
                     </div>
@@ -480,13 +595,13 @@
         </main>
     </div>
 
-    <div x-show="showDetail" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4">
+    <div x-show="showDetail" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/35 p-4">
         <div class="absolute inset-0" @@click="closeDetail()"></div>
         <section class="relative max-h-[92vh] w-full max-w-5xl overflow-hidden rounded bg-white shadow-2xl">
             <header class="flex items-start justify-between border-b border-slate-200 bg-slate-50 px-6 py-5">
                 <div>
-                    <p class="text-xs font-black uppercase tracking-widest text-teal-800" x-text="detailType === 'po' ? 'Detail Purchase Order' : 'Detail RRPO'"></p>
-                    <h3 class="mt-1 text-xl font-black text-slate-950" x-text="selectedDoc?.transNmbr || '-'"></h3>
+                    <p class="text-xs font-black uppercase tracking-widest text-blue-600" x-text="detailType === 'po' ? 'Detail Purchase Order' : 'Detail RRPO'"></p>
+                    <h3 class="mt-1 text-xl font-black text-slate-800" x-text="selectedDoc?.transNmbr || '-'"></h3>
                 </div>
                 <button type="button" @@click="closeDetail()" class="flex h-10 w-10 items-center justify-center rounded hover:bg-slate-200">
                     <i class="ri-close-line text-2xl"></i>
@@ -497,7 +612,7 @@
                 <div class="grid gap-4 md:grid-cols-4">
                     <div class="rounded border border-slate-200 bg-white p-4">
                         <p class="text-[11px] font-black uppercase tracking-widest text-slate-500" x-text="detailType === 'po' ? 'No. PO' : 'No. RRPO'"></p>
-                        <p class="mt-1 text-sm font-black text-teal-800" x-text="selectedDoc?.transNmbr"></p>
+                        <p class="mt-1 text-sm font-black text-blue-600" x-text="selectedDoc?.transNmbr"></p>
                     </div>
                     <div class="rounded border border-slate-200 bg-white p-4">
                         <p class="text-[11px] font-black uppercase tracking-widest text-slate-500" x-text="detailType === 'po' ? 'Tanggal PO' : 'Tanggal RRPO'"></p>
@@ -505,7 +620,7 @@
                     </div>
                     <div class="rounded border border-slate-200 bg-white p-4">
                         <p class="text-[11px] font-black uppercase tracking-widest text-slate-500">Total Nilai</p>
-                        <p class="mt-1 text-sm font-black text-slate-950" x-text="formatRupiah(selectedDoc?.totalForex)"></p>
+                        <p class="mt-1 text-sm font-black text-slate-800" x-text="formatRupiah(selectedDoc?.totalForex)"></p>
                     </div>
                     <div class="rounded border border-slate-200 bg-white p-4">
                         <p class="text-[11px] font-black uppercase tracking-widest text-slate-500">Status</p>
@@ -563,14 +678,14 @@
 
                 <footer class="mt-6 flex flex-col gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:items-center sm:justify-between">
                     <div class="text-sm font-bold text-slate-600">
-                        <span>Total Qty: </span><span class="text-slate-950" x-text="formatNumber(docTotalQty(selectedDoc))"></span>
+                        <span>Total Qty: </span><span class="text-slate-800" x-text="formatNumber(docTotalQty(selectedDoc))"></span>
                     </div>
                     <div class="flex flex-col gap-3 sm:flex-row">
-                        <button type="button" @@click="closeDetail()" class="rounded border border-slate-300 px-5 py-3 text-sm font-black text-slate-700 hover:bg-slate-50">
+                        <button type="button" @@click="closeDetail()" class="rounded border border-slate-200 px-5 py-3 text-sm font-black text-slate-600 hover:bg-slate-50">
                             Tutup
                         </button>
                         <button type="button" x-show="detailType === 'po' && selectedDoc && !selectedDoc.hasRrpo" @@click="createRrpo(selectedDoc)" :disabled="isSubmitting"
-                                class="rounded bg-teal-700 px-5 py-3 text-sm font-black text-white shadow-sm hover:bg-teal-800 disabled:cursor-not-allowed disabled:opacity-60">
+                                class="rounded bg-blue-600 px-5 py-3 text-sm font-black text-white shadow-sm hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60">
                             <span x-show="!isSubmitting">Done - Buat RRPO</span>
                             <span x-show="isSubmitting">Memproses...</span>
                         </button>
