@@ -31,7 +31,7 @@ namespace TestLandingPageNet8.Pages
 
         public UserBillingViewModel BillingInfo { get; set; }
 
-        public void OnGet()
+        public IActionResult OnGet()
         {
             var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userIdStr))
@@ -39,8 +39,15 @@ namespace TestLandingPageNet8.Pages
                 // Jika user tidak terautentikasi, arahkan ke halaman login atau tampilkan pesan error
                 // return RedirectToPage("/Login");
                 Console.WriteLine("User tidak terautentikasi. Harap login terlebih dahulu.");
-                return;
+                return Page();
             }
+
+            var role = User.FindFirstValue(ClaimTypes.Role);
+            if (role == "VENDOR")
+            {
+                return RedirectToPage("/VendorPortal/Index");
+            }
+
             string currentUserId = userIdStr;
             LoadBillingInfo(currentUserId);
             LoadDummyTerkini();
@@ -48,6 +55,8 @@ namespace TestLandingPageNet8.Pages
             LoadDummyProperties();   // nanti ganti SQL juga
             LoadDummyAcara();
             LoadItemsMenu();
+
+            return Page();
         }
 
         private void LoadBillingInfo(string userId)

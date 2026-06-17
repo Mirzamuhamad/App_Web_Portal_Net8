@@ -42,6 +42,11 @@ public class LoginModel : PageModel
         //  Jika sudah login cek cookie apakah sudah isi atau belum, jika sudah jangan lagi masuk ke halaman login lagi
         if (User.Identity?.IsAuthenticated == true)
         {
+            var role = User.FindFirstValue(ClaimTypes.Role);
+            if (role == "VENDOR")
+            {
+                return RedirectToPage("/VendorPortal/Index");
+            }
             return RedirectToPage("/Index"); // atau /Dashboard
         }
         return Page();
@@ -143,7 +148,8 @@ public class LoginModel : PageModel
         return new JsonResult(new
         {
             success = true,
-            message = "Login berhasil"
+            message = "Login berhasil",
+            role = rd.GetString(2)
         });
 
 

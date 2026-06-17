@@ -9,6 +9,9 @@ builder.Services.AddRazorPages(options =>
 {
     options.Conventions.AuthorizeFolder("/");
     options.Conventions.AllowAnonymousToPage("/Login");
+}).AddMvcOptions(options =>
+{
+    options.Filters.Add<TestLandingPageNet8.Helpers.VendorAccessFilter>();
 });
 
 builder.Services.AddSingleton<IDbConnectionFactory, DbConnectionFactory>(); // Registrasi DbConnectionFactory sebagai singleton database v1
