@@ -1940,19 +1940,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\IT\\.nuget\\packages\\": {}
+    "C:\\Users\\Dataprima\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\App_Web_Portal_Kawasan_Net8\\TestLandingPageNet8.csproj",
+      "projectUniqueName": "D:\\App_Web_Portal_Net8\\TestLandingPageNet8.csproj",
       "projectName": "TestLandingPageNet8",
-      "projectPath": "D:\\App_Web_Portal_Kawasan_Net8\\TestLandingPageNet8.csproj",
-      "packagesPath": "C:\\Users\\IT\\.nuget\\packages\\",
-      "outputPath": "D:\\App_Web_Portal_Kawasan_Net8\\obj\\",
+      "projectPath": "D:\\App_Web_Portal_Net8\\TestLandingPageNet8.csproj",
+      "packagesPath": "C:\\Users\\Dataprima\\.nuget\\packages\\",
+      "outputPath": "D:\\App_Web_Portal_Net8\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\IT\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "C:\\Users\\Dataprima\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net8.0"
@@ -2021,7 +2021,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.416/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "D:\\App_Web_Portal_Net8\\.dotnet\\sdk\\8.0.422/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

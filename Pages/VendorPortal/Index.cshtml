@@ -73,11 +73,19 @@
             transform: translateX(0);
         }
 
+        .vendor-mobile-filter.is-hidden {
+            display: none;
+        }
+
         .vendor-shell {
             transition: padding-left 180ms ease;
         }
 
         @@media (min-width: 1024px) {
+            .vendor-mobile-filter.is-hidden {
+                display: block;
+            }
+
             .vendor-sidebar {
                 width: 16rem;
                 transform: translateX(0);
@@ -143,6 +151,7 @@
                 isSubmitting: false,
                 sidebarOpen: false,
                 sidebarCollapsed: false,
+                filterOpen: false,
 
                 switchTab(tab) {
                     this.activeTab = tab;
@@ -420,13 +429,20 @@
                 <button type="button" @@click="sidebarOpen = true" class="flex h-9 w-9 items-center justify-center rounded-md bg-blue-600 text-white lg:hidden" aria-label="Buka sidebar">
                     <i class="ri-menu-2-line text-xl"></i>
                 </button>
-                <h2 class="text-lg font-extrabold text-slate-700 sm:text-xl">Supplier Connect</h2>
+                <h2 class="text-lg font-extrabold text-slate-700 sm:text-xl" x-text="activeTab === 'po' ? 'Info PO' : 'Info RRPO'"></h2>
             </div>
 
             <div class="hidden w-full max-w-md items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 sm:flex">
                 <i class="ri-search-line text-xl text-slate-500"></i>
                 <input type="search" x-model="searchTerm" @@input="currentPage = 1" placeholder="Cari nomor PO / RRPO..." class="w-full bg-transparent text-sm font-semibold outline-none placeholder:text-slate-500">
             </div>
+
+            <button type="button" @@click="filterOpen = !filterOpen"
+                    class="flex h-9 w-9 items-center justify-center rounded-md border border-slate-200 transition lg:hidden"
+                    :class="filterOpen ? 'bg-blue-50 text-blue-600' : 'bg-white text-slate-600 hover:bg-slate-50'"
+                    aria-label="Tampilkan filter">
+                <i class="ri-filter-3-line text-xl"></i>
+            </button>
 
             <!-- <div class="flex items-center gap-3 text-slate-800">
                 <button type="button" class="hidden h-10 w-10 items-center justify-center rounded-full hover:bg-slate-100 sm:flex">
@@ -442,36 +458,8 @@
         </header>
 
         <main class="px-4 py-6 sm:px-6 lg:px-8">
-            <div class="mb-6 flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
-                <div>
-                    <div class="mb-4 flex gap-2 lg:hidden">
-                        <button type="button" @@click="switchTab('po')" class="flex-1 rounded-md border px-4 py-2 text-sm font-bold"
-                                :class="activeTab === 'po' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 bg-white text-slate-600'">
-                            Daftar PO
-                        </button>
-                        <button type="button" @@click="switchTab('rrpo')" class="flex-1 rounded-md border px-4 py-2 text-sm font-bold"
-                                :class="activeTab === 'rrpo' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 bg-white text-slate-600'">
-                            RRPO
-                        </button>
-                    </div>
-                    <h5 class="text-3xl font-black tracking-tight text-slate-800 sm:text-4xl" x-text="activeTab === 'po' ? 'Daftar PO' : 'Daftar RRPO'"></h5>
-                    <p class="mt-2 max-w-2xl text-base font-semibold text-slate-600"
-                       x-text="activeTab === 'po' ? 'Kelola PO yang sudah posting dan buat RRPO dari detail pesanan.' : 'Pantau dokumen RRPO yang sudah dibuat untuk supplier ini.'"></p>
-                </div>
-
-                <div class="grid grid-cols-2 gap-3 sm:flex">
-                    <div class="vendor-summary-card rounded-md border border-slate-200 bg-white px-4 py-3 shadow-sm shadow-slate-200/40">
-                        <p class="text-[11px] font-black uppercase tracking-widest text-slate-500">PO Posting</p>
-                        <p class="mt-1 text-xl font-black text-blue-600" x-text="poList.length"></p>
-                    </div>
-                    <div class="vendor-summary-card rounded-md border border-slate-200 bg-white px-4 py-3 shadow-sm shadow-slate-200/40">
-                        <p class="text-[11px] font-black uppercase tracking-widest text-slate-500">RRPO</p>
-                        <p class="mt-1 text-xl font-black text-blue-600" x-text="rpoList.length"></p>
-                    </div>
-                </div>
-            </div>
-
-            <section class="mb-6 rounded border border-slate-200 bg-white p-4 shadow-sm shadow-slate-200/40">
+            <section class="vendor-mobile-filter mb-6 rounded border border-slate-200 bg-white p-4 shadow-sm shadow-slate-200/40"
+                     :class="{ 'is-hidden': !filterOpen }">
                 <div class="grid gap-4 xl:grid-cols-[1fr_1.4fr_auto] xl:items-end">
                     <label class="block">
                         <span class="mb-2 block text-xs font-black tracking-widest text-slate-800">Filter Status</span>
