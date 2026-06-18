@@ -63,7 +63,7 @@ namespace TestLandingPageNet8.Pages.AccountUser
                 Tenant = await connection.QueryFirstOrDefaultAsync<TenantViewModel>(sql, new { Id = userId });
 
                 // 2. Query untuk List Pengaduan menggunakan View V_ComplaintList
-                string sqlComplaints = "SELECT * FROM V_ComplaintList WHERE UserId = @Id ORDER BY ComplaintId DESC";
+                string sqlComplaints = "SELECT * FROM V_ComplaintList WHERE title = 'Pengaduan/Keluhan' AND UserId = @Id ORDER BY ComplaintId DESC";
                 Complaints = (await connection.QueryAsync<TicketViewModel>(sqlComplaints, new { Id = userId })).ToList();
 
 
@@ -74,7 +74,7 @@ namespace TestLandingPageNet8.Pages.AccountUser
 
 
                 // 1. Ambil Header Service Orders
-                var sqlService = "SELECT * FROM V_ServiceOrderList WHERE UserId = @Uid ORDER BY Date DESC";
+                var sqlService = "SELECT * FROM V_ServiceOrderList WHERE TypeService <> 'Pengaduan/Keluhan' AND UserId = @Uid ORDER BY Date DESC";
                 var headers = (await connection.QueryAsync<ServiceOrderViewModel>(sqlService, new { Uid = userId })).ToList();
 
                 // 2. TAMBAHKAN: Ambil Semua Detail (Milestone)
