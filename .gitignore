@@ -7,10 +7,16 @@
 ## [ Hasil Build / Kompilasi ]
 # File ini akan dibuat ulang secara otomatis saat di-Run di PC lain
 [Bb]in/
-[Obj]/
+[Oo]bj/
 .vs/
 .vscode/
 Properties/launchSettings.json
+
+## [ Runtime Lokal / Tooling ]
+# SDK lokal dan log hasil run/watch dari mesin developer
+.dotnet/
+.dotnet-install.ps1
+*.log
 
 ## [ Dependencies ]
 # Folder ini akan didownload ulang lewat 'npm install'

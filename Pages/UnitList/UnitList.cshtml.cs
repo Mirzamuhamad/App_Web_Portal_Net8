@@ -65,5 +65,6 @@ namespace TestLandingPageNet8.Pages.UnitList
         public string ImagePath { get; set; } = "/Image/image9.jpg";
         public string OwnerType { get; set; } = string.Empty;
         public string TicketKavlingCount { get; set; }
+          public Decimal TotalAmountKavling { get; set; }
     }
 }

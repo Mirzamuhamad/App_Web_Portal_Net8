@@ -744,7 +744,11 @@
                     // LOGIKA REDIRECT KHUSUS LOGIN
                     // Jika ada returnUrl atau ini adalah form login, arahkan ke Index
                     if (action.includes("handler=Login")) {
-                        setTimeout(() => { window.location.href = "/Index"; }, 100);
+                        if (result.role === 'VENDOR') {
+                            setTimeout(() => { window.location.href = "/VendorPortal/Index"; }, 100);
+                        } else {
+                            setTimeout(() => { window.location.href = "/Index"; }, 100);
+                        }
                     } 
                     // Jika Lupa Password, jangan redirect, cukup reset form
                     else if (action.includes("handler=ForgotPassword")) {

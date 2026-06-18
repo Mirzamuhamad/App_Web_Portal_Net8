@@ -53,7 +53,7 @@
             <div class="space-y-1">
                 <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Pilih Type Service/Order</label>
                 <div class="relative">
-                    <select name="Input.Title" required
+                    <select name="Input.Title" required id="serviceTypeSelect"
                         class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition appearance-none cursor-pointer">
 
                         @foreach (var TypeService in Model.TypeServiceList)
@@ -221,8 +221,14 @@
                     if (result.success) {
                         showSuccess('Sukses', result.message);
                         setTimeout(() => {
-                            // Menambahkan #service di akhir URL agar Alpine.js bisa membaca state tab
-                            window.location.href = '/AccountUser/AccountUser#service';
+                                              // 1. Ambil nilai select yang sedang terpilih dan ubah ke huruf kecil
+        const selectedService = document.getElementById('serviceTypeSelect').value.toLowerCase();
+        
+        // 2. Tentukan hash tujuan: jika mengandung kata 'pengaduan', arahkan ke #pengaduan
+        const targetHash = selectedService.includes('pengaduan/keluhan') ? '#pengaduan' : '#service';
+        
+        // 3. Redirect ke halaman akun dengan hash dinamis
+        window.location.href = '/AccountUser/AccountUser' + targetHash;
                         }, 2000);
                     } else {
                         showError('Gagal', result.message);

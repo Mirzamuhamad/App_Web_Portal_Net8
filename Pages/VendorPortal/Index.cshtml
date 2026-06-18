@@ -1,0 +1,690 @@
+@page
+@model TestLandingPageNet8.Pages.VendorPortal.IndexModel
+@{
+    Layout = null;
+    var jsonOptions = new System.Text.Json.JsonSerializerOptions
+    {
+        PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+    };
+}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supplier Connect - @Model.VendorName</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css?family=Muli:400,600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@@4.2.0/fonts/remixicon.css" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@@3.x.x/dist/cdn.min.js" defer></script>
+
+    <style>
+        [x-cloak] { display: none !important; }
+
+        body {
+            font-family: 'Muli', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: #f8fafc;
+        }
+
+        .vendor-portal {
+            font-size: calc(70% + 2pt);
+        }
+
+        .vendor-portal .text-\[11px\] { font-size: calc(7.7px + 2pt); line-height: 1.15; }
+        .vendor-portal .text-xs { font-size: calc(0.525rem + 2pt); line-height: 1rem; }
+        .vendor-portal .text-sm { font-size: calc(0.6125rem + 2pt); line-height: 1.15rem; }
+        .vendor-portal .text-base { font-size: calc(0.7rem + 2pt); line-height: 1.25rem; }
+        .vendor-portal .text-lg { font-size: calc(0.7875rem + 2pt); line-height: 1.3rem; }
+        .vendor-portal .text-xl { font-size: calc(0.875rem + 2pt); line-height: 1.4rem; }
+        .vendor-portal .text-2xl { font-size: calc(1.05rem + 2pt); line-height: 1.55rem; }
+        .vendor-portal .text-3xl { font-size: calc(1.3125rem + 2pt); line-height: 1.75rem; }
+        .vendor-portal .text-4xl { font-size: calc(1.575rem + 2pt); line-height: 2rem; }
+
+        .vendor-portal table {
+            font-size: calc(0.6125rem + 2pt);
+        }
+
+        .vendor-portal input,
+        .vendor-portal select,
+        .vendor-portal button {
+            font-size: inherit;
+        }
+
+        .vendor-portal .vendor-summary-card {
+            min-width: 8.5rem;
+        }
+
+        .vendor-portal .vendor-table-wrap {
+            max-height: calc(100vh - 17rem);
+        }
+
+        .vendor-sidebar {
+            width: min(18rem, calc(100vw - 2rem));
+            transform: translateX(-100%);
+            background: #ffffff;
+            color: #475569;
+        }
+
+        .vendor-sidebar.is-open {
+            transform: translateX(0);
+        }
+
+        .vendor-mobile-filter.is-hidden {
+            display: none;
+        }
+
+        .vendor-shell {
+            transition: padding-left 180ms ease;
+        }
+
+        @@media (min-width: 1024px) {
+            .vendor-mobile-filter.is-hidden {
+                display: block;
+            }
+
+            .vendor-sidebar {
+                width: 16rem;
+                transform: translateX(0);
+            }
+
+            .vendor-sidebar.is-collapsed {
+                width: 5rem;
+            }
+
+            .vendor-shell {
+                padding-left: 16rem;
+            }
+
+            .vendor-shell.is-collapsed {
+                padding-left: 5rem;
+            }
+
+            .vendor-sidebar.is-collapsed .vendor-sidebar-label {
+                display: none;
+            }
+
+            .vendor-sidebar.is-collapsed .vendor-sidebar-item {
+                justify-content: center;
+                gap: 0;
+                padding-left: 0.75rem;
+                padding-right: 0.75rem;
+            }
+
+            .vendor-sidebar.is-collapsed .vendor-sidebar-brand {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+
+            .vendor-sidebar.is-collapsed .vendor-sidebar-brand button {
+                justify-content: center;
+            }
+
+            .vendor-sidebar.is-collapsed .vendor-sidebar-footer {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+        }
+    </style>
+
+    <script>
+        window.vendorPortalPoList = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.PoList, jsonOptions));
+        window.vendorPortalRpoList = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.RpoList, jsonOptions));
+
+        function vendorPortalData() {
+            return {
+                activeTab: 'po',
+                poList: window.vendorPortalPoList || [],
+                rpoList: window.vendorPortalRpoList || [],
+                searchTerm: '',
+                statusFilter: 'all',
+                dateFrom: '',
+                dateTo: '',
+                currentPage: 1,
+                pageSize: 10,
+                showDetail: false,
+                detailType: 'po',
+                selectedDoc: null,
+                isSubmitting: false,
+                sidebarOpen: false,
+                sidebarCollapsed: false,
+                filterOpen: false,
+
+                switchTab(tab) {
+                    this.activeTab = tab;
+                    this.resetFilters();
+                    this.sidebarOpen = false;
+                },
+
+                toggleSidebarCollapse() {
+                    if (window.matchMedia('(min-width: 1024px)').matches) {
+                        this.sidebarCollapsed = !this.sidebarCollapsed;
+                    }
+                },
+
+                resetFilters() {
+                    this.searchTerm = '';
+                    this.statusFilter = 'all';
+                    this.dateFrom = '';
+                    this.dateTo = '';
+                    this.currentPage = 1;
+                },
+
+                currentList() {
+                    return this.activeTab === 'po' ? this.poList : this.rpoList;
+                },
+
+                filteredItems() {
+                    const search = this.searchTerm.trim().toLowerCase();
+                    return this.currentList().filter((item) => {
+                        const docDate = this.toDateInputValue(item.transDate);
+                        const statusOk = this.statusFilter === 'all'
+                            || (this.activeTab === 'po' && this.poStatusKey(item) === this.statusFilter)
+                            || (this.activeTab === 'rrpo' && (item.status || '').toUpperCase() === this.statusFilter);
+                        const fromOk = !this.dateFrom || docDate >= this.dateFrom;
+                        const toOk = !this.dateTo || docDate <= this.dateTo;
+                        const text = this.activeTab === 'po'
+                            ? [item.transNmbr, item.supplier, item.attn, item.remark, item.rrpoNo].join(' ')
+                            : [item.transNmbr, item.poNo, item.suppCode, item.remark].join(' ');
+
+                        return statusOk && fromOk && toOk && (!search || text.toLowerCase().includes(search));
+                    });
+                },
+
+                pagedItems() {
+                    const items = this.filteredItems();
+                    const maxPage = this.pageCount();
+                    if (this.currentPage > maxPage) this.currentPage = maxPage;
+                    const start = (this.currentPage - 1) * this.pageSize;
+                    return items.slice(start, start + this.pageSize);
+                },
+
+                pageCount() {
+                    return Math.max(1, Math.ceil(this.filteredItems().length / this.pageSize));
+                },
+
+                pageStart() {
+                    if (this.filteredItems().length === 0) return 0;
+                    return ((this.currentPage - 1) * this.pageSize) + 1;
+                },
+
+                pageEnd() {
+                    return Math.min(this.currentPage * this.pageSize, this.filteredItems().length);
+                },
+
+                nextPage() {
+                    this.currentPage = Math.min(this.currentPage + 1, this.pageCount());
+                },
+
+                prevPage() {
+                    this.currentPage = Math.max(this.currentPage - 1, 1);
+                },
+
+                openDetail(item, type = this.activeTab) {
+                    this.selectedDoc = item;
+                    this.detailType = type;
+                    this.showDetail = true;
+                    document.body.style.overflow = 'hidden';
+                },
+
+                closeDetail() {
+                    this.showDetail = false;
+                    this.selectedDoc = null;
+                    document.body.style.overflow = 'auto';
+                },
+
+                poStatusKey(po) {
+                    return po.hasRrpo ? 'done' : 'open';
+                },
+
+                poStatusLabel(po) {
+                    return po.hasRrpo ? 'RRPO Dibuat' : 'Siap RRPO';
+                },
+
+                rrpoStatusLabel(status) {
+                    const value = (status || '').toUpperCase();
+                    if (value === 'P') return 'Selesai';
+                    if (value === 'G') return 'Proses';
+                    if (value === 'H') return 'Draft';
+                    if (value === 'D') return 'Deleted';
+                    return value || '-';
+                },
+
+                statusClass(item) {
+                    if (this.activeTab === 'po' || this.detailType === 'po') {
+                        return item.hasRrpo
+                            ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
+                            : 'bg-amber-100 text-amber-800 border-amber-200';
+                    }
+
+                    const status = (item.status || '').toUpperCase();
+                    if (status === 'P') return 'bg-emerald-100 text-emerald-700 border-emerald-200';
+                    if (status === 'G') return 'bg-blue-100 text-blue-700 border-blue-200';
+                    if (status === 'H') return 'bg-slate-100 text-slate-700 border-slate-200';
+                    return 'bg-slate-100 text-slate-700 border-slate-200';
+                },
+
+                formatRupiah(amount) {
+                    if (amount === null || amount === undefined) return 'Rp 0';
+                    return 'Rp ' + Number(amount).toLocaleString('id-ID', { maximumFractionDigits: 0 });
+                },
+
+                formatNumber(amount) {
+                    if (amount === null || amount === undefined) return '0';
+                    return Number(amount).toLocaleString('id-ID', { maximumFractionDigits: 4 });
+                },
+
+                formatDate(dateStr) {
+                    if (!dateStr) return '-';
+                    return new Date(dateStr).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+                },
+
+                toDateInputValue(dateStr) {
+                    if (!dateStr) return '';
+                    const date = new Date(dateStr);
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    return `${year}-${month}-${day}`;
+                },
+
+                docTotalQty(doc) {
+                    const details = doc?.details || [];
+                    return details.reduce((sum, item) => sum + Number(item.qty || 0), 0);
+                },
+
+                async createRrpo(po) {
+                    if (!po || po.hasRrpo || this.isSubmitting) return;
+
+                    const confirm = await Swal.fire({
+                        title: 'Buat RRPO?',
+                        text: `PO ${po.transNmbr} akan dibuatkan RRPO.`,
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#00766b',
+                        cancelButtonColor: '#64748b',
+                        confirmButtonText: 'Ya, Buat RRPO',
+                        cancelButtonText: 'Batal'
+                    });
+
+                    if (!confirm.isConfirmed) return;
+
+                    this.isSubmitting = true;
+                    try {
+                        const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                        const response = await fetch('?handler=CreateRrpo', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                                'RequestVerificationToken': token
+                            },
+                            body: new URLSearchParams({ poNo: po.transNmbr })
+                        });
+
+                        const data = await response.json();
+                        if (!response.ok || !data.success) {
+                            throw new Error(data.message || 'Gagal membuat RRPO.');
+                        }
+
+                        await Swal.fire({
+                            title: 'Berhasil',
+                            text: data.message,
+                            icon: 'success',
+                            confirmButtonColor: '#00766b'
+                        });
+                        window.location.reload();
+                    } catch (error) {
+                        Swal.fire({
+                            title: 'Gagal',
+                            text: error.message,
+                            icon: 'error',
+                            confirmButtonColor: '#00766b'
+                        });
+                    } finally {
+                        this.isSubmitting = false;
+                    }
+                },
+
+                async logout() {
+                    const confirm = await Swal.fire({
+                        title: 'Keluar Portal?',
+                        text: 'Sesi vendor akan diakhiri.',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#dc2626',
+                        cancelButtonColor: '#64748b',
+                        confirmButtonText: 'Ya, Keluar',
+                        cancelButtonText: 'Batal'
+                    });
+
+                    if (!confirm.isConfirmed) return;
+
+                    const form = document.getElementById('logoutForm');
+                    const formData = new FormData(form);
+                    const response = await fetch('?handler=Logout', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                        }
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        window.location.href = data.redirect;
+                    }
+                }
+            };
+        }
+    </script>
+</head>
+<body class="vendor-portal text-slate-800 antialiased" x-data="vendorPortalData()">
+    <div x-show="sidebarOpen" x-cloak @@click="sidebarOpen = false"
+         class="fixed inset-0 z-30 bg-slate-950/50 backdrop-blur-[1px] lg:hidden"></div>
+
+    <aside class="vendor-sidebar fixed inset-y-0 left-0 z-40 flex flex-col border-r border-slate-200 shadow-2xl transition-all duration-200 lg:shadow-none"
+           :class="{ 'is-open': sidebarOpen, 'is-collapsed': sidebarCollapsed }">
+        <div class="vendor-sidebar-brand flex items-start gap-2 px-5 py-5">
+            <button type="button" @@click="toggleSidebarCollapse()" class="flex min-w-0 flex-1 items-center gap-3 rounded-lg px-1 py-1 text-left transition hover:bg-slate-50" title="Collapse sidebar">
+                <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+                    <i class="ri-store-2-line text-xl"></i>
+                </span>
+                <span class="vendor-sidebar-label min-w-0">
+                    <span class="block truncate text-xl font-extrabold text-slate-700">@Model.VendorName</span>
+                    <span class="mt-1 block truncate text-sm font-semibold tracking-wide text-slate-500">Supplier ID: @Model.VendorCode</span>
+                </span>
+                <i class="vendor-sidebar-label ri-menu-fold-line ml-auto hidden text-xl text-slate-400 lg:block"></i>
+            </button>
+            <button type="button" @@click="sidebarOpen = false" class="flex h-9 w-9 shrink-0 items-center justify-center rounded text-slate-500 hover:bg-slate-100 lg:hidden" aria-label="Tutup sidebar">
+                <i class="ri-close-line text-2xl"></i>
+            </button>
+        </div>
+
+        <nav class="mt-8 space-y-1">
+            <button type="button" @@click="switchTab('po')" title="Daftar PO" class="vendor-sidebar-item flex w-full items-center gap-4 border-l-4 px-6 py-4 text-left text-sm font-bold transition"
+                    :class="activeTab === 'po' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-transparent text-slate-600 hover:bg-slate-50 hover:text-blue-700'">
+                <i class="ri-shopping-cart-2-line shrink-0 text-2xl"></i>
+                <span class="vendor-sidebar-label">Daftar PO</span>
+            </button>
+            <button type="button" @@click="switchTab('rrpo')" title="RRPO" class="vendor-sidebar-item flex w-full items-center gap-4 border-l-4 px-6 py-4 text-left text-sm font-bold transition"
+                    :class="activeTab === 'rrpo' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-transparent text-slate-600 hover:bg-slate-50 hover:text-blue-700'">
+                <i class="ri-inbox-archive-line shrink-0 text-2xl"></i>
+                <span class="vendor-sidebar-label">RRPO</span>
+            </button>
+        </nav>
+
+        <div class="vendor-sidebar-footer mt-auto border-t border-slate-100 p-6">
+            <button type="button" @@click="logout()" title="Log Out" class="vendor-sidebar-item flex w-full items-center gap-4 rounded-md px-1 py-3 text-left text-sm font-bold text-slate-500 hover:bg-slate-50 hover:text-blue-700">
+                <i class="ri-logout-box-r-line shrink-0 text-2xl"></i>
+                <span class="vendor-sidebar-label">Log Out</span>
+            </button>
+        </div>
+    </aside>
+
+    <div class="vendor-shell min-h-screen" :class="{ 'is-collapsed': sidebarCollapsed }">
+        <header class="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-slate-200 bg-white px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center gap-3">
+                <button type="button" @@click="sidebarOpen = true" class="flex h-9 w-9 items-center justify-center rounded-md bg-blue-600 text-white lg:hidden" aria-label="Buka sidebar">
+                    <i class="ri-menu-2-line text-xl"></i>
+                </button>
+                <h2 class="text-lg font-extrabold text-slate-700 sm:text-xl" x-text="activeTab === 'po' ? 'Info PO' : 'Info RRPO'"></h2>
+            </div>
+
+            <div class="hidden w-full max-w-md items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 sm:flex">
+                <i class="ri-search-line text-xl text-slate-500"></i>
+                <input type="search" x-model="searchTerm" @@input="currentPage = 1" placeholder="Cari nomor PO / RRPO..." class="w-full bg-transparent text-sm font-semibold outline-none placeholder:text-slate-500">
+            </div>
+
+            <button type="button" @@click="filterOpen = !filterOpen"
+                    class="flex h-9 w-9 items-center justify-center rounded-md border border-slate-200 transition lg:hidden"
+                    :class="filterOpen ? 'bg-blue-50 text-blue-600' : 'bg-white text-slate-600 hover:bg-slate-50'"
+                    aria-label="Tampilkan filter">
+                <i class="ri-filter-3-line text-xl"></i>
+            </button>
+
+            <!-- <div class="flex items-center gap-3 text-slate-800">
+                <button type="button" class="hidden h-10 w-10 items-center justify-center rounded-full hover:bg-slate-100 sm:flex">
+                    <i class="ri-notification-3-line text-xl"></i>
+                </button>
+                <button type="button" class="hidden h-10 w-10 items-center justify-center rounded-full hover:bg-slate-100 sm:flex">
+                    <i class="ri-question-line text-xl"></i>
+                </button>
+                <button type="button" class="flex h-10 w-10 items-center justify-center rounded-full border border-blue-200 bg-blue-50 text-blue-600">
+                    <i class="ri-user-3-line text-xl"></i>
+                </button>
+            </div> -->
+        </header>
+
+        <main class="px-4 py-6 sm:px-6 lg:px-8">
+            <section class="vendor-mobile-filter mb-6 rounded border border-slate-200 bg-white p-4 shadow-sm shadow-slate-200/40"
+                     :class="{ 'is-hidden': !filterOpen }">
+                <div class="grid gap-4 xl:grid-cols-[1fr_1.4fr_auto] xl:items-end">
+                    <label class="block">
+                        <span class="mb-2 block text-xs font-black tracking-widest text-slate-800">Filter Status</span>
+                        <select x-model="statusFilter" @@change="currentPage = 1" class="h-11 w-full rounded border border-slate-200 bg-slate-50 px-4 text-sm font-semibold outline-none focus:border-blue-400">
+                            <option value="all">Semua Status</option>
+                            <template x-if="activeTab === 'po'">
+                                <option value="open">Siap RRPO</option>
+                            </template>
+                            <template x-if="activeTab === 'po'">
+                                <option value="done">RRPO Dibuat</option>
+                            </template>
+                            <template x-if="activeTab === 'rrpo'">
+                                <option value="P">Selesai</option>
+                            </template>
+                            <template x-if="activeTab === 'rrpo'">
+                                <option value="G">Proses</option>
+                            </template>
+                            <template x-if="activeTab === 'rrpo'">
+                                <option value="H">Draft</option>
+                            </template>
+                        </select>
+                    </label>
+
+                    <div>
+                        <span class="mb-2 block text-xs font-black tracking-widest text-slate-800">Rentang Tanggal</span>
+                        <div class="grid gap-3 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
+                            <input type="date" x-model="dateFrom" @@change="currentPage = 1" class="h-11 rounded border border-slate-200 bg-slate-50 px-4 text-sm font-semibold outline-none focus:border-blue-400">
+                            <span class="hidden text-slate-500 sm:block">-</span>
+                            <input type="date" x-model="dateTo" @@change="currentPage = 1" class="h-11 rounded border border-slate-200 bg-slate-50 px-4 text-sm font-semibold outline-none focus:border-blue-400">
+                        </div>
+                    </div>
+
+                    <button type="button" @@click="resetFilters()" class="h-11 rounded bg-slate-100 px-5 text-sm font-black text-slate-600 transition hover:bg-slate-200">
+                        Reset Filter
+                    </button>
+                </div>
+
+                <div class="mt-4 flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 sm:hidden">
+                    <i class="ri-search-line text-xl text-slate-500"></i>
+                    <input type="search" x-model="searchTerm" @@input="currentPage = 1" placeholder="Cari nomor PO / RRPO..." class="w-full bg-transparent text-sm font-semibold outline-none placeholder:text-slate-500">
+                </div>
+            </section>
+
+            <section class="overflow-hidden rounded border border-slate-200 bg-white shadow-sm shadow-slate-200/40">
+                <div class="vendor-table-wrap overflow-auto">
+                    <table class="w-full min-w-[940px] border-collapse text-left">
+                        <thead class="bg-slate-50 text-xs font-black tracking-widest text-slate-700">
+                            <tr>
+                                <th class="px-6 py-5" x-text="activeTab === 'po' ? 'Nomor Pesanan (PO)' : 'Nomor RRPO'"></th>
+                                <th class="px-6 py-5" x-text="activeTab === 'po' ? 'Supplier' : 'Nomor PO'"></th>
+                                <th class="px-6 py-5">Tanggal</th>
+                                <th class="px-6 py-5 text-center">Total Item</th>
+                                <th class="px-6 py-5 text-right">Nilai Transaksi</th>
+                                <th class="px-6 py-5">Status</th>
+                                <th class="px-6 py-5 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            <tr x-show="filteredItems().length === 0" x-cloak>
+                                <td colspan="7" class="px-6 py-14 text-center text-sm font-bold text-slate-500">
+                                    Tidak ada data yang sesuai filter.
+                                </td>
+                            </tr>
+
+                            <template x-for="item in pagedItems()" :key="activeTab + '-' + item.transNmbr">
+                                <tr class="text-sm font-semibold text-slate-800 hover:bg-slate-50">
+                                    <td class="px-6 py-5">
+                                        <button type="button" @@click="openDetail(item)" class="font-black text-blue-600 hover:underline" x-text="item.transNmbr"></button>
+                                    </td>
+                                    <td class="px-6 py-5">
+                                        <template x-if="activeTab === 'po'">
+                                            <div class="flex items-center gap-3">
+                                                <span class="flex h-9 w-9 items-center justify-center rounded-full bg-blue-50 text-xs font-black text-blue-600" x-text="(item.supplier || '-').slice(0, 2)"></span>
+                                                <div>
+                                                    <p class="font-bold" x-text="item.supplier"></p>
+                                                    <p class="text-xs text-slate-500" x-text="item.attn || '-'"></p>
+                                                </div>
+                                            </div>
+                                        </template>
+                                        <template x-if="activeTab === 'rrpo'">
+                                            <span class="font-black text-blue-600" x-text="item.poNo || '-'"></span>
+                                        </template>
+                                    </td>
+                                    <td class="px-6 py-5" x-text="formatDate(item.transDate)"></td>
+                                    <td class="px-6 py-5 text-center" x-text="item.totalItems || (item.details ? item.details.length : 0)"></td>
+                                    <td class="px-6 py-5 text-right font-black" x-text="formatRupiah(item.totalForex)"></td>
+                                    <td class="px-6 py-5">
+                                        <span class="inline-flex rounded-full border px-3 py-1 text-xs font-black" :class="statusClass(item)"
+                                              x-text="activeTab === 'po' ? poStatusLabel(item) : rrpoStatusLabel(item.status)"></span>
+                                    </td>
+                                    <td class="px-6 py-5 text-center">
+                                        <button type="button" @@click="openDetail(item)" class="inline-flex h-9 w-9 items-center justify-center rounded border border-slate-200 text-slate-600 transition hover:border-blue-300 hover:text-blue-600">
+                                            <i class="ri-arrow-down-s-line text-xl"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="flex flex-col gap-4 border-t border-slate-100 px-6 py-4 text-sm font-semibold text-slate-600 sm:flex-row sm:items-center sm:justify-between">
+                    <p>
+                        Menampilkan <span x-text="pageStart()"></span>-<span x-text="pageEnd()"></span>
+                        dari <span x-text="filteredItems().length"></span>
+                        <span x-text="activeTab === 'po' ? 'pesanan' : 'RRPO'"></span>
+                    </p>
+                    <div class="flex items-center gap-2">
+                        <button type="button" @@click="prevPage()" :disabled="currentPage === 1" class="h-10 w-10 rounded border border-slate-200 text-lg disabled:cursor-not-allowed disabled:opacity-40">
+                            <i class="ri-arrow-left-s-line"></i>
+                        </button>
+                        <span class="flex h-10 w-10 items-center justify-center rounded bg-blue-600 font-black text-white" x-text="currentPage"></span>
+                        <span class="px-2">/</span>
+                        <span class="font-black" x-text="pageCount()"></span>
+                        <button type="button" @@click="nextPage()" :disabled="currentPage === pageCount()" class="h-10 w-10 rounded border border-slate-200 text-lg disabled:cursor-not-allowed disabled:opacity-40">
+                            <i class="ri-arrow-right-s-line"></i>
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div x-show="showDetail" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/35 p-4">
+        <div class="absolute inset-0" @@click="closeDetail()"></div>
+        <section class="relative max-h-[92vh] w-full max-w-5xl overflow-hidden rounded bg-white shadow-2xl">
+            <header class="flex items-start justify-between border-b border-slate-200 bg-slate-50 px-6 py-5">
+                <div>
+                    <p class="text-xs font-black uppercase tracking-widest text-blue-600" x-text="detailType === 'po' ? 'Detail Purchase Order' : 'Detail RRPO'"></p>
+                    <h3 class="mt-1 text-xl font-black text-slate-800" x-text="selectedDoc?.transNmbr || '-'"></h3>
+                </div>
+                <button type="button" @@click="closeDetail()" class="flex h-10 w-10 items-center justify-center rounded hover:bg-slate-200">
+                    <i class="ri-close-line text-2xl"></i>
+                </button>
+            </header>
+
+            <div class="max-h-[calc(92vh-88px)] overflow-y-auto p-6" x-show="selectedDoc">
+                <div class="grid gap-4 md:grid-cols-4">
+                    <div class="rounded border border-slate-200 bg-white p-4">
+                        <p class="text-[11px] font-black uppercase tracking-widest text-slate-500" x-text="detailType === 'po' ? 'No. PO' : 'No. RRPO'"></p>
+                        <p class="mt-1 text-sm font-black text-blue-600" x-text="selectedDoc?.transNmbr"></p>
+                    </div>
+                    <div class="rounded border border-slate-200 bg-white p-4">
+                        <p class="text-[11px] font-black uppercase tracking-widest text-slate-500" x-text="detailType === 'po' ? 'Tanggal PO' : 'Tanggal RRPO'"></p>
+                        <p class="mt-1 text-sm font-bold text-slate-800" x-text="formatDate(selectedDoc?.transDate)"></p>
+                    </div>
+                    <div class="rounded border border-slate-200 bg-white p-4">
+                        <p class="text-[11px] font-black uppercase tracking-widest text-slate-500">Total Nilai</p>
+                        <p class="mt-1 text-sm font-black text-slate-800" x-text="formatRupiah(selectedDoc?.totalForex)"></p>
+                    </div>
+                    <div class="rounded border border-slate-200 bg-white p-4">
+                        <p class="text-[11px] font-black uppercase tracking-widest text-slate-500">Status</p>
+                        <span class="mt-2 inline-flex rounded-full border px-3 py-1 text-xs font-black" :class="statusClass(selectedDoc)"
+                              x-text="detailType === 'po' ? poStatusLabel(selectedDoc) : rrpoStatusLabel(selectedDoc?.status)"></span>
+                    </div>
+                </div>
+
+                <div class="mt-5 rounded border border-slate-200 bg-slate-50 p-4 text-sm font-semibold text-slate-700">
+                    <template x-if="detailType === 'po'">
+                        <div class="grid gap-3 md:grid-cols-2">
+                            <p><span class="font-black text-slate-500">Supplier:</span> <span x-text="selectedDoc?.supplier || '-'"></span></p>
+                            <p><span class="font-black text-slate-500">RRPO:</span> <span x-text="selectedDoc?.rrpoNo || '-'"></span></p>
+                            <p class="md:col-span-2"><span class="font-black text-slate-500">Alamat Kirim:</span> <span x-text="[selectedDoc?.deliveryAddr, selectedDoc?.deliveryCity].filter(Boolean).join(', ') || '-'"></span></p>
+                            <p class="md:col-span-2"><span class="font-black text-slate-500">Remark:</span> <span x-text="selectedDoc?.remark || '-'"></span></p>
+                        </div>
+                    </template>
+                    <template x-if="detailType === 'rrpo'">
+                        <div class="grid gap-3 md:grid-cols-2">
+                            <p><span class="font-black text-slate-500">No. PO:</span> <span x-text="selectedDoc?.poNo || '-'"></span></p>
+                            <p><span class="font-black text-slate-500">Supplier:</span> <span x-text="selectedDoc?.suppCode || '-'"></span></p>
+                            <p><span class="font-black text-slate-500">User Prep:</span> <span x-text="selectedDoc?.userPrep || '-'"></span></p>
+                            <p><span class="font-black text-slate-500">Tanggal Prep:</span> <span x-text="formatDate(selectedDoc?.datePrep)"></span></p>
+                            <p class="md:col-span-2"><span class="font-black text-slate-500">Remark:</span> <span x-text="selectedDoc?.remark || '-'"></span></p>
+                        </div>
+                    </template>
+                </div>
+
+                <div class="mt-6 overflow-hidden rounded border border-slate-200">
+                    <table class="w-full min-w-[760px] border-collapse text-left text-sm">
+                        <thead class="bg-slate-100 text-xs font-black uppercase tracking-widest text-slate-700">
+                            <tr>
+                                <th class="px-4 py-3">Kode Barang</th>
+                                <th class="px-4 py-3">Keterangan</th>
+                                <th class="px-4 py-3 text-right">Qty</th>
+                                <th class="px-4 py-3">Unit</th>
+                                <th class="px-4 py-3 text-right">Harga</th>
+                                <th class="px-4 py-3 text-right">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-200">
+                            <template x-for="detail in (selectedDoc?.details || [])" :key="(detail.product || detail.productCode) + '-' + detail.qty">
+                                <tr>
+                                    <td class="px-4 py-3 font-black text-slate-800" x-text="detail.product || detail.productCode"></td>
+                                    <td class="px-4 py-3 text-slate-700" x-text="detail.specification || detail.remark || '-'"></td>
+                                    <td class="px-4 py-3 text-right font-bold" x-text="formatNumber(detail.qty)"></td>
+                                    <td class="px-4 py-3 font-bold" x-text="detail.unit"></td>
+                                    <td class="px-4 py-3 text-right" x-text="formatRupiah(detail.priceForex)"></td>
+                                    <td class="px-4 py-3 text-right font-black" x-text="formatRupiah(detail.nettoForex ?? detail.totalForex ?? detail.amountForex)"></td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+
+                <footer class="mt-6 flex flex-col gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:items-center sm:justify-between">
+                    <div class="text-sm font-bold text-slate-600">
+                        <span>Total Qty: </span><span class="text-slate-800" x-text="formatNumber(docTotalQty(selectedDoc))"></span>
+                    </div>
+                    <div class="flex flex-col gap-3 sm:flex-row">
+                        <button type="button" @@click="closeDetail()" class="rounded border border-slate-200 px-5 py-3 text-sm font-black text-slate-600 hover:bg-slate-50">
+                            Tutup
+                        </button>
+                        <button type="button" x-show="detailType === 'po' && selectedDoc && !selectedDoc.hasRrpo" @@click="createRrpo(selectedDoc)" :disabled="isSubmitting"
+                                class="rounded bg-blue-600 px-5 py-3 text-sm font-black text-white shadow-sm hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60">
+                            <span x-show="!isSubmitting">Done - Buat RRPO</span>
+                            <span x-show="isSubmitting">Memproses...</span>
+                        </button>
+                    </div>
+                </footer>
+            </div>
+        </section>
+    </div>
+
+    <form id="logoutForm" method="post" asp-page-handler="Logout" class="hidden">
+        @Html.AntiForgeryToken()
+    </form>
+</body>
+</html>
