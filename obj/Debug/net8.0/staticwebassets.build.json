@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "66WnSD9Q8FmDn+3tllq9/ugU9hc9jNo1CY4WIpXNrZs=",
+  "Hash": "AQzzXuKHmPLu9+kZga3EkHfp/LsCHPkMP/xiJ2k044M=",
   "Source": "TestLandingPageNet8",
   "BasePath": "_content/TestLandingPageNet8",
   "Mode": "Default",
@@ -4062,6 +4062,25 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\uploads\\generalComplaint\\e4e20b1b-c1fb-4b4f-ad43-409a534f8770.jpg"
+    },
+    {
+      "Identity": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\uploads\\pelanggaran\\d9510a0d-5dc2-4367-b576-39c03dd78495.jpg",
+      "SourceId": "TestLandingPageNet8",
+      "SourceType": "Discovered",
+      "ContentRoot": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\",
+      "BasePath": "_content/TestLandingPageNet8",
+      "RelativePath": "uploads/pelanggaran/d9510a0d-5dc2-4367-b576-39c03dd78495.jpg",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\uploads\\pelanggaran\\d9510a0d-5dc2-4367-b576-39c03dd78495.jpg"
     },
     {
       "Identity": "D:\\App_Web_Portal_Kawasan_Net8\\wwwroot\\uploads\\profiles\\15f3d980-9709-49fb-9fff-31a2578cc33e.jpg",

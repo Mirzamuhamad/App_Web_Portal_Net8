@@ -25,18 +25,28 @@ namespace TestLandingPageNet8.Pages.Pelanggaran
             
             try
             {
-                using (var connection = Db.Connect())
-                {
-                    // Query mengambil data pelanggaran berdasarkan KavlingId dan UserId penyewa sesuai kolom View terbaru
-                    string sql = @"SELECT * FROM V_GetTenantViolations 
-                                //    WHERE KavlingId = @KavlingId AND UserId = @UserId
-                                   ORDER BY ViolationDate DESC";
 
-                    ViolationItems = (await connection.QueryAsync<ViolationListDto>(sql, new { 
-                        KavlingId = kavlingId, 
-                        UserId = userId 
-                    })).ToList();
-                }
+                using (var connection = Db.Connect())
+{
+    // Query mengambil semua data pelanggaran dari View tanpa filter WHERE
+    string sql = @"SELECT * FROM V_GetTenantViolations 
+                   ORDER BY ViolationDate DESC";
+
+    // Dipanggil langsung tanpa mengirimkan new { KavlingId, UserId }
+    ViolationItems = (await connection.QueryAsync<ViolationListDto>(sql)).ToList();
+}
+                // using (var connection = Db.Connect())
+                // {
+                //     // Query mengambil data pelanggaran berdasarkan KavlingId dan UserId penyewa sesuai kolom View terbaru
+                //     string sql = @"SELECT * FROM V_GetTenantViolations 
+                //                 //    WHERE KavlingId = @KavlingId AND UserId = @UserId
+                //                    ORDER BY ViolationDate DESC";
+
+                //     ViolationItems = (await connection.QueryAsync<ViolationListDto>(sql, new { 
+                //         KavlingId = kavlingId, 
+                //         UserId = userId 
+                //     })).ToList();
+                // }
             }
             catch (Exception)
             {
