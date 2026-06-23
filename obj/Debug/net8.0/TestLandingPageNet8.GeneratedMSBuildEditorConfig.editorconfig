@@ -62,6 +62,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTG9naW4uY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
+[D:/App_Web_Portal_Kawasan_Net8/Pages/Pelanggaran/Pelanggaran.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUGVsYW5nZ2FyYW5cUGVsYW5nZ2FyYW4uY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
 [D:/App_Web_Portal_Kawasan_Net8/Pages/Privacy.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUHJpdmFjeS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
