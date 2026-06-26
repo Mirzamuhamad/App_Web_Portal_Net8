@@ -5,11 +5,13 @@ using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Dapper;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 namespace TestLandingPageNet8.Pages.Pelanggaran
 {
-    // [Authorize(Roles = "Owner,Security")] // Hanya mengizinkan Owner atau Security
-    [AllowAnonymous] 
+    [Authorize(Roles = "SECURITY")] // Hanya mengizinkan Owner atau Security
+    // [AllowAnonymous] 
     public class InputModel : PageModel
     {
         [BindProperty]
@@ -63,7 +65,7 @@ namespace TestLandingPageNet8.Pages.Pelanggaran
             int.TryParse(createdByStr, out int currentUserId);
 
             string transNmbr = $"VIO/{DateTime.Now:yyyyMM}/{new Random().Next(1000, 9999)}";
-            
+
             // Logika penentuan status awal
             string initialStatus = (Input.FineAmount.HasValue && Input.FineAmount.Value > 0) ? "Belum Lunas" : "Peringatan";
 
@@ -83,18 +85,18 @@ namespace TestLandingPageNet8.Pages.Pelanggaran
                         using (var cmd = new SqlCommand(sqlViolation, connection, transaction))
                         {
                             cmd.Parameters.AddWithValue("@TransNo", transNmbr);
-                            
+
                             // Handling nilai NULL untuk KavlingId
                             cmd.Parameters.AddWithValue("@KavlingId", (object)Input.KavlingId ?? DBNull.Value);
                             cmd.Parameters.AddWithValue("@Type", System.Net.WebUtility.HtmlEncode(Input.ViolationType));
                             cmd.Parameters.AddWithValue("@Desc", System.Net.WebUtility.HtmlEncode(Input.Description));
                             cmd.Parameters.AddWithValue("@VioDate", Input.ViolationDate);
-                            
+
                             // Handling nilai NULL untuk FineAmount
                             cmd.Parameters.AddWithValue("@Fine", (object)Input.FineAmount ?? DBNull.Value);
                             cmd.Parameters.AddWithValue("@Status", initialStatus);
                             cmd.Parameters.AddWithValue("@CreatedBy", currentUserId);
-                            
+
                             newViolationId = (int)await cmd.ExecuteScalarAsync();
                         }
 
@@ -142,6 +144,19 @@ namespace TestLandingPageNet8.Pages.Pelanggaran
                     }
                 }
             }
+        }
+
+        // Tambahkan fungsi handler khusus logout ini
+        public async Task<IActionResult> OnGetLogoutAsync()
+        {
+            // 1. Bersihkan session jika digunakan
+            HttpContext.Session.Clear();
+
+            // 2. Hapus cookie autentikasi secara menyeluruh
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+            // 3. Kembalikan ke halaman login utama secara bersih
+            return RedirectToPage("/Login");
         }
     }
 }
