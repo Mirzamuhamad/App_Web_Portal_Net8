@@ -13,18 +13,18 @@
                     <i class="ri-file-shield-2-line text-2xl"></i>
                 </div>
                 <div>
-                    <h1 class="text-xl font-bold text-slate-800">Ijin dan Upload Dokumen</h1>
-                    <p class="text-xs text-slate-400">Ajukan dan pantau status perizinan kawasan Anda</p>
+                    <h1 class="text-xl font-bold text-slate-800">Upload Dokumen</h1>
+                    <p class="text-xs text-slate-400">Laporkan dokumen yang diperlukan</p>
                 </div>
             </div>
             <button @@click="isModalOpen = true" class="bg-teal-600 text-white px-5 py-2.5 rounded-2xl text-sm font-bold shadow-lg shadow-teal-100 hover:bg-teal-700 transition">
-                + Buat Pengajuan
+                + Upload Dokumen
             </button>
         </div>
     </div>
 
     <div class="px-2 sm:px-6 mt-8 ">
-        <h2 class="text-xs text-slate-400 font-bold uppercase tracking-widest mb-4">Riwayat Pengajuan Izin</h2>
+        <h2 class="text-xs text-slate-400 font-bold uppercase tracking-widest mb-4">Riwayat Pelaporan Dokumen</h2>
 
         <div class="grid grid-cols-1 gap-4">
             @if (Model.PermitHistory != null && Model.PermitHistory.Any())
@@ -73,7 +73,7 @@
             {
                 <div class="py-20 text-center bg-white rounded-[2rem] border-2 border-dashed border-slate-100">
                     <i class="ri-file-list-3-line text-5xl text-slate-200"></i>
-                    <p class="text-slate-400 font-bold mt-2">Belum ada pengajuan izin yang terdaftar.</p>
+                    <p class="text-slate-400 font-bold mt-2">Belum ada pelaporan dokumen yang di upload</p>
                 </div>
             }
         </div>
@@ -101,7 +101,7 @@
                     <div class="relative">
                         <select name="Input.KavlingId" required
                                 class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition appearance-none cursor-pointer">
-                            <option value="">-- Pilih Unit --</option>
+                            @* <option value="">Pilih Unit</option> *@
                             @foreach(var unit in Model.MyUnits)
                             {
                                 <option value="@unit.KavlingId">@unit.KavlingCode (@unit.Kawasan)</option>
@@ -113,7 +113,7 @@
 
                 <div class="space-y-1">
                     <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Jenis Izin</label>
-                    <input type="text" name="Input.PermitType" required placeholder="Contoh: Izin Renovasi..."
+                    <input type="text" name="Input.PermitType" required placeholder="Contoh: Peaporan Dokumen, Izin Masuk, dll."
                            class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition">
                 </div>
 
