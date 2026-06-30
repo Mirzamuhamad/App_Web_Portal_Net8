@@ -28,6 +28,8 @@ node_modules/
 *.suo
 *.sln.docstates
 appsettings.Development.json
+appsettings.json
+
 
 ## [ User Uploads ]
 # Data dinamis yang tidak perlu ikut ke PC lain
@@ -43,6 +45,10 @@ wwwroot/uploads/service_order
 !wwwroot/uploads/complaints/.gitkeep
 !wwwroot/uploads/documents/.gitkeep
 !wwwroot/uploads/profiles/.gitkeep
+!wwwroot/uploads/generalComplaint/.gitkeep
+!wwwroot/uploads/permits/.gitkeep
+!wwwroot/uploads/pelanggaran/.gitkeep
+!wwwroot/uploads/service_order/.gitkeep
 
 ## [ OS Specific ]
 .DS_Store

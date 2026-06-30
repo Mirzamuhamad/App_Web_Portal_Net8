@@ -3440,12 +3440,12 @@
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\uploads\pelanggaran\dcb8b747-4bb8-4c7d-a5dc-b8afd1cf4b10.jpg))</OriginalItemSpec>
     </StaticWebAsset>
-    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\uploads\permits\105d6abc-a46f-4ebf-8ea6-5bc2efd11548.pdf))">
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\uploads\permits\59c69917-30b9-46a0-9591-67d99135b318.pdf))">
       <SourceType>Package</SourceType>
       <SourceId>TestLandingPageNet8</SourceId>
       <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
       <BasePath>_content/TestLandingPageNet8</BasePath>
-      <RelativePath>uploads/permits/105d6abc-a46f-4ebf-8ea6-5bc2efd11548.pdf</RelativePath>
+      <RelativePath>uploads/permits/59c69917-30b9-46a0-9591-67d99135b318.pdf</RelativePath>
       <AssetKind>All</AssetKind>
       <AssetMode>All</AssetMode>
       <AssetRole>Primary</AssetRole>
@@ -3454,14 +3454,14 @@
       <AssetTraitValue></AssetTraitValue>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\uploads\permits\105d6abc-a46f-4ebf-8ea6-5bc2efd11548.pdf))</OriginalItemSpec>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\uploads\permits\59c69917-30b9-46a0-9591-67d99135b318.pdf))</OriginalItemSpec>
     </StaticWebAsset>
-    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\uploads\permits\16653a78-a9c8-4197-9dd8-b85e7a3b66f9.pdf))">
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\uploads\permits\86ddebfa-8377-4e35-be9c-b1eb24e1ca88.jpg))">
       <SourceType>Package</SourceType>
       <SourceId>TestLandingPageNet8</SourceId>
       <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
       <BasePath>_content/TestLandingPageNet8</BasePath>
-      <RelativePath>uploads/permits/16653a78-a9c8-4197-9dd8-b85e7a3b66f9.pdf</RelativePath>
+      <RelativePath>uploads/permits/86ddebfa-8377-4e35-be9c-b1eb24e1ca88.jpg</RelativePath>
       <AssetKind>All</AssetKind>
       <AssetMode>All</AssetMode>
       <AssetRole>Primary</AssetRole>
@@ -3470,14 +3470,14 @@
       <AssetTraitValue></AssetTraitValue>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\uploads\permits\16653a78-a9c8-4197-9dd8-b85e7a3b66f9.pdf))</OriginalItemSpec>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\uploads\permits\86ddebfa-8377-4e35-be9c-b1eb24e1ca88.jpg))</OriginalItemSpec>
     </StaticWebAsset>
-    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\uploads\permits\1be849d4-83ba-4594-9eea-fe5ab0302190.jpg))">
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\uploads\permits\aef0a558-c088-42f9-b64f-d6d414380319.jpg))">
       <SourceType>Package</SourceType>
       <SourceId>TestLandingPageNet8</SourceId>
       <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
       <BasePath>_content/TestLandingPageNet8</BasePath>
-      <RelativePath>uploads/permits/1be849d4-83ba-4594-9eea-fe5ab0302190.jpg</RelativePath>
+      <RelativePath>uploads/permits/aef0a558-c088-42f9-b64f-d6d414380319.jpg</RelativePath>
       <AssetKind>All</AssetKind>
       <AssetMode>All</AssetMode>
       <AssetRole>Primary</AssetRole>
@@ -3486,14 +3486,14 @@
       <AssetTraitValue></AssetTraitValue>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\uploads\permits\1be849d4-83ba-4594-9eea-fe5ab0302190.jpg))</OriginalItemSpec>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\uploads\permits\aef0a558-c088-42f9-b64f-d6d414380319.jpg))</OriginalItemSpec>
     </StaticWebAsset>
-    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\uploads\permits\5a94e350-1896-4630-837e-6d612f1539c5.pdf))">
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\uploads\permits\d712db4e-ac79-4dd1-a046-a402e3bfaa69.pdf))">
       <SourceType>Package</SourceType>
       <SourceId>TestLandingPageNet8</SourceId>
       <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
       <BasePath>_content/TestLandingPageNet8</BasePath>
-      <RelativePath>uploads/permits/5a94e350-1896-4630-837e-6d612f1539c5.pdf</RelativePath>
+      <RelativePath>uploads/permits/d712db4e-ac79-4dd1-a046-a402e3bfaa69.pdf</RelativePath>
       <AssetKind>All</AssetKind>
       <AssetMode>All</AssetMode>
       <AssetRole>Primary</AssetRole>
@@ -3502,14 +3502,14 @@
       <AssetTraitValue></AssetTraitValue>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\uploads\permits\5a94e350-1896-4630-837e-6d612f1539c5.pdf))</OriginalItemSpec>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\uploads\permits\d712db4e-ac79-4dd1-a046-a402e3bfaa69.pdf))</OriginalItemSpec>
     </StaticWebAsset>
-    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\uploads\permits\78c415f7-b021-486f-96fe-6022f0b64986.jpg))">
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\uploads\permits\f1cc2c38-f428-4ec5-a912-b886af40bd50.jpg))">
       <SourceType>Package</SourceType>
       <SourceId>TestLandingPageNet8</SourceId>
       <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
       <BasePath>_content/TestLandingPageNet8</BasePath>
-      <RelativePath>uploads/permits/78c415f7-b021-486f-96fe-6022f0b64986.jpg</RelativePath>
+      <RelativePath>uploads/permits/f1cc2c38-f428-4ec5-a912-b886af40bd50.jpg</RelativePath>
       <AssetKind>All</AssetKind>
       <AssetMode>All</AssetMode>
       <AssetRole>Primary</AssetRole>
@@ -3518,71 +3518,7 @@
       <AssetTraitValue></AssetTraitValue>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\uploads\permits\78c415f7-b021-486f-96fe-6022f0b64986.jpg))</OriginalItemSpec>
-    </StaticWebAsset>
-    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\uploads\permits\d0ff9f10-f1ad-4964-9c8f-eee778ae8511.jpg))">
-      <SourceType>Package</SourceType>
-      <SourceId>TestLandingPageNet8</SourceId>
-      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
-      <BasePath>_content/TestLandingPageNet8</BasePath>
-      <RelativePath>uploads/permits/d0ff9f10-f1ad-4964-9c8f-eee778ae8511.jpg</RelativePath>
-      <AssetKind>All</AssetKind>
-      <AssetMode>All</AssetMode>
-      <AssetRole>Primary</AssetRole>
-      <RelatedAsset></RelatedAsset>
-      <AssetTraitName></AssetTraitName>
-      <AssetTraitValue></AssetTraitValue>
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\uploads\permits\d0ff9f10-f1ad-4964-9c8f-eee778ae8511.jpg))</OriginalItemSpec>
-    </StaticWebAsset>
-    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\uploads\permits\d12019ca-4c22-4ae1-93cd-a6d94616df2e.png))">
-      <SourceType>Package</SourceType>
-      <SourceId>TestLandingPageNet8</SourceId>
-      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
-      <BasePath>_content/TestLandingPageNet8</BasePath>
-      <RelativePath>uploads/permits/d12019ca-4c22-4ae1-93cd-a6d94616df2e.png</RelativePath>
-      <AssetKind>All</AssetKind>
-      <AssetMode>All</AssetMode>
-      <AssetRole>Primary</AssetRole>
-      <RelatedAsset></RelatedAsset>
-      <AssetTraitName></AssetTraitName>
-      <AssetTraitValue></AssetTraitValue>
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\uploads\permits\d12019ca-4c22-4ae1-93cd-a6d94616df2e.png))</OriginalItemSpec>
-    </StaticWebAsset>
-    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\uploads\permits\d972cc15-00bb-4c2a-8b0c-e254816ecb6b.pdf))">
-      <SourceType>Package</SourceType>
-      <SourceId>TestLandingPageNet8</SourceId>
-      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
-      <BasePath>_content/TestLandingPageNet8</BasePath>
-      <RelativePath>uploads/permits/d972cc15-00bb-4c2a-8b0c-e254816ecb6b.pdf</RelativePath>
-      <AssetKind>All</AssetKind>
-      <AssetMode>All</AssetMode>
-      <AssetRole>Primary</AssetRole>
-      <RelatedAsset></RelatedAsset>
-      <AssetTraitName></AssetTraitName>
-      <AssetTraitValue></AssetTraitValue>
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\uploads\permits\d972cc15-00bb-4c2a-8b0c-e254816ecb6b.pdf))</OriginalItemSpec>
-    </StaticWebAsset>
-    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\uploads\permits\fe8b8fad-5dc6-453c-a339-1469f039755b.jpg))">
-      <SourceType>Package</SourceType>
-      <SourceId>TestLandingPageNet8</SourceId>
-      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
-      <BasePath>_content/TestLandingPageNet8</BasePath>
-      <RelativePath>uploads/permits/fe8b8fad-5dc6-453c-a339-1469f039755b.jpg</RelativePath>
-      <AssetKind>All</AssetKind>
-      <AssetMode>All</AssetMode>
-      <AssetRole>Primary</AssetRole>
-      <RelatedAsset></RelatedAsset>
-      <AssetTraitName></AssetTraitName>
-      <AssetTraitValue></AssetTraitValue>
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\uploads\permits\fe8b8fad-5dc6-453c-a339-1469f039755b.jpg))</OriginalItemSpec>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\uploads\permits\f1cc2c38-f428-4ec5-a912-b886af40bd50.jpg))</OriginalItemSpec>
     </StaticWebAsset>
     <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\uploads\profiles\15f3d980-9709-49fb-9fff-31a2578cc33e.jpg))">
       <SourceType>Package</SourceType>
