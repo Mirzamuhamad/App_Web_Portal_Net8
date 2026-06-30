@@ -28,6 +28,8 @@ node_modules/
 *.suo
 *.sln.docstates
 appsettings.Development.json
+appsettings.json
+
 
 ## [ User Uploads ]
 # Data dinamis yang tidak perlu ikut ke PC lain
@@ -35,12 +37,18 @@ wwwroot/uploads/complaints/*
 wwwroot/uploads/documents/*
 wwwroot/uploads/profiles/*
 wwwroot/uploads/generalComplaint/*
+wwwroot/uploads/permits/*
+wwwroot/uploads/pelanggaran/*
 wwwroot/uploads/service_order
 
 # Pastikan folder tetap ada (agar kodingan tidak error saat save)
 !wwwroot/uploads/complaints/.gitkeep
 !wwwroot/uploads/documents/.gitkeep
 !wwwroot/uploads/profiles/.gitkeep
+!wwwroot/uploads/generalComplaint/.gitkeep
+!wwwroot/uploads/permits/.gitkeep
+!wwwroot/uploads/pelanggaran/.gitkeep
+!wwwroot/uploads/service_order/.gitkeep
 
 ## [ OS Specific ]
 .DS_Store

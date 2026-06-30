@@ -39,15 +39,23 @@ public class LoginModel : PageModel
 
     public IActionResult OnGet()
     {
-        //  Jika sudah login cek cookie apakah sudah isi atau belum, jika sudah jangan lagi masuk ke halaman login lagi
+        // Jika sudah login cek cookie apakah sudah isi atau belum, jika sudah jangan lagi masuk ke halaman login lagi
         if (User.Identity?.IsAuthenticated == true)
         {
             var role = User.FindFirstValue(ClaimTypes.Role);
+System.Diagnostics.Debug.WriteLine($"ROLE YANG TERBACA: '{role}'");
+
             if (role == "VENDOR")
             {
                 return RedirectToPage("/VendorPortal/Index");
             }
-            return RedirectToPage("/Index"); // atau /Dashboard
+            else if (role == "SECURITY") // Tambahkan kondisi untuk role SECURITY
+            {
+                // Diarahkan langsung ke folder Pelanggaran, file PelanggaranInput
+                return RedirectToPage("/PelanggaranInput/PelanggaranInput");
+            }
+
+            return RedirectToPage("/Index"); // Untuk Owner / Tenant / Role Lainnya
         }
         return Page();
     }
@@ -459,20 +467,20 @@ public class LoginModel : PageModel
             await conn.OpenAsync();
 
             // 1. Ambil Base URL dari fungsi database
-        string baseUrl = "";
-        using (var cmdUrl = new SqlCommand("SELECT dbo.Portal_ImageUrl('')", conn))
-        {
-            var result = await cmdUrl.ExecuteScalarAsync();
-            baseUrl = result?.ToString() ?? "";
-        }
+            string baseUrl = "";
+            using (var cmdUrl = new SqlCommand("SELECT dbo.Portal_ImageUrl('')", conn))
+            {
+                var result = await cmdUrl.ExecuteScalarAsync();
+                baseUrl = result?.ToString() ?? "";
+            }
 
-        // Pastikan baseUrl tidak kosong dan bersihkan slash di akhir jika ada
-        if (string.IsNullOrEmpty(baseUrl))
-        {
-            // Fallback jika database return kosong (opsional)
-            baseUrl = $"{Request.Scheme}://{Request.Host}";
-        }
-        baseUrl = baseUrl.TrimEnd('/');
+            // Pastikan baseUrl tidak kosong dan bersihkan slash di akhir jika ada
+            if (string.IsNullOrEmpty(baseUrl))
+            {
+                // Fallback jika database return kosong (opsional)
+                baseUrl = $"{Request.Scheme}://{Request.Host}";
+            }
+            baseUrl = baseUrl.TrimEnd('/');
 
 
             // 2 Cek apakah email terdaftar

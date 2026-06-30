@@ -62,6 +62,18 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcTG9naW4uY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
+[D:/App_Web_Portal_Kawasan_Net8/Pages/PelanggaranInput/PelanggaranInput.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUGVsYW5nZ2FyYW5JbnB1dFxQZWxhbmdnYXJhbklucHV0LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/App_Web_Portal_Kawasan_Net8/Pages/Pelanggaran/Pelanggaran.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUGVsYW5nZ2FyYW5cUGVsYW5nZ2FyYW4uY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/App_Web_Portal_Kawasan_Net8/Pages/PermitTenant/PermitPage.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUGVybWl0VGVuYW50XFBlcm1pdFBhZ2UuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
 [D:/App_Web_Portal_Kawasan_Net8/Pages/Privacy.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUHJpdmFjeS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
@@ -116,6 +128,10 @@ build_metadata.AdditionalFiles.CssScope =
 
 [D:/App_Web_Portal_Kawasan_Net8/Pages/UnitList/UnitList.cshtml]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcVW5pdExpc3RcVW5pdExpc3QuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/App_Web_Portal_Kawasan_Net8/Pages/VendorPortal/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcVmVuZG9yUG9ydGFsXEluZGV4LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [D:/App_Web_Portal_Kawasan_Net8/Pages/_ViewImports.cshtml]
