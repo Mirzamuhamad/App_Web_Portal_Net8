@@ -1,47 +1,54 @@
-## [ File Database Backup & Data ]
-# Sangat penting agar tidak berat saat ditarik di PC lain
+## Database Backup & Data
 *.bak
 *.mdf
 *.ldf
 
-## [ Hasil Build / Kompilasi ]
-# File ini akan dibuat ulang secara otomatis saat di-Run di PC lain
+## Build Output
 [Bb]in/
 [Oo]bj/
+publish/
+artifacts/
+
+## Visual Studio / .NET Local Files
 .vs/
 .vscode/
+*.user
+*.rsuser
+*.suo
+*.userosscache
+*.sln.docstates
 Properties/launchSettings.json
 
-## [ Runtime Lokal / Tooling ]
-# SDK lokal dan log hasil run/watch dari mesin developer
+## Local .NET SDK / Tooling
 .dotnet/
 .dotnet-install.ps1
+
+## Logs
 *.log
+logs/
 
-## [ Dependencies ]
-# Folder ini akan didownload ulang lewat 'npm install'
+## Node / Tailwind Dependencies
 node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
-## [ Konfigurasi Lokal ]
-# File ini sering berisi path folder yang berbeda di tiap PC
-*.user
-*.suo
-*.sln.docstates
-appsettings.Development.json
+## Local Configuration
 appsettings.json
+appsettings.Development.json
+appsettings.*.local.json
 
-
-## [ User Uploads ]
-# Data dinamis yang tidak perlu ikut ke PC lain
+## User Uploads
 wwwroot/uploads/complaints/*
 wwwroot/uploads/documents/*
 wwwroot/uploads/profiles/*
 wwwroot/uploads/generalComplaint/*
 wwwroot/uploads/permits/*
 wwwroot/uploads/pelanggaran/*
-wwwroot/uploads/service_order
+wwwroot/uploads/service_order/*
 
-# Pastikan folder tetap ada (agar kodingan tidak error saat save)
+## Keep Upload Folders
 !wwwroot/uploads/complaints/.gitkeep
 !wwwroot/uploads/documents/.gitkeep
 !wwwroot/uploads/profiles/.gitkeep
@@ -50,6 +57,7 @@ wwwroot/uploads/service_order
 !wwwroot/uploads/pelanggaran/.gitkeep
 !wwwroot/uploads/service_order/.gitkeep
 
-## [ OS Specific ]
+## OS Specific
 .DS_Store
 Thumbs.db
+desktop.ini
