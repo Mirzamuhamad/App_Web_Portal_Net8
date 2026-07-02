@@ -52,18 +52,35 @@
 
             <div class="space-y-1">
                 <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Pilih Type Service/Order</label>
+                @{
+                    // Mengambil parameter "from" dari URL
+                    var sourceMenu = ViewContext.HttpContext.Request.Query["from"].ToString();
+                    var isKeluhan = sourceMenu == "Pengaduan/Keluhan";
+                }
+
                 <div class="relative">
-                    <select name="Input.Title" required id="serviceTypeSelect"
-                        class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition appearance-none cursor-pointer">
-
-                        @foreach (var TypeService in Model.TypeServiceList)
-                        {
-                            <option value="@TypeService.TypeService">@TypeService.TypeService</option>
-                        }
-
-                    </select>
-                    <i
-                        class="ri-arrow-down-s-line absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                    @if (isKeluhan)
+                    {
+                        <!-- Jika dari menu Keluhan, langsung kunci nilainya ke "Keluhan" -->
+                        <select name="Input.Title" required id="serviceTypeSelect"
+                                class="w-full bg-slate-100 border border-slate-200 rounded-2xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition appearance-none cursor-not-allowed" readonly>
+                            <option value="Pengaduan/Keluhan" selected>Pengaduan/Keluhan</option>
+                        </select>
+                    }
+                    else
+                    {
+                        <!-- Jika diakses normal, tampilkan semua list seperti biasa -->
+                        <select name="Input.Title" required id="serviceTypeSelect"
+                                class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition appearance-none cursor-pointer">
+                            
+                            @foreach (var TypeService in Model.TypeServiceList)
+                            {
+                                <option value="@TypeService.TypeService">@TypeService.TypeService</option>
+                            }
+                        </select>
+                    }
+                    
+                    <i class="ri-arrow-down-s-line absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
                 </div>
             </div>
 

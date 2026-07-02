@@ -29,7 +29,7 @@
         ? "text-blue-600 bg-blue-50"
         : "text-purple-600 bg-purple-50";
 
-        <a asp-page="/UnitList/UnitDetailPage/UnitDetailPage" 
+        <a asp-page="/UnitList/UnitList" 
            asp-route-id="@item.KavlingId" 
            class="block transform hover:scale-[1.02] transition duration-200">
             <div class="bg-white rounded-3xl shadow-md overflow-hidden border border-gray-200">
@@ -51,16 +51,16 @@
                         
                         <div>
                             <h3 class="text-xl font-bold text-gray-700">@item.KavlingCode</h3>
-                            <p class="text-gray-500 text-sm">@item.kawasan</p>
+                            <p class="text-gray-500 text-sm">Luas Kavling : @item.Luas.ToString("N2", new System.Globalization.CultureInfo("id-ID")) m²
                         </div>
                     </div>
 
-                    <div class="text-right flex-shrink-0">
+                    @* <div class="text-right flex-shrink-0">
                         <p class="text-[9px] sm:text-[10px] text-slate-400 uppercase tracking-widest mb-0.5 font-semibold">Total Tagihan</p>
                         <div class="text-base sm:text-lg font-bold text-slate-700 tracking-tight">
                             <span class="text-xs sm:text-sm font-bold text-teal-500 mr-0.5">Rp</span>@item.TotalAmountKavling.ToString("N0", new System.Globalization.CultureInfo("id-ID"))
                         </div>
-                    </div>
+                    </div> *@
 
                 </div>
             </div>

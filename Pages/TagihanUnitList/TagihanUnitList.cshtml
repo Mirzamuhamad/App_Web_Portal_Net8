@@ -1,0 +1,73 @@
+@page
+@model Pages.TagihanUnitList.TagihanUnitListModel
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Unit List";
+}
+
+<div class="max-w-7xl mx-auto p-2 sm:pt-5 pb-30">
+
+    <div class="grid grid-cols-1 pt-2 gap-3">
+
+    @foreach (var item in Model.UnitItems)
+    {
+        <a asp-page="/TagihanUnitList/TagihanUnitDetailPage/TagihanUnitDetailPage" 
+           asp-route-id="@item.KavlingId" 
+           class="block transform hover:scale-[1.005] transition duration-200">
+            
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                
+                <div class="flex items-start gap-3 flex-1">
+                    <div class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 @(item.TotalAmountKavling <= 0 ? "bg-slate-50 text-slate-400" : "bg-amber-50 text-amber-500")">
+                        @if (item.TotalAmountKavling <= 0)
+                        {
+                            <i class="fa-solid fa-file-invoice text-xl"></i>
+                        }
+                        else
+                        {
+                            <i class="fa-solid fa-file-circle-exclamation text-xl"></i>
+                        }
+                    </div>
+                    
+                    <div>
+                        <h4 class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Tagihan Kavling - @item.KavlingCode</h4>
+                        
+                        @if (item.TotalAmountKavling <= 0)
+                        {
+                            <p class="text-base font-bold text-emerald-600 mt-0.5">Belum ada tagihan</p>
+                            <p class="text-xs text-gray-400">Semua tagihan lunas / belum tersedia</p>
+                        }
+                        else
+                        {
+                            <p class="text-xs text-gray-400 mt-0.5">Luas: @item.Luas.ToString("N2", new System.Globalization.CultureInfo("id-ID")) m²</p>
+                            <p class="text-xs text-amber-600 font-medium">Klik untuk melihat detail tagihan</p>
+                        }
+                    </div>
+                </div>
+                    <div class="bg-[#0d2a4d] rounded-xl p-3 text-white flex items-center justify-between gap-4 w-full sm:w-[280px] flex-shrink-0">
+                        
+                        <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-white/10 text-teal-400 flex-shrink-0">
+                            <i class="fa-solid fa-wallet text-base"></i>
+                        </div>
+
+                        <div class="text-right px-1 flex-1 min-w-0">
+                            <p class="text-[10px] opacity-70 leading-none mb-1 truncate">Total Tagihan Belum Dibayar</p>
+                            <h2 class="text-base font-bold tracking-wide whitespace-nowrap">
+                                <span class="text-xs font-bold text-teal-400 mr-0.5">Rp</span>@item.TotalAmountKavling.ToString("N0", new System.Globalization.CultureInfo("id-ID"))
+                            </h2>
+                        </div>
+                        
+                        @* <span class="bg-white text-[#0d2a4d] text-xs font-bold px-3 py-2 rounded-lg shadow-sm whitespace-nowrap">
+                            Bayar Sekarang
+                        </span> *@
+                    </div>
+
+            </div>
+        </a>
+    }
+
+    
+    </div>
+
+    
+</div>
