@@ -8,9 +8,9 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace TestLandingPageNet8.Pages.UnitList
+namespace TestLandingPageNet8.Pages.TagihanUnitList
 {
-    public class UnitListModel : PageModel
+    public class TagihanUnitListModel : PageModel
     {
         public List<UnitItemList> UnitItems { get; set; } = new();
 
