@@ -60,7 +60,7 @@ namespace TestLandingPageNet8.Pages.TagihanUnitList.TagihanUnitDetailPage
                 await connection.OpenAsync();
 
                 // Pastikan variabel query diakhiri dengan titik koma (;)
-                string sqlUnit = "SELECT KavlingId, KavlingCode, Kawasan FROM V_ListKavlingUserPOrtal WHERE KavlingId = @KavlingId AND UserId = @UserId;";
+                string sqlUnit = "SELECT KavlingId, KavlingCode, Kawasan, Luas FROM V_ListKavlingUserPOrtal WHERE KavlingId = @KavlingId AND UserId = @UserId;";
                 Unit = await connection.QueryFirstOrDefaultAsync<KavlingInfo>(sqlUnit, new { KavlingId = id, UserId = userId });
 
                 if (Unit == null)
@@ -176,6 +176,8 @@ namespace TestLandingPageNet8.Pages.TagihanUnitList.TagihanUnitDetailPage
             public int KavlingId { get; set; }
             public string KavlingCode { get; set; }
             public string Kawasan { get; set; }
+
+             public decimal Luas { get; set; }
         }
 
         public class KavlingInfoDetail
@@ -189,6 +191,7 @@ namespace TestLandingPageNet8.Pages.TagihanUnitList.TagihanUnitDetailPage
             public string CommercialDesc { get; set; }
             public decimal AmountPerKavling { get; set; }
             public decimal TotalAmountKavling { get; set; }
+           
             public string Status { get; set; }
         }
 
