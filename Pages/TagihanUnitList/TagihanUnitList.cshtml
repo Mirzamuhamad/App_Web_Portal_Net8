@@ -5,69 +5,70 @@
     ViewData["Title"] = "Unit List";
 }
 
-<div class="max-w-7xl mx-auto p-2 sm:pt-5 pb-30">
+<div class=" mx-auto p-4 sm:pt-5 pb-30">
 
-    <div class="grid grid-cols-1 pt-2 gap-3">
-
+    <div class="grid grid-cols-1 gap-4">
     @foreach (var item in Model.UnitItems)
     {
         <a asp-page="/TagihanUnitList/TagihanUnitDetailPage/TagihanUnitDetailPage" 
            asp-route-id="@item.KavlingId" 
-           class="block transform hover:scale-[1.005] transition duration-200">
+           class="block transform hover:scale-[1.002] transition duration-200">
             
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <!-- Card Utama mengikuti style image_c1b69e.png (Rounded besar, shadow lembut, border gray tipis) -->
+            <div class="bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-gray-100 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative overflow-hidden">
                 
-                <div class="flex items-start gap-3 flex-1">
-                    <div class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 @(item.TotalAmountKavling <= 0 ? "bg-slate-50 text-slate-400" : "bg-amber-50 text-amber-500")">
-                        @if (item.TotalAmountKavling <= 0)
-                        {
-                            <i class="fa-solid fa-file-invoice text-xl"></i>
-                        }
-                        else
-                        {
-                            <i class="fa-solid fa-file-circle-exclamation text-xl"></i>
-                        }
-                    </div>
+                <!-- Sisi Kiri: Informasi Kavling -->
+                <div class="flex items-start gap-3 flex-1 min-w-0">
+                    <!-- Indicator Vertikal Teal/Slate sesuai status tagihan -->
+                    <div class="w-1.5 h-10 rounded-full flex-shrink-0 mt-0.5 @(item.TotalAmountKavling <= 0 ? "bg-slate-300" : "bg-teal-500")"></div>
                     
-                    <div>
-                        <h4 class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Tagihan Kavling - @item.KavlingCode</h4>
+                    <div class="flex-1 min-w-0">
+                        <span class="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider block mb-0.5">Informasi Tagihan Kavling</span>
+                        <h3 class="text-base sm:text-lg font-bold truncate @(item.TotalAmountKavling <= 0 ? "text-slate-500" : "text-teal-600")">
+                            @item.KavlingCode
+                        </h3>
                         
-                        @if (item.TotalAmountKavling <= 0)
-                        {
-                            <p class="text-base font-bold text-emerald-600 mt-0.5">Belum ada tagihan</p>
-                            <p class="text-xs text-gray-400">Semua tagihan lunas / belum tersedia</p>
-                        }
-                        else
-                        {
-                            <p class="text-xs text-gray-400 mt-0.5">Luas: @item.Luas.ToString("N2", new System.Globalization.CultureInfo("id-ID")) m²</p>
-                            <p class="text-xs text-amber-600 font-medium">Klik untuk melihat detail tagihan</p>
-                        }
+                        <div class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-400">
+                            @if (item.TotalAmountKavling <= 0)
+                            {
+                                <span class="text-emerald-600 font-medium flex items-center gap-1">
+                                    <i class="fa-solid fa-circle-check"></i> Belum ada tagihan / Lunas
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="flex items-center gap-1">
+                                    <i class="fa-solid fa-ruler-combined text-[10px]"></i> Luas: @item.Luas.ToString("N2", new System.Globalization.CultureInfo("id-ID")) m²
+                                </span>
+                                <span class="text-amber-600 font-medium flex items-center gap-1">
+                                    <i class="fa-solid fa-circle-info text-[10px]"></i> Klik untuk detail tagihan
+                                </span>
+                            }
+                        </div>
                     </div>
                 </div>
-                    <div class="bg-[#0d2a4d] rounded-xl p-3 text-white flex items-center justify-between gap-4 w-full sm:w-[280px] flex-shrink-0">
-                        
-                        <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-white/10 text-teal-400 flex-shrink-0">
-                            <i class="fa-solid fa-wallet text-base"></i>
-                        </div>
 
-                        <div class="text-right px-1 flex-1 min-w-0">
-                            <p class="text-[10px] opacity-70 leading-none mb-1 truncate">Total Tagihan Belum Dibayar</p>
-                            <h2 class="text-base font-bold tracking-wide whitespace-nowrap">
-                                <span class="text-xs font-bold text-teal-400 mr-0.5">Rp</span>@item.TotalAmountKavling.ToString("N0", new System.Globalization.CultureInfo("id-ID"))
-                            </h2>
-                        </div>
-                        
-                        @* <span class="bg-white text-[#0d2a4d] text-xs font-bold px-3 py-2 rounded-lg shadow-sm whitespace-nowrap">
-                            Bayar Sekarang
-                        </span> *@
+                <!-- Sisi Kanan: Card Total Tagihan (Diubah menjadi Outline Clean Style & Tetap Membawa Ikon Wallet) -->
+                <div class="border rounded-xl p-3 flex items-center justify-between gap-4 w-full sm:w-[260px] flex-shrink-0 transition-colors @(item.TotalAmountKavling <= 0 ? "border-slate-100 bg-slate-50/50 text-slate-400" : "border-teal-500/30 bg-teal-50/10 text-gray-700")">
+                    
+                    <!-- Ikon Wallet Tetap Dipertahankan -->
+                    <div class="flex items-center justify-center w-8 h-8 rounded-lg flex-shrink-0 @(item.TotalAmountKavling <= 0 ? "bg-slate-100 text-slate-400" : "bg-teal-50 text-teal-500")">
+                        <i class="fa-solid fa-wallet text-sm"></i>
                     </div>
+
+                    <!-- Nilai Tagihan -->
+                    <div class="text-right flex-1 min-w-0">
+                        <p class="text-[9px] uppercase tracking-wider text-gray-400 font-semibold leading-none mb-1.5">Total Tagihan Belum Dibayar</p>
+                        <h2 class="text-base sm:text-lg font-bold tracking-tight text-gray-600 whitespace-nowrap">
+                            <span class="text-xs font-semibold @(item.TotalAmountKavling <= 0 ? "text-slate-400" : "text-teal-500") mr-0.5">Rp</span>@item.TotalAmountKavling.ToString("N0", new System.Globalization.CultureInfo("id-ID"))
+                        </h2>
+                    </div>
+                    
+                </div>
 
             </div>
         </a>
     }
-
-    
     </div>
-
     
 </div>
