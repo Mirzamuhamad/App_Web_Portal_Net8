@@ -60,7 +60,7 @@ namespace TestLandingPageNet8.Pages.UnitList.UnitDetailPage
                 await connection.OpenAsync();
 
                 // Pastikan variabel query diakhiri dengan titik koma (;)
-                string sqlUnit = "SELECT KavlingId, KavlingCode, Kawasan FROM V_ListKavlingUserPOrtal WHERE KavlingId = @KavlingId AND UserId = @UserId;";
+                string sqlUnit = "SELECT KavlingId, KavlingCode, Kawasan, DenahKavling FROM V_ListKavlingUserPOrtal WHERE KavlingId = @KavlingId AND UserId = @UserId;";
                 Unit = await connection.QueryFirstOrDefaultAsync<KavlingInfo>(sqlUnit, new { KavlingId = id, UserId = userId });
 
                 if (Unit == null)
@@ -176,6 +176,7 @@ namespace TestLandingPageNet8.Pages.UnitList.UnitDetailPage
             public int KavlingId { get; set; }
             public string KavlingCode { get; set; }
             public string Kawasan { get; set; }
+            public string denahkavling { get; set; }
         }
 
         public class KavlingInfoDetail

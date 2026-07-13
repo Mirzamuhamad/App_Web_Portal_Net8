@@ -6,6 +6,7 @@
 }
 
 <div class="min-h-screen bg-slate-50 pb-20">
+   <!-- Header -->
     <div class="bg-white border-b sticky top-0 z-30 px-2 sm:px-6 py-3 shadow-sm">
         <div class="mx-auto flex items-center justify-between gap-4">
             <div class="flex items-center gap-4 min-w-0">
@@ -15,18 +16,66 @@
                 </a>
                 <div class="min-w-0">
                     <h1 class="text-base sm:text-lg font-bold text-slate-700 truncate">History Tagihan Lunas</h1>
-                    <p class="text-[10px] sm:text-xs text-slate-400 uppercase tracking-widest font-semibold">Arsip pembayaran unit</p>
+                    <p class="text-[10px] sm:text-xs text-slate-400 uppercase tracking-widest font-semibold">Arsip pembayaran unit (Maks. 10)</p>
                 </div>
             </div>
 
-            <span class="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-50 text-emerald-600 text-xs font-bold border border-emerald-100">
-                <i class="ri-checkbox-circle-fill text-base"></i>
-                Tagihan Sudah Lunas
-            </span>
+            <div class="flex items-center gap-2">
+                <span class="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-50 text-emerald-600 text-xs font-bold border border-emerald-100">
+                    <i class="ri-checkbox-circle-fill text-base"></i>
+                    Tagihan Sudah Lunas
+                </span>
+
+                <!-- Tombol Hamburger Filter (Hanya Muncul di Mobile) -->
+                <button type="button" 
+                        onclick="toggleMobileFilter()" 
+                        class="sm:hidden w-10 h-10 flex items-center justify-center bg-slate-100 border border-slate-200 rounded-2xl text-slate-600 hover:bg-emerald-50 hover:text-emerald-600 relative transition">
+                    <i class="ri-equalizer-line text-xl"></i>
+                    <!-- Indikator dot merah jika filter sedang aktif -->
+                    @if (Model.StartDate.HasValue || Model.EndDate.HasValue)
+                    {
+                        <span class="absolute top-2 right-2 w-2.5 h-2.5 bg-rose-500 rounded-full ring-2 ring-white"></span>
+                    }
+                </button>
+            </div>
         </div>
     </div>
 
-    <div class="grid grid-cols-1 gap-4 pt-5 mx-auto px-2 sm:px-6">
+    <!-- Filter Section (Responsif: Desktop Terbuka, Mobile Tersembunyi bawaan) -->
+    <div id="filterContainer" class="hidden sm:block mx-auto px-2 sm:px-6 pt-4 transition-all duration-300">
+        <form method="get" class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row items-end gap-4">
+            <div class="w-full sm:w-auto flex-1">
+                <label for="StartDate" class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wider cursor-pointer">Dari Tanggal</label>
+                <input type="date" 
+                       id="StartDate"
+                       asp-for="StartDate" 
+                       onclick="this.showPicker()"
+                       class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 focus:outline-none focus:border-emerald-500 transition cursor-pointer" />
+            </div>
+            <div class="w-full sm:w-auto flex-1">
+                <label for="EndDate" class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wider cursor-pointer">Sampai Tanggal</label>
+                <input type="date" 
+                       id="EndDate"
+                       asp-for="EndDate" 
+                       onclick="this.showPicker()"
+                       class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 focus:outline-none focus:border-emerald-500 transition cursor-pointer" />
+            </div>
+            <div class="w-full sm:w-auto flex gap-2 w-full sm:w-auto">
+                <button type="submit" class="flex-1 sm:flex-initial bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm px-5 py-2.5 rounded-xl shadow-md transition flex items-center justify-center gap-2">
+                    <i class="ri-filter-3-line"></i> Terapkan
+                </button>
+                @if (Model.StartDate.HasValue || Model.EndDate.HasValue)
+                {
+                    <a href="/HistoryTagihanUnitList/HistoryTagihanUnitList" class="bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-sm px-4 py-2.5 rounded-xl transition flex items-center justify-center">
+                        Reset
+                    </a>
+                }
+            </div>
+        </form>
+    </div>
+
+    <!-- Data List -->
+    <div class="grid grid-cols-1 gap-4 pt-4 mx-auto px-2 sm:px-6">
         @if (Model.UnitItems.Any())
         {
             @foreach (var item in Model.UnitItems)
@@ -79,8 +128,20 @@
             <div class="bg-white rounded-2xl border border-dashed border-slate-200 p-10 text-center shadow-sm">
                 <i class="ri-inbox-archive-line text-5xl text-slate-200"></i>
                 <h2 class="mt-3 text-base font-bold text-slate-600">Belum ada history tagihan lunas</h2>
-                <p class="mt-1 text-xs text-slate-400">Tagihan yang sudah berstatus lunas akan tampil di halaman ini.</p>
+                <p class="mt-1 text-xs text-slate-400">Tagihan yang sudah berstatus lunas atau sesuai filter tanggal akan tampil di halaman ini.</p>
             </div>
         }
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        function toggleMobileFilter() {
+            const filterContainer = document.getElementById('filterContainer');
+            // Jika di mobile (layar < 640px), toggle kelas 'hidden'
+            if (window.innerWidth < 640) {
+                filterContainer.classList.toggle('hidden');
+            }
+        }
+    </script>
+    }

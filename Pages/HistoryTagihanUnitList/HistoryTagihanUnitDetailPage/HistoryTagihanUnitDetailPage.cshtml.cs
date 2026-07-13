@@ -43,7 +43,7 @@ namespace TestLandingPageNet8.Pages.HistoryTagihanUnitList.HistoryTagihanUnitDet
                     FROM V_GetTagihanDetailKavling
                     WHERE UserId = @UserId
                         AND KavlingId = @KavlingId
-                        AND Status = 'P'
+                       
                     ORDER BY DueDate DESC, TransNmbr DESC";
 
                 var resultDetail = await connection.QueryAsync<KavlingInfoDetail>(sqlUnitDetail, new { UserId = userId, KavlingId = id });
