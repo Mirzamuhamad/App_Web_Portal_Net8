@@ -40,7 +40,7 @@ namespace TestLandingPageNet8.Pages.HistoryTagihanUnitList.HistoryTagihanUnitDet
 
                 const string sqlUnitDetail = @"
                     SELECT *
-                    FROM V_GetTagihanDetailKavling
+                    FROM V_GetTagihanDetailKavlingHistory
                     WHERE UserId = @UserId
                         AND KavlingId = @KavlingId
                        
@@ -73,6 +73,8 @@ namespace TestLandingPageNet8.Pages.HistoryTagihanUnitList.HistoryTagihanUnitDet
             public decimal AmountPerKavling { get; set; }
             public decimal TotalAmountKavling { get; set; }
             public string Status { get; set; } = string.Empty;
+            public string FileFakturPajak { get; set; } = string.Empty;
+            public string FileKwitansi { get; set; } = string.Empty;
         }
     }
 }

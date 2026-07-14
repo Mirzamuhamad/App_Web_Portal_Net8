@@ -38,8 +38,8 @@ namespace TestLandingPageNet8.Pages.HistoryTagihanUnitList
                         KavlingId,
                         COUNT(DISTINCT TransNmbr) AS PaidInvoiceCount,
                         SUM(AmountPerKavling) AS TotalPaidAmount
-                    FROM V_GetTagihanDetailKavling
-                    WHERE UserId = @Id ";
+                    FROM V_GetTagihanDetailKavlingHistory
+                    WHERE UserId = @Id  ";
 
                 if (StartDate.HasValue)
                 {
@@ -47,7 +47,7 @@ namespace TestLandingPageNet8.Pages.HistoryTagihanUnitList
                 }
                 if (EndDate.HasValue)
                 {
-                    sqlPaidSummary += " AND DueDate <= @EndDate ";
+                    sqlPaidSummary += " AND PaymentDate <= @EndDate ";
                 }
 
                 sqlPaidSummary += " GROUP BY KavlingId";
