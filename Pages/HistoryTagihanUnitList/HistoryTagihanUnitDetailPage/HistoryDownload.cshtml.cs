@@ -2,68 +2,96 @@ using System;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.StaticFiles; // Diperlukan untuk FileExtensionContentTypeProvider
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.StaticFiles;
 
 namespace TestLandingPageNet8.Pages.HistoryTagihanUnitList.HistoryTagihanUnitDetailPage
 {
-    // Sesuaikan dengan struktur routing kamu
-    [Route("HistoryTagihanUnitList/HistoryTagihanUnitDetailPage")]
-    public class HistoryTagihanUnitDetailPageController : Controller
+    [Authorize]
+    public class HistoryDownloadModel : PageModel
     {
         private readonly HttpClient _httpClient;
 
-        // Menggunakan Dependency Injection untuk HttpClient (Best Practice)
-        public HistoryTagihanUnitDetailPageController(HttpClient httpClient)
+        public HistoryDownloadModel(IHttpClientFactory httpClientFactory)
         {
-            _httpClient = httpClient;
+            _httpClient = httpClientFactory.CreateClient();
         }
 
-        [HttpGet("DownloadFileBypassCors")]
-        public async Task<IActionResult> DownloadFileBypassCors([FromQuery] string fileUrl)
+        public async Task<IActionResult> OnGetAsync(string fileUrl, string documentType, string invoiceNo)
         {
-            if (string.IsNullOrEmpty(fileUrl))
+            if (string.IsNullOrWhiteSpace(fileUrl))
             {
-                return BadRequest("URL file tidak valid atau kosong.");
+                return NotFound("File belum tersedia untuk invoice ini.");
+            }
+
+            var normalizedDocumentType = string.Equals(documentType, "faktur-pajak", StringComparison.OrdinalIgnoreCase)
+                ? "faktur-pajak"
+                : "kwitansi";
+
+            if (!Uri.TryCreate(fileUrl, UriKind.Absolute, out var sourceUri) ||
+                (sourceUri.Scheme != Uri.UriSchemeHttp && sourceUri.Scheme != Uri.UriSchemeHttps))
+            {
+                return BadRequest("URL file tidak valid.");
             }
 
             try
             {
-                // 1. Ambil stream file dari URL sumber asli
-                // Menggunakan HttpCompletionOption.ResponseHeadersRead agar tidak menimbun seluruh file di memori
-                var response = await _httpClient.GetAsync(fileUrl, HttpCompletionOption.ResponseHeadersRead);
-                
+                using var request = new HttpRequestMessage(HttpMethod.Get, sourceUri);
+                request.Headers.UserAgent.ParseAdd("Mozilla/5.0");
+                request.Headers.Accept.ParseAdd("image/*,application/pdf,application/octet-stream,*/*;q=0.8");
+
+                var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
                 if (!response.IsSuccessStatusCode)
                 {
-                    return NotFound("File tidak ditemukan di server sumber.");
+                    var sourceStatusCode = (int)response.StatusCode;
+                    response.Dispose();
+                    return StatusCode(sourceStatusCode, $"Server sumber gagal mengirim file. Status: {sourceStatusCode} {response.ReasonPhrase}");
                 }
 
-                // 2. Dapatkan stream data
+                HttpContext.Response.RegisterForDispose(response);
                 var fileStream = await response.Content.ReadAsStreamAsync();
+                var fileName = GetDownloadFileName(response, sourceUri, normalizedDocumentType, invoiceNo);
+                var contentType = response.Content.Headers.ContentType?.MediaType;
 
-                // 3. Ambil nama file asli dari URL untuk penamaan saat diunduh
-                string fileName = Path.GetFileName(new Uri(fileUrl).LocalPath);
-                if (string.IsNullOrEmpty(fileName))
+                if (string.IsNullOrWhiteSpace(contentType))
                 {
-                    fileName = "downloaded_file";
+                    var provider = new FileExtensionContentTypeProvider();
+                    if (!provider.TryGetContentType(fileName, out contentType))
+                    {
+                        contentType = "application/octet-stream";
+                    }
                 }
 
-                // 4. Deteksi Content-Type (MIME Type) secara otomatis berdasarkan ekstensi file
-                var provider = new FileExtensionContentTypeProvider();
-                if (!provider.TryGetContentType(fileName, out string contentType))
-                {
-                    contentType = "application/octet-stream"; // Fallback jika ekstensi tidak dikenali
-                }
-
-                // 5. Kembalikan sebagai FileStreamResult ke browser
-                // Ini akan langsung memicu download di browser user tanpa membebani RAM server kamu
                 return File(fileStream, contentType, fileName);
             }
-            catch (Exception ex)
+            catch (HttpRequestException)
             {
-                // Log error ex disini sesuai kebutuhan
-                return StatusCode(500, $"Terjadi kesalahan internal: {ex.Message}");
+                return StatusCode(502, "Gagal mengambil file dari server sumber.");
             }
+            catch (TaskCanceledException)
+            {
+                return StatusCode(504, "Koneksi ke server sumber timeout.");
+            }
+        }
+
+        private static string GetDownloadFileName(HttpResponseMessage response, Uri sourceUri, string documentType, string invoiceNo)
+        {
+            var fileName = response.Content.Headers.ContentDisposition?.FileNameStar
+                ?? response.Content.Headers.ContentDisposition?.FileName
+                ?? Path.GetFileName(sourceUri.LocalPath);
+
+            fileName = string.IsNullOrWhiteSpace(fileName)
+                ? $"{documentType}-{invoiceNo}.pdf"
+                : fileName.Trim('"');
+
+            foreach (var invalidChar in Path.GetInvalidFileNameChars())
+            {
+                fileName = fileName.Replace(invalidChar, '_');
+            }
+
+            return fileName;
         }
     }
 }
