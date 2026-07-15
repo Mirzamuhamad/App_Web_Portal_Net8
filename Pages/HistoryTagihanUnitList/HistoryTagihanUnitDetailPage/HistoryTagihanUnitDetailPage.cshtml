@@ -9,6 +9,21 @@
         .ToList();
 }
 
+@functions {
+    private static string ToBase64Url(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return string.Empty;
+        }
+
+        return System.Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(value))
+            .TrimEnd('=')
+            .Replace('+', '-')
+            .Replace('/', '_');
+    }
+}
+
 <div class="min-h-screen bg-slate-50 pb-20">
     <div class="bg-white border-b sticky top-0 z-30 px-2 sm:px-6 py-3 shadow-sm">
         <div class="mx-auto flex items-center justify-between gap-4">
@@ -55,12 +70,12 @@
             var headerInvoice = invoice.First();
             var totalInvoiceIni = invoice.Sum(x => x.AmountPerKavling);
             var modalId = $"history-billing-{index}";
-            var encodedInvoice = System.Net.WebUtility.UrlEncode(headerInvoice.TransNmbr);
-            var encodedKwitansiUrl = System.Net.WebUtility.UrlEncode(headerInvoice.FileKwitansi);
-            var encodedFakturPajakUrl = System.Net.WebUtility.UrlEncode(headerInvoice.FileFakturPajak);
+            var invoiceKey = ToBase64Url(headerInvoice.TransNmbr);
+            var kwitansiFileKey = ToBase64Url(headerInvoice.FileKwitansi);
+            var fakturPajakFileKey = ToBase64Url(headerInvoice.FileFakturPajak);
             var downloadBasePath = "/HistoryTagihanUnitList/HistoryTagihanUnitDetailPage/HistoryDownload";
-            var kwitansiDownloadUrl = $"{downloadBasePath}?fileUrl={encodedKwitansiUrl}&documentType=kwitansi&invoiceNo={encodedInvoice}";
-            var fakturPajakDownloadUrl = $"{downloadBasePath}?fileUrl={encodedFakturPajakUrl}&documentType=faktur-pajak&invoiceNo={encodedInvoice}";
+            var kwitansiDownloadUrl = $"{downloadBasePath}?fileKey={kwitansiFileKey}&documentType=kwitansi&invoiceKey={invoiceKey}";
+            var fakturPajakDownloadUrl = $"{downloadBasePath}?fileKey={fakturPajakFileKey}&documentType=faktur-pajak&invoiceKey={invoiceKey}";
 
             <div class="mx-auto px-2 sm:px-6 mt-3 sm:mt-5">
                 <section aria-labelledby="billing-title-@modalId"

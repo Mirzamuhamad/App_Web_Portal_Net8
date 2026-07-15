@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,14 +14,19 @@ namespace TestLandingPageNet8.Pages.HistoryTagihanUnitList.HistoryTagihanUnitDet
     public class HistoryDownloadModel : PageModel
     {
         private readonly HttpClient _httpClient;
+        private readonly ILogger<HistoryDownloadModel> _logger;
 
-        public HistoryDownloadModel(IHttpClientFactory httpClientFactory)
+        public HistoryDownloadModel(IHttpClientFactory httpClientFactory, ILogger<HistoryDownloadModel> logger)
         {
             _httpClient = httpClientFactory.CreateClient();
+            _logger = logger;
         }
 
-        public async Task<IActionResult> OnGetAsync(string fileUrl, string documentType, string invoiceNo)
+        public async Task<IActionResult> OnGetAsync(string fileKey, string documentType, string invoiceKey, string fileUrl, string invoiceNo)
         {
+            fileUrl = DecodeBase64Url(fileKey) ?? fileUrl;
+            invoiceNo = DecodeBase64Url(invoiceKey) ?? invoiceNo;
+
             if (string.IsNullOrWhiteSpace(fileUrl))
             {
                 return NotFound("File belum tersedia untuk invoice ini.");
@@ -42,18 +48,16 @@ namespace TestLandingPageNet8.Pages.HistoryTagihanUnitList.HistoryTagihanUnitDet
                 request.Headers.UserAgent.ParseAdd("Mozilla/5.0");
                 request.Headers.Accept.ParseAdd("image/*,application/pdf,application/octet-stream,*/*;q=0.8");
 
-                var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+                using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
                 if (!response.IsSuccessStatusCode)
                 {
                     var sourceStatusCode = (int)response.StatusCode;
-                    response.Dispose();
                     return StatusCode(sourceStatusCode, $"Server sumber gagal mengirim file. Status: {sourceStatusCode} {response.ReasonPhrase}");
                 }
 
-                HttpContext.Response.RegisterForDispose(response);
-                var fileStream = await response.Content.ReadAsStreamAsync();
                 var fileName = GetDownloadFileName(response, sourceUri, normalizedDocumentType, invoiceNo);
                 var contentType = response.Content.Headers.ContentType?.MediaType;
+                var fileBytes = await response.Content.ReadAsByteArrayAsync();
 
                 if (string.IsNullOrWhiteSpace(contentType))
                 {
@@ -64,15 +68,22 @@ namespace TestLandingPageNet8.Pages.HistoryTagihanUnitList.HistoryTagihanUnitDet
                     }
                 }
 
-                return File(fileStream, contentType, fileName);
+                return File(fileBytes, contentType, fileName);
             }
-            catch (HttpRequestException)
+            catch (HttpRequestException ex)
             {
+                _logger.LogError(ex, "Gagal mengambil file history tagihan dari server sumber.");
                 return StatusCode(502, "Gagal mengambil file dari server sumber.");
             }
-            catch (TaskCanceledException)
+            catch (TaskCanceledException ex)
             {
+                _logger.LogError(ex, "Timeout saat mengambil file history tagihan dari server sumber.");
                 return StatusCode(504, "Koneksi ke server sumber timeout.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Gagal memproses download history tagihan.");
+                return StatusCode(500, $"Gagal memproses download dokumen: {ex.Message}");
             }
         }
 
@@ -92,6 +103,31 @@ namespace TestLandingPageNet8.Pages.HistoryTagihanUnitList.HistoryTagihanUnitDet
             }
 
             return fileName;
+        }
+
+        private static string? DecodeBase64Url(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return null;
+            }
+
+            try
+            {
+                var base64 = value.Replace('-', '+').Replace('_', '/');
+                var padding = base64.Length % 4;
+
+                if (padding > 0)
+                {
+                    base64 = base64.PadRight(base64.Length + 4 - padding, '=');
+                }
+
+                return Encoding.UTF8.GetString(Convert.FromBase64String(base64));
+            }
+            catch (FormatException)
+            {
+                return null;
+            }
         }
     }
 }
