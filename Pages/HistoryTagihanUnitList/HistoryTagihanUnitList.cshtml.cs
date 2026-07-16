@@ -47,7 +47,7 @@ namespace TestLandingPageNet8.Pages.HistoryTagihanUnitList
                 }
                 if (EndDate.HasValue)
                 {
-                    sqlPaidSummary += " AND PaymentDate <= @EndDate ";
+                    sqlPaidSummary += " AND DueDate <= @EndDate ";
                 }
 
                 sqlPaidSummary += " GROUP BY KavlingId";
