@@ -1,65 +1,177 @@
 @page
-
 @model semuaTerkiniModel
 @{
-    Layout = "_Layout";
+    if (Request.Headers.ContainsKey("HX-Request"))
+    {
+        Layout = null;
+    }
+    else
+    {
+        Layout = "_Layout";
+    }
+
     ViewData["Title"] = "Semua Terkini";
+    var lastItemId = Model.SemuaTerkiniItems.LastOrDefault()?.Id;
+    var encodedSearch = System.Net.WebUtility.UrlEncode(Model.Search ?? string.Empty);
+    var nextItemsUrl = $"/SemuaTerkini/SemuaTerkini?handler=Items&lastId={lastItemId}&search={encodedSearch}";
 }
 
 <div class="max-w-7xl p-2 sm:p-10 mx-auto pb-10">
-    <!-- BARIS DUA KOLOM -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-0 items-center">
-
-        <!-- KOLOM KIRI: TEXT -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-6 items-center">
         <h4 class="text-sm sm:text-2xl font-bold text-gray-700 pb-2 sm:pb-0">
             Jelajahi Semua Info Terkini Kami
         </h4>
 
-        <!-- KOLOM KANAN: SEARCH BAR -->
-        <div class="w-full flex items-center rounded-full border border-gray-300 
-                overflow-hidden shadow-sm">
-            <input type="text" placeholder="Cari terkini..." class="flex-1 px-3 py-1.5 text-sm outline-none" />
+        <form method="get" class="w-full flex items-center rounded-full border border-gray-300 overflow-hidden shadow-sm">
+            <input type="text"
+                   name="search"
+                   value="@Model.Search"
+                   placeholder="Cari terkini..."
+                   class="flex-1 px-3 py-1.5 text-sm outline-none" />
 
-            <button class="text-white px-4 py-1.5 rounded-full flex items-center justify-center
-                       bg-blue-100 hover:bg-blue-200  transition">
-                <img src="~/icons/search.png" class="h-5 w-5" />
+            <button type="submit"
+                    class="text-white px-4 py-1.5 rounded-full flex items-center justify-center bg-blue-100 hover:bg-blue-200 transition"
+                    title="Cari">
+                <img src="~/icons/search.png" class="h-5 w-5" alt="Cari" />
             </button>
-        </div>
-
+        </form>
     </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-3 pt-0 gap-4 sm:gab-4 mt-8 sm:mt-10">
-        @foreach (var propertyItemTerkini in Model.SemuaTerkiniItems)
+    <div id="terkiniContainer" class="grid grid-cols-1 sm:grid-cols-3 pt-0 gap-4 sm:gap-4 mt-8 sm:mt-10">
+        @foreach (var item in Model.SemuaTerkiniItems)
         {
+            <a href="/DetailTerkini/DetailTerkini/@item.Id"
+               data-terkini-id="@item.Id"
+               class="snap-start rounded-none sm:rounded-2xl overflow-hidden sm:border sm:border-gray-200 sm:shadow-sm bg-white hover:shadow-lg hover:-translate-y-1 transition">
+                <img src="@item.ImageUrl" class="w-full h-56 sm:h-48 object-cover rounded-md sm:rounded-none" alt="@item.Title" />
 
-            <a href="/DetailTerkini/DetailTerkini?id=@propertyItemTerkini.Id"
-                    class="snap-start rounded-none sm:rounded-2xl 
-                   overflow-hidden sm:border sm:border-gray-200 sm:shadow-sm bg-white 
-                    hover:shadow-lg hover:-translate-y-1 transition">
-
-                    <img src="@propertyItemTerkini.ImageUrl"
-                        class="w-full h-56 sm:h-48 object-cover rounded-md sm:rounded-none" />
-
-                    <div class="pt-2 sm:p-2">
-                        <h3 class="text-sm sm:text-lg font-bold mb-0 sm:mb-1 text-gray-700">@propertyItemTerkini.Title</h3>
-                        <p class="text-gray-500 text-xs sm:text-sm">
-                            @propertyItemTerkini.CreateDate
-                        </p>
-                    </div>
-                </a>
+                <div class="pt-2 sm:p-2">
+                    <h3 class="text-sm sm:text-lg font-bold mb-0 sm:mb-1 text-gray-700">@item.Title</h3>
+                    <p class="text-gray-500 text-xs sm:text-sm">@item.CreateDate</p>
+                </div>
+            </a>
         }
     </div>
-@* 
-    <div id="terkiniContainer"
-     class="grid grid-cols-1 sm:grid-cols-3 pt-0 gap-4 sm:gap-4 mt-8 sm:mt-10">
+
+    @if (!Model.SemuaTerkiniItems.Any())
+    {
+        <p class="text-center text-sm text-gray-500 pt-10">Data tidak ditemukan.</p>
+    }
+
+    @if (Model.SemuaTerkiniItems.Count == semuaTerkiniModel.PageSize)
+    {
+        <div id="terkiniLoadMore"
+             data-next-url="@nextItemsUrl">
+            <p class="text-center pt-5 text-gray-400">Memuat data berikutnya...</p>
+        </div>
+    }
 </div>
 
-<div id="loadMoreTrigger" 
-     hx-get="/SemuaTerkini/SemuaTerkini?page=1"
-     hx-trigger="load, revealed"
-     hx-target="#loadMoreTrigger"
-     hx-swap="outerHTML">
-     
-     <p class="text-center pt-5 text-gray-400">Memulai load data...</p>
-</div> *@
-</div>
+<script>
+    (function () {
+        const stateKey = "__semuaTerkiniInfiniteScroll";
+        const state = window[stateKey] || {
+            userHasScrolled: false,
+            scrollBound: false,
+            observer: null,
+            loading: false,
+            requestedUrls: new Set()
+        };
+        window[stateKey] = state;
+        state.userHasScrolled = false;
+        state.loading = false;
+        state.requestedUrls = new Set();
+
+        function removeDuplicateCards() {
+            const seen = new Set();
+            document.querySelectorAll("#terkiniContainer [data-terkini-id]").forEach(function (card) {
+                const id = card.dataset.terkiniId;
+                if (seen.has(id)) {
+                    card.remove();
+                    return;
+                }
+
+                seen.add(id);
+            });
+        }
+
+        function loadNext(trigger) {
+            const url = trigger.dataset.nextUrl;
+            if (!url || state.loading || state.requestedUrls.has(url) || !window.htmx) {
+                return;
+            }
+
+            state.loading = true;
+            state.requestedUrls.add(url);
+            state.userHasScrolled = false;
+            htmx.ajax("GET", url, {
+                target: "#terkiniLoadMore",
+                swap: "outerHTML"
+            });
+        }
+
+        function isVisible(trigger) {
+            const rect = trigger.getBoundingClientRect();
+            return rect.top <= window.innerHeight + 120 && rect.bottom >= 0;
+        }
+
+        function loadIfReady() {
+            const trigger = document.getElementById("terkiniLoadMore");
+            if (!state.userHasScrolled || !trigger || !trigger.dataset.nextUrl || !isVisible(trigger)) {
+                return;
+            }
+
+            if (state.observer) {
+                state.observer.disconnect();
+            }
+
+            loadNext(trigger);
+        }
+
+        function setupObserver() {
+            if (state.observer) {
+                state.observer.disconnect();
+            }
+
+            const trigger = document.getElementById("terkiniLoadMore");
+            if (!trigger || !trigger.dataset.nextUrl) {
+                return;
+            }
+
+            state.observer = new IntersectionObserver(function (entries) {
+                if (!state.userHasScrolled) {
+                    return;
+                }
+
+                if (entries.some(entry => entry.isIntersecting)) {
+                    state.observer.disconnect();
+                    loadNext(trigger);
+                }
+            }, { rootMargin: "120px" });
+
+            state.observer.observe(trigger);
+            loadIfReady();
+        }
+
+        if (!state.scrollBound) {
+            window.addEventListener("scroll", function () {
+                state.userHasScrolled = true;
+                loadIfReady();
+            }, { passive: true });
+            state.scrollBound = true;
+        }
+
+        if (state.afterSettleHandler) {
+            document.body.removeEventListener("htmx:afterSettle", state.afterSettleHandler);
+        }
+
+        state.afterSettleHandler = function () {
+            state.loading = false;
+            removeDuplicateCards();
+            setupObserver();
+        };
+        document.body.addEventListener("htmx:afterSettle", state.afterSettleHandler);
+        removeDuplicateCards();
+        setupObserver();
+    })();
+</script>

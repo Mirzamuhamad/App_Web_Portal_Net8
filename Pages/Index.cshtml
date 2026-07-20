@@ -27,99 +27,51 @@
 <!-- HERO SECTION (Mobile-first) -->
 <!-- ========================= -->
 
-<section class="relative px-1 sm:px-6  lg:px-10 pt-48 sm:pt-30 pb-10 sm:pb-6
-    bg-cover bg-center bg-no-repeat bg-[url('/Image/Image9.jpg')]
-    overflow-visible rounded-t-2xl sm:rounded-t-3xl ">
+<section class="hero-carousel-section" data-hero-carousel>
     @* rounded-2xl sm:rounded-3xl *@ @*Untuk Rounded Image*@
 
-    <div class="absolute inset-0 bg-black/45 rounded-t-2xl sm:rounded-t-3xl "></div>
+    <div class="hero-carousel-track">
+        @for (var index = 0; index < Model.HeroSlides.Count; index++)
+        {
+            var slide = Model.HeroSlides[index];
+            <article class="hero-carousel-slide @(index == 0 ? "is-active" : "")" aria-hidden="@(index == 0 ? "false" : "true")">
+                <img src="@slide.HeroImage"
+                     alt="@slide.Title"
+                     loading="@(index == 0 ? "eager" : "lazy")"
+                     fetchpriority="@(index == 0 ? "high" : "auto")"
+                     class="hero-carousel-image" />
+                <div class="hero-carousel-overlay"></div>
 
-    @* <!-- ========== USER BAR (ATAS) ========== -->
-    <div class="absolute top-4 left-2 sm:left-10 right-2 sm:right-10 flex items-center justify-between z-30">
-        <!-- Nama User -->
-        <p class="text-white text-sm sm:text-lg font-semibold drop-shadow-md">
-            Hi, John Doe
-        </p>
-        <!-- Icon Profile (putih) -->
-        <!-- Profile Button -->
-        <div id="profileBtn" class="w-7 h-7 sm:w-8 sm:h-8 bg-white bg-opacity-80 backdrop-blur-md
-            rounded-full flex items-center justify-center shadow cursor-pointer">
-            <img src="/icons/settings.png" class="w-6 h-6" />
-        </div>
-
-        <!-- Dropdown Menu -->
-        <div id="profileMenu" class="hidden absolute right-2 mt-2
-            w-32 sm:w-40 <!-- Mobile lebih kecil -->
-            bg-white shadow-lg rounded-md py-2 z-50
-            opacity-0 translate-y-2 transition-all duration-200">
-
-            <!-- Menu Akun -->
-            <a href="#" class="px-3 sm:px-4 py-2 flex items-center gap-2 hover:bg-gray-100">
-                <i class="fa-solid fa-user text-gray-700 text-sm sm:text-base"></i>
-                <span class="text-sm sm:text-base">Akun</span>
-            </a>
-
-            <!-- Logout -->
-            <a href="#" class="px-3 sm:px-4 py-2 flex items-center gap-2 hover:bg-gray-100">
-                <i class="fa-solid fa-right-from-bracket text-red-500 text-sm sm:text-base"></i>
-                <span class="text-red-500 font-semibold text-sm sm:text-base">Logout</span>
-            </a>
-        </div>
-
-    </div>
-    <!-- ====================================== --> *@
-
-    <div class="relative max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-10 text-white">
-
-        <!-- LEFT -->
-        <!-- LEFT -->
-        <div class="flex flex-col justify-center left-15 md:py-12 md:mt-6">
-
-            <h1 class="text-2xl sm:text-4xl lg:text-5xl font-bold leading-tight mb-4 sm:mb-12 md:pl-2 pl-2">
-                Discover your dream <br />
-                home with us
-            </h1>
-        </div>
-        @* <!-- RIGHT (Blue Box) -->
-        <div class="flex justify-center items-start mt-6 lg:mt-0">
-            <div class="bg-blue-600 text-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl w-full sm:w-auto shadow-lg">
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-
-                    <div>
-                        <label class="text-xs sm:text-sm">Location</label>
-                        <input type="text" class="mt-1 p-2 w-full rounded-xl text-black text-sm sm:text-base"
-                            placeholder="Search">
-                    </div>
-
-                    <div>
-                        <label class="text-xs sm:text-sm">Property</label>
-                        <select class="mt-1 p-2 w-full rounded-xl text-black text-sm sm:text-base">
-                            <option>Townhouse</option>
-                            <option>Villas</option>
-                            <option>Loft</option>
-                            <option>House</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="text-xs sm:text-sm">Status</label>
-                        <select class="mt-1 p-2 w-full rounded-xl text-black text-sm sm:text-base">
-                            <option>Rent</option>
-                            <option>Sell</option>
-                        </select>
+                <div class="hero-carousel-content">
+                    <div class="hero-carousel-copy">
+                        <h1>@slide.Title</h1>
+                        @if (!string.IsNullOrWhiteSpace(slide.SubTitle))
+                        {
+                            <p>@slide.SubTitle</p>
+                        }
                     </div>
                 </div>
+            </article>
+        }
+    </div>
 
-                <button class="mt-5 bg-black text-white w-full py-3 rounded-xl font-medium
-                       text-sm sm:text-base">
-                    Search Properties
-                </button>
-            </div>
-        </div> *@
+    @if (Model.HeroSlides.Count > 1)
+    {
+        <div class="hero-carousel-dots" role="tablist" aria-label="Hero carousel">
+            @for (var index = 0; index < Model.HeroSlides.Count; index++)
+            {
+                <button type="button"
+                        class="hero-carousel-dot @(index == 0 ? "is-active" : "")"
+                        data-hero-dot="@index"
+                        aria-label="Tampilkan slide @(index + 1)"
+                        aria-selected="@(index == 0 ? "true" : "false")"></button>
+            }
+        </div>
+    }
 
-
+    <div class="hero-carousel-inner">
         <!-- Floating Card (Kuning) -->
-        <div class="absolute left-2 right-2 -bottom-20 sm:-bottom-20 z-30">
+        <div class="hero-billing-card absolute left-2 right-2 -bottom-20 sm:-bottom-20 z-30">
             <div class="bg-yellow-400 p-3 sm:p-4 rounded-2xl shadow-lg flex items-center justify-between">
 
                 <div>

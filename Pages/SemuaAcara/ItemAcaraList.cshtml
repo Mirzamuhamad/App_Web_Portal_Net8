@@ -1,35 +1,35 @@
-@model IReadOnlyList<semuaTerkiniModel.semuaTerkiniItem>
+@model IReadOnlyList<semuaAcaraModel.semuaAcaraItem>
 @{
     var search = ViewData["Search"]?.ToString() ?? string.Empty;
-    var lastItemId = Model.LastOrDefault()?.Id;
     var encodedSearch = System.Net.WebUtility.UrlEncode(search);
-    var nextItemsUrl = $"/SemuaTerkini/SemuaTerkini?handler=Items&lastId={lastItemId}&search={encodedSearch}";
+    var lastItemId = Model.LastOrDefault()?.Id;
+    var nextItemsUrl = $"/SemuaAcara/SemuaAcara?handler=Items&lastId={lastItemId}&search={encodedSearch}";
 }
 
-<div hx-swap-oob="beforeend:#terkiniContainer">
+<div hx-swap-oob="beforeend:#acaraContainer">
     @foreach (var item in Model)
     {
-        <a href="/DetailTerkini/DetailTerkini/@item.Id"
-           data-terkini-id="@item.Id"
+        <a href="/DetailAcara/DetailAcara/@item.Id"
+           data-acara-id="@item.Id"
            class="snap-start rounded-none sm:rounded-2xl overflow-hidden sm:border sm:border-gray-200 sm:shadow-sm bg-white hover:shadow-lg hover:-translate-y-1 transition">
             <img src="@item.ImageUrl" class="w-full h-56 sm:h-48 object-cover rounded-md sm:rounded-none" alt="@item.Title" />
 
             <div class="pt-2 sm:p-2">
                 <h3 class="text-sm sm:text-lg font-bold mb-0 sm:mb-1 text-gray-700">@item.Title</h3>
-                <p class="text-gray-500 text-xs sm:text-sm">@item.CreateDate</p>
+                <p class="text-gray-500 text-xs sm:text-sm">@item.StartDate - @item.EndDate</p>
             </div>
         </a>
     }
 </div>
 
-@if (Model.Count == semuaTerkiniModel.PageSize)
+@if (Model.Count == semuaAcaraModel.PageSize)
 {
-    <div id="terkiniLoadMore"
+    <div id="acaraLoadMore"
          data-next-url="@nextItemsUrl">
         <p class="text-center pt-5 text-gray-400">Memuat data berikutnya...</p>
     </div>
 }
 else
 {
-    <div id="terkiniLoadMore"></div>
+    <div id="acaraLoadMore"></div>
 }

@@ -1,5 +1,16 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Data.SqlClient;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using Dapper;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json.Serialization;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Authorization;
 
 public class DetailAcaraModel : PageModel
 {
@@ -7,16 +18,45 @@ public class DetailAcaraModel : PageModel
 
     public IActionResult OnGet(int id)
     {
-        // Dummy data
-        var list = new List<DetailItemAcara>
-        {
-            new DetailItemAcara { Id = 1, Title="Property Expo", Location="Cileles", Price="Rp 500.000", StartDate="10 Nov 2025", EndDate="13 Nov 2025", ImageUrl="/Acara/Image1.jpg", Description="Nikmati malam penuh musik dengan band-band ternama.", LocationUrl="https://maps.app.goo.gl/xYz123AbCdEfGh" },
-            new DetailItemAcara { Id = 2, Title="Indonesia Property Forum", Location="Tangerang Selatan", Price="Rp 150.000", StartDate="10 Nov 2025", EndDate="13 Nov 2025", ImageUrl="/Acara/Image2.jpg", Description="Pameran seni dengan karya seniman lokal & internasional.", LocationUrl="https://maps.app.goo.gl/xYz123AbCdEfGh" },
-            new DetailItemAcara { Id = 3, Title="Halloween Event", Location="BSD City", Price="Rp 200.000", StartDate="10 Nov 2025", EndDate="13 Nov 2025", ImageUrl="/Acara/Image3.jpg", Description="Festival kuliner terbesar tahun ini.", LocationUrl="https://maps.app.goo.gl/xYz123AbCdEfGh" },
-            new DetailItemAcara { Id = 4, Title="Festival Music", Location="Yogyakarta", Price="Rp 300.000", StartDate="10 Nov 2025", EndDate="13 Nov 2025", ImageUrl="/Acara/Image4.webp", Description="Workshop intensif bersama fotografer profesional.", LocationUrl="https://maps.app.goo.gl/xYz123AbCdEfGh" }
-        };
+        var list = new List<DetailItemAcara>();
 
-        DetailAcara = list.FirstOrDefault(x => x.Id == id);
+        try
+        {
+            using var conn = Db.Connect();
+            conn.Open();
+
+            // Gunakan parameter untuk mencegah SQL Injection dan ambil data berdasarkan ID jika diperlukan,
+            // atau ambil data dari V_SectionEvent sesuai dengan konteks Acara
+            using var cmd = new SqlCommand("SELECT * FROM V_SectionEvent WHERE Id = @Id", conn);
+            cmd.Parameters.AddWithValue("@Id", id);
+            
+            using var dr = cmd.ExecuteReader();
+
+            if (dr.Read())
+            {
+                DetailAcara = new DetailItemAcara
+                {
+                    Id = Convert.ToInt32(dr["Id"]),
+                    Title = dr["Title"] != DBNull.Value ? dr["Title"].ToString() : string.Empty,
+                    Location = dr["Location"] != DBNull.Value ? dr["Location"].ToString() : string.Empty,
+                    Price = dr["Price"] != DBNull.Value && decimal.TryParse(dr["Price"].ToString(), out var priceVal) 
+                        ? $"Rp {priceVal:N0}" 
+                        : (dr["Price"] != DBNull.Value ? dr["Price"].ToString() : string.Empty),
+                    StartDate = dr["StartDate"] != DBNull.Value && DateTime.TryParse(dr["StartDate"].ToString(), out var startDate)
+                        ? startDate.ToString("dd MMM yyyy")
+                        : string.Empty,
+                    EndDate = dr["EndDate"] != DBNull.Value && DateTime.TryParse(dr["EndDate"].ToString(), out var endDate)
+                        ? endDate.ToString("dd MMM yyyy")
+                        : string.Empty,
+                    ImageUrl = dr["ImageUrl"] != DBNull.Value ? dr["ImageUrl"].ToString() : "/Acara/default.jpg",
+                    Description = dr["Description"] != DBNull.Value ? dr["Description"].ToString() : string.Empty
+                };
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error loading event detail: " + ex.Message);
+        }
 
         if (DetailAcara == null)
             return RedirectToPage("/Index");
@@ -28,7 +68,7 @@ public class DetailAcaraModel : PageModel
 public class DetailItemAcara
 {
     public int Id { get; set; }
-    public string Title { get; set; } = string.Empty; //= string.Empty; untuk menghindari null reference jadi kalau tidak diisi tetap ada isinya
+    public string Title { get; set; } = string.Empty;
     public string Location { get; set; } = string.Empty;
     public string Price { get; set; } = string.Empty;
     public string StartDate { get; set; } = string.Empty;
