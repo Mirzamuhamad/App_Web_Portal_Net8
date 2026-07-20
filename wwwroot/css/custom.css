@@ -119,6 +119,38 @@ body {
     /* agar elemen modal tidak "berkedip" muncul sebentar saat halaman baru dimuat: */
     [x-cloak] { display: none !important; }
 
+    /* Team */
+
+    .team-card .team-lightbox-toggle {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .team-card .team-avatar-wrap {
+            cursor: pointer;
+        }
+
+        .team-card .team-lightbox {
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 180ms ease, visibility 180ms ease;
+        }
+
+        .team-card .team-lightbox img {
+            transform: scale(0.92);
+            transition: transform 180ms ease;
+        }
+
+        .team-card .team-lightbox-toggle:checked~.team-lightbox {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .team-card .team-lightbox-toggle:checked~.team-lightbox img {
+            transform: scale(1);
+        }
+
 
 
 
