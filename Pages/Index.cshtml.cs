@@ -113,12 +113,12 @@ namespace TestLandingPageNet8.Pages
         }
 
         public class UserBillingViewModel
-    {
-        public string CustCode { get; set; } = string.Empty;
-        public decimal BaseForex { get; set; } // Menggunakan decimal untuk nominal uang
-        public string UserId { get; set; } = string.Empty;
-        public DateTime? DueDate { get; set; } // Nullable jika sewaktu-waktu database kosong
-    }
+        {
+            public string CustCode { get; set; } = string.Empty;
+            public decimal BaseForex { get; set; } // Menggunakan decimal untuk nominal uang
+            public string UserId { get; set; } = string.Empty;
+            public DateTime? DueDate { get; set; } // Nullable jika sewaktu-waktu database kosong
+        }
 
         private void LoadItemsFromDatabase() // contoh ambil data dari database loadnya
         {
@@ -151,42 +151,139 @@ namespace TestLandingPageNet8.Pages
 
         private void LoadDummyTerkini()
         {
-            Terkini = new List<LoadDummyTerkini>
+            // Terkini = new List<LoadDummyTerkini>
+            // {
+            //     new LoadDummyTerkini { Id = 1, Title="Perbaikan Jalan", CreateDate="30 Nov 2025", Price="Rp 250,000,000", Tag="Featured", ImageUrl="/Image/Image14.jpg", Description = "melibatkan serangkaian kegiatan terencana untuk mengembalikan, memperbaiki, atau meningkatkan kondisi fungsional jalan. Tujuannya adalah untuk mempertahankan kondisi jalan agar tetap optimal, aman, dan nyaman bagi pengguna, serta memperlancar mobilitas dan distribusi barang/jasa" },
+            //     new LoadDummyTerkini { Id = 2, Title="Pembaruan System", CreateDate="30 Nov 2025", Price="Rp 180,000,000", Tag="Hot", ImageUrl="/Image/Image16.jpg", Description="Experience the epitome of urban living in this luxury loft situated in Bandung, featuring contemporary design and top-notch facilities." },
+            //     new LoadDummyTerkini { Id = 3, Title="Fasilitas EV Charging", CreateDate="30 Nov 2025", Price="Rp 350,000,000", Tag="Premium", ImageUrl="/Image/Image15.png", Description="Discover elegance and comfort in this exquisite townhouse located in Surabaya, offering spacious interiors and modern conveniences." },
+            //     new LoadDummyTerkini { Id = 4, Title="Pembangunan Mushola", CreateDate="30 Nov 2025", Price="Rp 270,000,000", Tag="Featured", ImageUrl="/Image/Image17.png", Description="Another modern villa with great environment and excellent facilities." },
+            //     new LoadDummyTerkini { Id = 5,  Title="Perencanaan Pembangunan Taman", CreateDate="30 Nov 2025", Price="Rp 185,000,000", Tag="Hot", ImageUrl="/Image/Image18.jpeg", Description="Luxury loft with a gorgeous view of the city and modern rooms." },
+            //     new LoadDummyTerkini { Id = 6, Title="Penanaman Pohon", CreateDate="30 Nov 2025", Price="Rp 360,000,000", Tag="Premium", ImageUrl="/Image/Image20.jpg", Description="Townhouse designed with contemporary style and comfortable living." }
+            //  };
+
+            try
             {
-                new LoadDummyTerkini { Id = 1, Title="Perbaikan Jalan", CreateDate="30 Nov 2025", Price="Rp 250,000,000", Tag="Featured", ImageUrl="/Image/Image14.jpg", Description = "melibatkan serangkaian kegiatan terencana untuk mengembalikan, memperbaiki, atau meningkatkan kondisi fungsional jalan. Tujuannya adalah untuk mempertahankan kondisi jalan agar tetap optimal, aman, dan nyaman bagi pengguna, serta memperlancar mobilitas dan distribusi barang/jasa" },
-                new LoadDummyTerkini { Id = 2, Title="Pembaruan System", CreateDate="30 Nov 2025", Price="Rp 180,000,000", Tag="Hot", ImageUrl="/Image/Image16.jpg", Description="Experience the epitome of urban living in this luxury loft situated in Bandung, featuring contemporary design and top-notch facilities." },
-                new LoadDummyTerkini { Id = 3, Title="Fasilitas EV Charging", CreateDate="30 Nov 2025", Price="Rp 350,000,000", Tag="Premium", ImageUrl="/Image/Image15.png", Description="Discover elegance and comfort in this exquisite townhouse located in Surabaya, offering spacious interiors and modern conveniences." },
-                new LoadDummyTerkini { Id = 4, Title="Pembangunan Mushola", CreateDate="30 Nov 2025", Price="Rp 270,000,000", Tag="Featured", ImageUrl="/Image/Image17.png", Description="Another modern villa with great environment and excellent facilities." },
-                new LoadDummyTerkini { Id = 5,  Title="Perencanaan Pembangunan Taman", CreateDate="30 Nov 2025", Price="Rp 185,000,000", Tag="Hot", ImageUrl="/Image/Image18.jpeg", Description="Luxury loft with a gorgeous view of the city and modern rooms." },
-                new LoadDummyTerkini { Id = 6, Title="Penanaman Pohon", CreateDate="30 Nov 2025", Price="Rp 360,000,000", Tag="Premium", ImageUrl="/Image/Image20.jpg", Description="Townhouse designed with contemporary style and comfortable living." }
-             };
+                // using var conn = _db.CreateConnection();
+                // conn.Open();
+                using var conn = Db.Connect();
+                conn.Open();
+
+                using var cmd = new SqlCommand("SELECT TOP 6 * FROM V_SectionInfo ORDER BY Id DESC", conn);
+                using var dr = cmd.ExecuteReader();
+
+                while (dr.Read())
+                {
+                    Terkini.Add(new LoadDummyTerkini
+                    {
+                        Id = Convert.ToInt32(dr["Id"]),
+                        Title = dr["Title"].ToString(),
+                        CreateDate = dr["CreatedDate"] != DBNull.Value && DateTime.TryParse(dr["CreatedDate"].ToString(), out var CreateDate)
+                            ? CreateDate.ToString("dd MMM yyyy")
+                            : string.Empty,
+                        Price = dr["Price"].ToString(),
+                        Tag = dr["Tag"].ToString(),
+                        ImageUrl = dr["ImageUrl"].ToString() ?? "/Image/default.jpg",
+                        Description = dr["Description"].ToString()
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                // log error atau tampilkan di console
+                Console.WriteLine("Error loading menu items: " + ex.Message);
+            }
         }
 
         private void LoadDummyProperties()
         {
-            Properties = new List<PropertyItem>
-            {
-                new PropertyItem { Id = 1, Title="Gudang Tekstil", Location="Jakarta", Price="Rp 250,000,000", Tag="Featured", ImageUrl="/Image/Image10.jpg", Description="A beautiful modern villa located in the heart of Jakarta with stunning architecture and luxurious amenities." },
-                new PropertyItem { Id = 2, Title="Kavling Kosong", Location="Cileles", Price="Rp 180,000,000", Tag="Hot", ImageUrl="/Image/Image12.jpg", Description="Experience the epitome of urban living in this luxury loft situated in Bandung, featuring contemporary design and top-notch facilities." },
-                new PropertyItem { Id = 3, Title="Pabrik", Location="Cileles", Price="Rp 350,000,000", Tag="Premium", ImageUrl="/Image/Image11.jpg", Description="Discover elegance and comfort in this exquisite townhouse located in Surabaya, offering spacious interiors and modern conveniences." },
-                new PropertyItem { Id = 4, Title="Gudang Makanan", Location="Jakarta", Price="Rp 270,000,000", Tag="Featured", ImageUrl="/Image/Image13.jpg", Description="Another modern villa with great environment and excellent facilities." },
-                new PropertyItem { Id = 5, Title="Kavling kosong B", Location="Bandung", Price="Rp 185,000,000", Tag="Hot", ImageUrl="/Image/Image12.jpg", Description="Luxury loft with a gorgeous view of the city and modern rooms." },
-                new PropertyItem { Id = 6, Title="Gudang Barang", Location="Surabaya", Price="Rp 360,000,000", Tag="Premium", ImageUrl="/Image/Image10.jpg", Description="Townhouse designed with contemporary style and comfortable living." }
+            // Properties = new List<PropertyItem>
+            // {
+            //     new PropertyItem { Id = 1, Title="Gudang Tekstil", Location="Jakarta", Price="Rp 250,000,000", Tag="Featured", ImageUrl="/Image/Image10.jpg", Description="A beautiful modern villa located in the heart of Jakarta with stunning architecture and luxurious amenities." },
+            //     new PropertyItem { Id = 2, Title="Kavling Kosong", Location="Cileles", Price="Rp 180,000,000", Tag="Hot", ImageUrl="/Image/Image12.jpg", Description="Experience the epitome of urban living in this luxury loft situated in Bandung, featuring contemporary design and top-notch facilities." },
+            //     new PropertyItem { Id = 3, Title="Pabrik", Location="Cileles", Price="Rp 350,000,000", Tag="Premium", ImageUrl="/Image/Image11.jpg", Description="Discover elegance and comfort in this exquisite townhouse located in Surabaya, offering spacious interiors and modern conveniences." },
+            //     new PropertyItem { Id = 4, Title="Gudang Makanan", Location="Jakarta", Price="Rp 270,000,000", Tag="Featured", ImageUrl="/Image/Image13.jpg", Description="Another modern villa with great environment and excellent facilities." },
+            //     new PropertyItem { Id = 5, Title="Kavling kosong B", Location="Bandung", Price="Rp 185,000,000", Tag="Hot", ImageUrl="/Image/Image12.jpg", Description="Luxury loft with a gorgeous view of the city and modern rooms." },
+            //     new PropertyItem { Id = 6, Title="Gudang Barang", Location="Surabaya", Price="Rp 360,000,000", Tag="Premium", ImageUrl="/Image/Image10.jpg", Description="Townhouse designed with contemporary style and comfortable living." }
 
-               };
+            //    };
+
+            Properties = new List<PropertyItem>();
+
+            try
+            {
+                using var conn = Db.Connect();
+                conn.Open();
+
+                using var cmd = new SqlCommand("SELECT TOP 6 * FROM V_SectionPromo ORDER BY Id DESC", conn);
+                using var dr = cmd.ExecuteReader();
+
+                while (dr.Read())
+                {
+                    Properties.Add(new PropertyItem
+                    {
+                        Id = Convert.ToInt32(dr["Id"]),
+                        Title = dr["Title"] != DBNull.Value ? dr["Title"].ToString() : string.Empty,
+                        Location = dr["Location"] != DBNull.Value ? dr["Location"].ToString() : string.Empty,
+                        Price = dr["Price"] != DBNull.Value && decimal.TryParse(dr["Price"].ToString(), out var priceVal) 
+    ? $"Rp {priceVal:N0}" 
+    : (dr["Price"] != DBNull.Value ? dr["Price"].ToString() : string.Empty),
+                        Tag = dr["Tag"] != DBNull.Value ? dr["Tag"].ToString() : string.Empty,
+                        ImageUrl = dr["ImageUrl"] != DBNull.Value ? dr["ImageUrl"].ToString() : "/Image/default.jpg",
+                        Description = dr["Description"] != DBNull.Value ? dr["Description"].ToString() : string.Empty
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error loading promo items: " + ex.Message);
+            }
         }
 
 
         private void LoadDummyAcara()
         {
             // Implementasi pengambilan data acara dari database atau sumber lainnya
-            Acara = new List<ItemCaraouselAcara>
+            // Acara = new List<ItemCaraouselAcara>
+            // {
+            //     new ItemCaraouselAcara { Id = 1, Title="Property Expo", Location="Cileles", Price="Rp 500,000", StartDate="10 Nov 2025", EndDate="13 Nov 2025", ImageUrl="/Acara/Image1.jpg", Description="Nikmati malam penuh musik dengan penampilan dari band-band ternama di konser spektakuler ini." },
+            //     new ItemCaraouselAcara { Id = 2, Title="Indonesia Property Forum", Location="Tangerang Selatan", Price="Rp 150,000", StartDate="10 Nov 2025", EndDate="13 Nov 2025", ImageUrl="/Acara/Image2.jpg", Description="Jelajahi karya seni menakjubkan dari seniman lokal dan internasional di pameran seni ini." },
+            //     new ItemCaraouselAcara { Id = 3, Title="Halloween", Location="BSD City", Price="Rp 200,000", StartDate="10 Nov 2025", EndDate="13 Nov 2025", ImageUrl="/Acara/Image3.jpg", Description="Cicipi berbagai hidangan lezat dari seluruh nusantara di festival kuliner terbesar tahun ini." },
+            //     new ItemCaraouselAcara { Id = 4, Title="Festival Music", Location="Yogyakarta", Price="Rp 300,000", StartDate="10 Nov 2025", EndDate="13 Nov 2025", ImageUrl="/Acara/Image4.webp", Description="Tingkatkan keterampilan fotografi Anda dengan mengikuti workshop intensif bersama fotografer profesional." }
+            // };
+
+            Acara = new List<ItemCaraouselAcara>();
+
+            try
             {
-                new ItemCaraouselAcara { Id = 1, Title="Property Expo", Location="Cileles", Price="Rp 500,000", StartDate="10 Nov 2025", EndDate="13 Nov 2025", ImageUrl="/Acara/Image1.jpg", Description="Nikmati malam penuh musik dengan penampilan dari band-band ternama di konser spektakuler ini." },
-                new ItemCaraouselAcara { Id = 2, Title="Indonesia Property Forum", Location="Tangerang Selatan", Price="Rp 150,000", StartDate="10 Nov 2025", EndDate="13 Nov 2025", ImageUrl="/Acara/Image2.jpg", Description="Jelajahi karya seni menakjubkan dari seniman lokal dan internasional di pameran seni ini." },
-                new ItemCaraouselAcara { Id = 3, Title="Halloween", Location="BSD City", Price="Rp 200,000", StartDate="10 Nov 2025", EndDate="13 Nov 2025", ImageUrl="/Acara/Image3.jpg", Description="Cicipi berbagai hidangan lezat dari seluruh nusantara di festival kuliner terbesar tahun ini." },
-                new ItemCaraouselAcara { Id = 4, Title="Festival Music", Location="Yogyakarta", Price="Rp 300,000", StartDate="10 Nov 2025", EndDate="13 Nov 2025", ImageUrl="/Acara/Image4.webp", Description="Tingkatkan keterampilan fotografi Anda dengan mengikuti workshop intensif bersama fotografer profesional." }
-            };
+                using var conn = Db.Connect();
+                conn.Open();
+
+                using var cmd = new SqlCommand("SELECT TOP 6 * FROM V_SectionEvent ORDER BY Id DESC", conn);
+                using var dr = cmd.ExecuteReader();
+
+                while (dr.Read())
+                {
+                    Acara.Add(new ItemCaraouselAcara
+                    {
+                        Id = Convert.ToInt32(dr["Id"]),
+                        Title = dr["Title"]?.ToString() ?? string.Empty,
+                        Location = dr["Location"] != DBNull.Value ? dr["Location"]?.ToString() : string.Empty, // Sesuaikan jika kolom Location ada di view
+                        Price = dr["Price"] != DBNull.Value ? dr["Price"]?.ToString() : string.Empty,       // Sesuaikan jika kolom Price ada di view
+                        StartDate = dr["StartDate"] != DBNull.Value && DateTime.TryParse(dr["StartDate"].ToString(), out var startDate)
+                            ? startDate.ToString("dd MMM yyyy")
+                            : string.Empty,
+                        EndDate = dr["EndDate"] != DBNull.Value && DateTime.TryParse(dr["EndDate"].ToString(), out var endDate)
+                            ? endDate.ToString("dd MMM yyyy")
+                            : string.Empty,
+                        ImageUrl = dr["ImageUrl"]?.ToString() ?? "/Acara/default.jpg",
+                        Description = dr["Description"]?.ToString() ?? string.Empty
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error loading event items: " + ex.Message);
+            }
         }
 
         // class ambil data menu dari database

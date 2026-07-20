@@ -20,6 +20,8 @@ public class semuaAcaraModel : PageModel
                 new semuaAcaraItem { Id = 4, Title="Festival Music", Location="Yogyakarta", Price="Rp 300,000", StartDate="10 Nov 2025", EndDate="13 Nov 2025", ImageUrl="/Acara/Image4.webp", Description="Tingkatkan keterampilan fotografi Anda dengan mengikuti workshop intensif bersama fotografer profesional." }
             
              };
+
+             
         }
     public class semuaAcaraItem
     {
