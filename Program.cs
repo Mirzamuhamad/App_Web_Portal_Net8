@@ -18,6 +18,8 @@ builder.Services.AddSingleton<IDbConnectionFactory, DbConnectionFactory>(); // R
 
 builder.Services.AddScoped<EmailService>(); // Service untuk email
 
+builder.Services.AddHttpClient();
+
 builder.Services.AddSession(); // untuk aktifkan session
 
 

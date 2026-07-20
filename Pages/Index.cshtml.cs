@@ -28,6 +28,7 @@ namespace TestLandingPageNet8.Pages
         public List<PropertyItem> Properties { get; set; } = new(); // list properti buat carousel membuat data 
         public List<ItemCaraouselAcara> Acara { get; set; } = new(); // list acara buat carousel membuat data
         public List<HomeMenuItem> HomeMenuItems { get; set; } = new();
+        public List<SectionTeamItem> TeamMembers { get; set; } = new();
 
         public UserBillingViewModel BillingInfo { get; set; }
 
@@ -55,6 +56,7 @@ namespace TestLandingPageNet8.Pages
             LoadDummyProperties();   // nanti ganti SQL juga
             LoadDummyAcara();
             LoadItemsMenu();
+            LoadSectionTeam();
 
             return Page();
         }
@@ -171,6 +173,31 @@ namespace TestLandingPageNet8.Pages
             }
         }
 
+        private void LoadSectionTeam()
+        {
+            try
+            {
+                using var conn = Db.Connect();
+                string sql = @"
+                    SELECT
+                        Id,
+                        Nama,
+                        Position,
+                        Phone,
+                        Email,
+                        ImageTeam
+                    FROM V_SectionTeam
+                    ORDER BY Id
+                ";
+
+                TeamMembers = conn.Query<SectionTeamItem>(sql).ToList();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error loading section team: " + ex.Message);
+            }
+        }
+
         // class ambil data menu dari hardcode LIst
         //     private void LoadItemsMenu()
         //     {
@@ -248,5 +275,15 @@ namespace TestLandingPageNet8.Pages
         public string Title { get; set; } = string.Empty;
         public string IconPath { get; set; } = string.Empty;
         public string Url { get; set; } = string.Empty;
+    }
+
+    public class SectionTeamItem
+    {
+        public int Id { get; set; }
+        public string Nama { get; set; } = string.Empty;
+        public string Position { get; set; } = string.Empty;
+        public string Phone { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string ImageTeam { get; set; } = string.Empty;
     }
 }
