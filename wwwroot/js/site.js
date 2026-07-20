@@ -153,6 +153,108 @@ document.body.addEventListener("htmx:afterSwap", function () {
 // 🔥 Run saat halaman pertama load
 document.addEventListener("DOMContentLoaded", initCarousel);
 
+function initHeroCarousel() {
+    document.querySelectorAll("[data-hero-carousel]").forEach((carousel) => {
+        if (carousel.dataset.heroCarouselReady === "true") return;
+        carousel.dataset.heroCarouselReady = "true";
+
+        const slides = Array.from(carousel.querySelectorAll(".hero-carousel-slide"));
+        const dots = Array.from(carousel.querySelectorAll("[data-hero-dot]"));
+        const images = Array.from(carousel.querySelectorAll(".hero-carousel-image"));
+
+        images.forEach((image) => {
+            if (image.complete) {
+                image.classList.add("is-loaded");
+            } else {
+                image.addEventListener("load", () => image.classList.add("is-loaded"), { once: true });
+                image.addEventListener("error", () => image.classList.add("is-loaded"), { once: true });
+            }
+        });
+
+        if (slides.length <= 1) return;
+
+        let activeIndex = Math.max(0, slides.findIndex((slide) => slide.classList.contains("is-active")));
+        let autoPlayTimer = null;
+        let touchStartX = 0;
+        let touchStartY = 0;
+
+        function showSlide(nextIndex) {
+            activeIndex = (nextIndex + slides.length) % slides.length;
+
+            slides.forEach((slide, index) => {
+                const isActive = index === activeIndex;
+                slide.classList.toggle("is-active", isActive);
+                slide.setAttribute("aria-hidden", isActive ? "false" : "true");
+            });
+
+            dots.forEach((dot, index) => {
+                const isActive = index === activeIndex;
+                dot.classList.toggle("is-active", isActive);
+                dot.setAttribute("aria-selected", isActive ? "true" : "false");
+            });
+        }
+
+        function nextSlide() {
+            showSlide(activeIndex + 1);
+        }
+
+        function prevSlide() {
+            showSlide(activeIndex - 1);
+        }
+
+        function stopAutoPlay() {
+            if (autoPlayTimer) {
+                clearInterval(autoPlayTimer);
+                autoPlayTimer = null;
+            }
+        }
+
+        function startAutoPlay() {
+            stopAutoPlay();
+            autoPlayTimer = setInterval(nextSlide, 5000);
+        }
+
+        dots.forEach((dot) => {
+            dot.addEventListener("click", () => {
+                const dotIndex = Number(dot.dataset.heroDot);
+                if (!Number.isNaN(dotIndex)) showSlide(dotIndex);
+            });
+        });
+
+        carousel.addEventListener("mouseenter", stopAutoPlay);
+        carousel.addEventListener("mouseleave", startAutoPlay);
+
+        carousel.addEventListener("touchstart", (event) => {
+            const touch = event.touches[0];
+            touchStartX = touch.clientX;
+            touchStartY = touch.clientY;
+            stopAutoPlay();
+        }, { passive: true });
+
+        carousel.addEventListener("touchend", (event) => {
+            const touch = event.changedTouches[0];
+            const deltaX = touch.clientX - touchStartX;
+            const deltaY = touch.clientY - touchStartY;
+
+            if (Math.abs(deltaX) > 45 && Math.abs(deltaX) > Math.abs(deltaY)) {
+                if (deltaX < 0) {
+                    nextSlide();
+                } else {
+                    prevSlide();
+                }
+            }
+
+            startAutoPlay();
+        }, { passive: true });
+
+        showSlide(activeIndex);
+        startAutoPlay();
+    });
+}
+
+document.body.addEventListener("htmx:afterSwap", initHeroCarousel);
+document.addEventListener("DOMContentLoaded", initHeroCarousel);
+
 
 // untuk dropdown profile di pojok kanan atas
 document.addEventListener("DOMContentLoaded", () => {

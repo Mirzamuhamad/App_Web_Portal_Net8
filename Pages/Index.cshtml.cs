@@ -29,11 +29,14 @@ namespace TestLandingPageNet8.Pages
         public List<ItemCaraouselAcara> Acara { get; set; } = new(); // list acara buat carousel membuat data
         public List<HomeMenuItem> HomeMenuItems { get; set; } = new();
         public List<SectionTeamItem> TeamMembers { get; set; } = new();
+        public List<SectionHeroItem> HeroSlides { get; set; } = new();
 
         public UserBillingViewModel BillingInfo { get; set; }
 
         public IActionResult OnGet()
         {
+            LoadSectionHero();
+
             var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userIdStr))
             {
@@ -59,6 +62,36 @@ namespace TestLandingPageNet8.Pages
             LoadSectionTeam();
 
             return Page();
+        }
+
+        private void LoadSectionHero()
+        {
+            try
+            {
+                using var conn = Db.Connect();
+                string sql = @"
+                    SELECT
+                        Id,
+                        Title,
+                        SubTitle,
+                        HeroImage
+                    FROM V_SectionHero
+                    ORDER BY Id
+                ";
+
+                HeroSlides = conn.Query<SectionHeroItem>(sql)
+                    .Select(hero => hero.WithFallback())
+                    .ToList();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error loading section hero: " + ex.Message);
+            }
+
+            if (HeroSlides.Count == 0)
+            {
+                HeroSlides.Add(SectionHeroItem.Default);
+            }
         }
 
         private void LoadBillingInfo(string userId)
@@ -285,5 +318,32 @@ namespace TestLandingPageNet8.Pages
         public string Phone { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string ImageTeam { get; set; } = string.Empty;
+    }
+
+    public class SectionHeroItem
+    {
+        public long Id { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string SubTitle { get; set; } = string.Empty;
+        public string HeroImage { get; set; } = string.Empty;
+
+        public static SectionHeroItem Default => new()
+        {
+            Id = 0,
+            Title = "Discover your dream home with us",
+            SubTitle = "Temukan informasi kawasan terbaru langsung dari portal tenant.",
+            HeroImage = "/Image/Image9.jpg"
+        };
+
+        public SectionHeroItem WithFallback()
+        {
+            var fallback = Default;
+
+            Title = string.IsNullOrWhiteSpace(Title) ? fallback.Title : Title;
+            SubTitle = string.IsNullOrWhiteSpace(SubTitle) ? fallback.SubTitle : SubTitle;
+            HeroImage = string.IsNullOrWhiteSpace(HeroImage) ? fallback.HeroImage : HeroImage;
+
+            return this;
+        }
     }
 }
