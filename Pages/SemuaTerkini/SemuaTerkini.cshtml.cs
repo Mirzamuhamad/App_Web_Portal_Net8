@@ -1,60 +1,120 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Data.SqlClient;
 
 public class semuaTerkiniModel : PageModel
 {
+    public const int PageSize = 9;
+
+    [BindProperty(SupportsGet = true)]
+    public string Search { get; set; } = string.Empty;
+
     public List<semuaTerkiniItem> SemuaTerkiniItems { get; set; } = new();
+
     public void OnGet()
     {
-        semuaTerkiniList();
-
-        
+        SemuaTerkiniItems = LoadItems(null, Search);
     }
-// FILE: SemuaTerkini.cshtml.cs (Perubahan pada OnGet)
 
-// public IActionResult OnGet(int page = 1)
-// {
-//     semuaTerkiniList();
+    public IActionResult OnGetItems(int? lastId, string search = "")
+    {
+        var items = LoadItems(lastId, search);
 
-//     int pageSize = 3; // 🔥 UBAH ke 3 agar sinkron dengan grid HTML
-//     var skip = (page - 1) * pageSize;
-    
-//     var data = SemuaTerkiniItems
-//                 .OrderBy(item => item.Id) // 🔥 TAMBAHKAN: OrderBy untuk stabilitas
-//                 .Skip(skip)
-//                 .Take(pageSize)
-//                 .ToList();
+        ViewData["Search"] = search ?? string.Empty;
 
-//     if (!data.Any())
-//         return new EmptyResult(); // Ini akan menghentikan loop setelah page 4
+        return Partial("ItemTerkiniList", items);
+    }
 
-//     if (Request.Headers.ContainsKey("HX-Request"))
-//         return Partial("ItemTerkiniList", data);
+    private static List<semuaTerkiniItem> LoadItems(int? lastId, string? search)
+    {
+        var items = new List<semuaTerkiniItem>();
+        var keyword = search?.Trim() ?? string.Empty;
 
-//     SemuaTerkiniItems = new List<semuaTerkiniItem>();
-//     return Page();
-// }
-
-
-
-    private void semuaTerkiniList()
+        try
         {
-            SemuaTerkiniItems = new List<semuaTerkiniItem>
+            using var conn = Db.Connect();
+            conn.Open();
+
+            const string sql = @"
+                SELECT
+                    Id,
+                    Title,
+                    CreatedDate,
+                    Tag,
+                    ImageUrl,
+                    Description,
+                    Price
+                FROM V_SectionInfo
+                WHERE
+                    (@LastId IS NULL OR Id < @LastId)
+                    AND (
+                        @Search = ''
+                        OR Title LIKE @LikeSearch
+                        OR Description LIKE @LikeSearch
+                        OR Tag LIKE @LikeSearch
+                    )
+                ORDER BY Id DESC
+                OFFSET 0 ROWS FETCH NEXT @PageSize ROWS ONLY";
+
+            using var cmd = new SqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@LastId", lastId.HasValue ? lastId.Value : DBNull.Value);
+            cmd.Parameters.AddWithValue("@Search", keyword);
+            cmd.Parameters.AddWithValue("@LikeSearch", $"%{keyword}%");
+            cmd.Parameters.AddWithValue("@PageSize", PageSize);
+
+            using var dr = cmd.ExecuteReader();
+            while (dr.Read())
             {
-                new semuaTerkiniItem { Id = 1, Title="Perbaikan Jalan", CreateDate="30 Nov 2025", Price="Rp 250,000,000", Tag="Featured", ImageUrl="/Image/Image14.jpg", Description = "melibatkan serangkaian kegiatan terencana untuk mengembalikan, memperbaiki, atau meningkatkan kondisi fungsional jalan. Tujuannya adalah untuk mempertahankan kondisi jalan agar tetap optimal, aman, dan nyaman bagi pengguna, serta memperlancar mobilitas dan distribusi barang/jasa" },
-                new semuaTerkiniItem { Id = 2, Title="Pembaruan System", CreateDate="30 Nov 2025", Price="Rp 180,000,000", Tag="Hot", ImageUrl="/Image/Image16.jpg", Description="Experience the epitome of urban living in this luxury loft situated in Bandung, featuring contemporary design and top-notch facilities." },
-                new semuaTerkiniItem { Id = 3, Title="Fasilitas EV Charging", CreateDate="30 Nov 2025", Price="Rp 350,000,000", Tag="Premium", ImageUrl="/Image/Image15.png", Description="Discover elegance and comfort in this exquisite townhouse located in Surabaya, offering spacious interiors and modern conveniences." },
-                new semuaTerkiniItem { Id = 4, Title="Pembangunan Mushola", CreateDate="30 Nov 2025", Price="Rp 270,000,000", Tag="Featured", ImageUrl="/Image/Image17.png", Description="Another modern villa with great environment and excellent facilities." },
-                new semuaTerkiniItem { Id = 5,  Title="Perencanaan Pembangunan Taman", CreateDate="30 Nov 2025", Price="Rp 185,000,000", Tag="Hot", ImageUrl="/Image/Image18.jpeg", Description="Luxury loft with a gorgeous view of the city and modern rooms." },
-                new semuaTerkiniItem { Id = 6, Title="Penanaman Pohon", CreateDate="30 Nov 2025", Price="Rp 360,000,000", Tag="Premium", ImageUrl="/Image/Image20.jpg", Description="Townhouse designed with contemporary style and comfortable living." },
-                new semuaTerkiniItem { Id = 7, Title="Perbaikan Jalan", CreateDate="30 Nov 2025", Price="Rp 250,000,000", Tag="Featured", ImageUrl="/Image/Image14.jpg", Description = "melibatkan serangkaian kegiatan terencana untuk mengembalikan, memperbaiki, atau meningkatkan kondisi fungsional jalan. Tujuannya adalah untuk mempertahankan kondisi jalan agar tetap optimal, aman, dan nyaman bagi pengguna, serta memperlancar mobilitas dan distribusi barang/jasa" },
-                new semuaTerkiniItem { Id = 8, Title="Pembaruan System", CreateDate="30 Nov 2025", Price="Rp 180,000,000", Tag="Hot", ImageUrl="/Image/Image16.jpg", Description="Experience the epitome of urban living in this luxury loft situated in Bandung, featuring contemporary design and top-notch facilities." },
-                new semuaTerkiniItem { Id = 9, Title="Fasilitas EV Charging", CreateDate="30 Nov 2025", Price="Rp 350,000,000", Tag="Premium", ImageUrl="/Image/Image15.png", Description="Discover elegance and comfort in this exquisite townhouse located in Surabaya, offering spacious interiors and modern conveniences." },
-                new semuaTerkiniItem { Id = 10, Title="Pembangunan Mushola", CreateDate="30 Nov 2025", Price="Rp 270,000,000", Tag="Featured", ImageUrl="/Image/Image17.png", Description="Another modern villa with great environment and excellent facilities." },
-                new semuaTerkiniItem { Id = 11,  Title="Perencanaan Pembangunan Taman", CreateDate="30 Nov 2025", Price="Rp 185,000,000", Tag="Hot", ImageUrl="/Image/Image18.jpeg", Description="Luxury loft with a gorgeous view of the city and modern rooms." },
-                new semuaTerkiniItem { Id = 12, Title="Penanaman Pohon", CreateDate="30 Nov 2025", Price="Rp 360,000,000", Tag="Premium", ImageUrl="/Image/Image20.jpg", Description="Townhouse designed with contemporary style and comfortable living." }
-             };
+                items.Add(new semuaTerkiniItem
+                {
+                    Id = Convert.ToInt32(dr["Id"]),
+                    Title = ReadString(dr, "Title"),
+                    CreateDate = FormatDate(dr["CreatedDate"]),
+                    Price = FormatPrice(dr["Price"]),
+                    Tag = ReadString(dr, "Tag"),
+                    ImageUrl = ReadImageUrl(dr, "ImageUrl", "/Image/default.jpg"),
+                    Description = ReadString(dr, "Description")
+                });
+            }
         }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error loading semua terkini items: " + ex.Message);
+        }
+
+        return items;
+    }
+
+    private static string ReadString(SqlDataReader dr, string columnName)
+    {
+        return dr[columnName] != DBNull.Value ? dr[columnName]?.ToString() ?? string.Empty : string.Empty;
+    }
+
+    private static string ReadImageUrl(SqlDataReader dr, string columnName, string fallback)
+    {
+        var imageUrl = ReadString(dr, columnName);
+        return string.IsNullOrWhiteSpace(imageUrl) ? fallback : imageUrl;
+    }
+
+    private static string FormatDate(object value)
+    {
+        return value != DBNull.Value && DateTime.TryParse(value.ToString(), out var date)
+            ? date.ToString("dd MMM yyyy")
+            : string.Empty;
+    }
+
+    private static string FormatPrice(object value)
+    {
+        if (value == DBNull.Value)
+        {
+            return string.Empty;
+        }
+
+        return decimal.TryParse(value.ToString(), out var price)
+            ? $"Rp {price:N0}"
+            : value.ToString() ?? string.Empty;
+    }
+
     public class semuaTerkiniItem
     {
         public int Id { get; set; }
@@ -65,9 +125,4 @@ public class semuaTerkiniModel : PageModel
         public string Description { get; set; } = string.Empty;
         public string CreateDate { get; set; } = string.Empty;
     }
-
-   
-
-    
-
 }
