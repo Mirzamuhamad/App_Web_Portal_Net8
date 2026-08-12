@@ -75,6 +75,8 @@ namespace TestLandingPageNet8.Pages.HistoryTagihanUnitList.HistoryTagihanUnitDet
             public string Status { get; set; } = string.Empty;
             public string FileFakturPajak { get; set; } = string.Empty;
             public string FileKwitansi { get; set; } = string.Empty;
+
+            public string InvoiceNo { get; set; } = string.Empty;
         }
     }
 }

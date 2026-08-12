@@ -9,7 +9,6 @@
 <head>
     <meta charset="UTF-8">
     <title>@Model.DocumentTitle - @Model.InvoiceHeader.TransNmbr</title>
-    <!-- Library html2pdf.js untuk auto-download -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
     <style>
@@ -18,18 +17,17 @@
         }
         body {
             font-family: Arial, Helvetica, sans-serif;
-            color: #4b4b4b;
+            color: #222;
             line-height: 1.3;
             font-size: 11pt;
             margin: 0;
             padding: 0;
             background-color: #fff;
         }
-        /* Pembungkus luar presisi ukuran A4 asli */
         .invoice-container {
-            width: 175mm;
+            width: 180mm;
             margin: 0 auto;
-            padding: 15mm 5mm;
+            padding: 10mm 5mm;
         }
         .header-table {
             width: 100%;
@@ -37,39 +35,34 @@
             margin-bottom: 5px;
         }
         .logo-area {
-            text-align: center;
-            font-size: 18pt;
+            text-align: left;
+            font-size: 14pt;
             font-weight: bold;
-            color: #2c3e50;
+            color: #000;
             vertical-align: middle;
             line-height: 1.2;
-        }
-        .subtitle-company {
-            font-size: 12pt;
-            font-weight: bold;
-            letter-spacing: 1px;
-            margin-top: 3px;
+            padding-left: 10px;
         }
         .address-company {
-            font-size: 9.5pt;
+            font-size: 9pt;
             font-weight: normal;
-            color: #4b4b4b;
-            margin-top: 5px;
+            color: #333;
+            margin-top: 2px;
         }
         .divider-line {
-            border-top: 2px solid #4b4b4b;
-            border-bottom: 1px solid #4b4b4b;
+            border-top: 2px solid #000;
+            border-bottom: 1px solid #000;
             height: 2px;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
+            margin-top: 5px;
         }
         .title-section {
             text-align: center;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
         }
         .invoice-title {
-            font-size: 13pt;
+            font-size: 14pt;
             font-weight: bold;
-            text-decoration: underline;
             margin: 0;
             letter-spacing: 0.5px;
         }
@@ -77,26 +70,32 @@
             font-size: 11pt;
             margin-top: 3px;
         }
-        .meta-text-block {
+        .meta-table {
+            width: 100%;
+            border-collapse: collapse;
             margin-bottom: 15px;
         }
-        
-        /* CSS Tabel Sesuai Gambar Baru */
+        .meta-table td {
+            padding: 3px 0;
+            vertical-align: top;
+            font-size: 11pt;
+        }
         .item-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 15px;
-            margin-bottom: 15px;
+            margin-top: 10px;
+            border: 1px solid #000;
         }
         .item-table th {
-            border: 1px solid #4b4b4b;
+            border: 1px solid #000;
             padding: 8px;
             font-size: 11pt;
-            font-weight: normal;
+            font-weight: bold;
             text-align: center;
+            background-color: #fff;
         }
         .item-table td {
-            border: 1px solid #4b4b4b;
+            border: none; /* Menghilangkan garis horizontal/vertikal di dalam tabel item */
             padding: 8px;
             font-size: 11pt;
             vertical-align: top;
@@ -104,32 +103,26 @@
         .text-right {
             text-align: right;
         }
-        .summary-label {
-            text-align: right;
-            border-right: none !important;
+        .terbilang-box {
+            border: 1px solid #000;
+            border-top: none;
+            padding: 10px 8px;
+            font-size: 10.5pt;
+            margin-bottom: 30px;
+            background-color: #fff;
         }
-        .summary-value {
-            border-left: none !important;
+        .signature-section {
+            width: 100%;
+            margin-top: 10px;
+            page-break-inside: avoid;
         }
-
-        .footer-info-section {
-            margin-top: 20px;
-            font-size: 10pt;
-        }
-        .info-list-table {
-            margin-top: 15px;
+        .signature-table {
+            width: 100%;
             border-collapse: collapse;
         }
-        .info-list-table td {
-            padding: 2px 0;
-            vertical-align: top;
+        .signature-space {
+            height: 65px;
         }
-        .note-block {
-            margin-top: 20px;
-            font-size: 10pt;
-        }
-        
-        /* Loading Overlay */
         #loading-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(255,255,255,0.95); z-index: 9999;
@@ -137,7 +130,7 @@
             font-family: sans-serif; font-size: 14px; color: #333;
         }
         .spinner {
-            border: 4px solid #f3f3f3; border-top: 4px solid #4b4b4b;
+            border: 4px solid #f3f3f3; border-top: 4px solid #000;
             border-radius: 50%; width: 35px; height: 35px; animation: spin 1s linear infinite;
             margin-bottom: 10px;
         }
@@ -153,163 +146,111 @@
 
     <div id="invoice-pdf-content" class="invoice-container">
 
-       <!-- Kop Surat Perusahaan -->
-<table class="header-table" style="width: 100%;">
-    <tr>
-        <td style="width: 15%; text-align: left; vertical-align: middle;">
-            <!-- Memasukkan logo di dalam kotak 70x70px -->
-            <div style="width: 100px; height: 100px;">
-                <img src="~/image/Logo_CV_AMT.png" alt="Logo CV AMT" style="width: 100%; height: 100%; object-fit: contain;" />
-            </div>
-        </td>
-        <td class="logo-area" style="vertical-align: middle;">
-            <div class="title">@Model.InvoiceHeader.CompanyName</div>
-            <div class="subtitle-company">KAWASAN INDUSTRI SUMBER REJEKI</div>
-            <div class="address-company">
-                @Model.InvoiceHeader.Address
-            </div>
-        </td>
-    </tr>
-</table>
+        <!-- Kop Surat Perusahaan -->
+        <table class="header-table">
+            <tr>
+                <td style="width: 12%; text-align: left; vertical-align: middle;">
+                    <div style="width: 75px; height: 75px;">
+                        <img src="~/image/Logo_CV_AMT.png" alt="Logo" style="width: 100%; height: 100%; object-fit: contain;" />
+                    </div>
+                </td>
+                <td class="logo-area">
+                    <div style="font-size: 13pt; font-weight: bold;">@Model.InvoiceHeader.CompanyName</div>
+                    <div class="address-company">@Model.InvoiceHeader.Address</div>
+                </td>
+            </tr>
+        </table>
         
-        <!-- Garis Pembatas Kop -->
         <div class="divider-line"></div>
 
-        <!-- Judul Invoice -->
         <div class="title-section">
             <h1 class="invoice-title">@Model.DocumentTitle</h1>
-            <div class="invoice-number">Nomor : @Model.InvoiceHeader.TransNmbr</div>
+            <div class="invoice-number">No. @Model.InvoiceHeader.TransNmbr</div>
         </div>
 
-        <!-- Tujuan & Periode Atas -->
-        <div class="meta-text-block">
-            Kepada Yth,<br>
-            <strong>Bapak/ibu Pimpinan</strong><br>
-            <strong>Kavling @Model.InvoiceHeader.KavlingCode</strong>
-        </div>
+        <table class="meta-table">
+            <tr>
+                <td style="width: 140px;">Telah terima dari</td>
+                <td style="width: 15px;">:</td>
+                <td><strong>@Model.InvoiceHeader.CustomerName</strong></td>
+            </tr>
+            <tr>
+                <td>Tanggal</td>
+                <td>:</td>
+                <td>@(Model.InvoiceHeader.DueDate.HasValue ? Model.InvoiceHeader.DueDate.Value.ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("id-ID")) : "-")</td>
+            </tr>
+        </table>
 
-        <div class="meta-text-block" style="margin-top: 20px;">
-            <table style="border-collapse: collapse;">
-                <tr>
-                    <td style="width: 90px;"><strong>Periode</strong></td>
-                    <td style="width: 20px;">:</td>
-                    <td><strong>@(Model.InvoiceHeader.DueDate.HasValue ? Model.InvoiceHeader.DueDate.Value.ToString("MMMM yyyy", new System.Globalization.CultureInfo("id-ID")) : "-")</strong></td>               </tr>
-            </table>
-        </div>
-
-        <div class="meta-text-block" style="margin-top: 25px;">
-            Dengan hormat,<br><br>
-            Berikut kami sampaikan rincian tagihan yang sudah lunas untuk Kavling @Model.InvoiceHeader.KavlingCode dengan ketentuan sebagai berikut:
-        </div>
-
-        <!-- TABEL BARU: 2 KOLOM (Commercial Item & Subtotal) -->
-       <!-- TABEL BARU: 2 KOLOM (Commercial Item & Subtotal) -->
+        <!-- Tabel Item Kwitansi (Tanpa garis dalam, kolom jumlah & keterangan digabung menggunakan rowspan) -->
         <table class="item-table">
             <thead>
                 <tr>
-                    <th style="width: 70%;">Commercial Item</th>
-                    <th style="width: 30%;">Subtotal</th>
+                    <th style="width: 48%; border-right: 1px solid #000;">Perihal</th>
+                    <th style="width: 24%; border-right: 1px solid #000;">Jumlah</th>
+                    <th style="width: 28%;">Keterangan</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach (var item in Model.InvoiceItems)
+                @{
+                    int totalRows = Model.InvoiceItems.Count;
+                    bool isFirstRow = true;
+                }
+                @for (int i = 0; i < totalRows; i++)
                 {
-                    <tr style="vertical-align: top;">
-                        <!-- Kolom Kiri: Judul & Deskripsi Langsung Menyatu -->
-                        <td style="padding: 8px;">
-                            <strong>@item.CommercialItem</strong><br />
-                            <span style="white-space: pre-line; color: #4b4b4b; font-size: 10.5pt; line-height: 1.2;">@item.DeskripsiItemCommercial</span>
+                    var item = Model.InvoiceItems[i];
+                    <tr>
+                        <td style="border-right: 1px solid #000;">                            
+                            @item.CommercialItem<br />
+                            <span style="font-size: 10pt; color: #444;">@item.CommercialDesc</span><br />
+                            <span style="font-size: 9.5pt; color: #555; font-weight: bold;">No. Inv: @item.TransNmbr</span>
                         </td>
-                        <!-- Kolom Kanan: Nominal Rupiah -->
-                        <td class="text-right" style="padding: 8px;">
-                            <span style="float: left;">Rp</span>
-                            <span>@item.NettoForex.ToString("N0", new System.Globalization.CultureInfo("id-ID"))</span>
-                        </td>
+
+                        @if (isFirstRow)
+                        {
+                            <td class="text-right" rowspan="@totalRows" style="border-right: 1px solid #000; vertical-align: middle;">
+                                @Model.InvoiceHeader.TotalBayar.ToString("N0", new System.Globalization.CultureInfo("id-ID"))
+                            </td>
+                            <td rowspan="@totalRows" style="vertical-align: middle;">
+                                Kavling @Model.InvoiceHeader.KavlingCode<br />
+                                Luas: @Model.InvoiceHeader.Luas.ToString("N2", new System.Globalization.CultureInfo("id-ID")) m²
+                            </td>
+                            isFirstRow = false;
+                        }
                     </tr>
                 }
-                                
-                <!-- Total : -->
-                <tr>
-                    <td class="summary-label" style="font-weight: bold; padding: 8px;">JUMLAH :</td>
-                    <td class="text-right summary-value" style="font-weight: bold; padding: 8px;">
-                        <span style="float: left;">Rp</span>
-                        <span>@Model.InvoiceHeader.BaseForex.ToString("N0", new System.Globalization.CultureInfo("id-ID"))</span>
-                    </td>
-                </tr>
-                <!-- Ppn : -->
-                <tr>
-                    <td class="summary-label" style="font-weight: bold; padding: 8px;">PPN @Model.InvoiceHeader.PPn.ToString("N0", new System.Globalization.CultureInfo("id-ID"))%:</td>
-                    <td class="text-right summary-value" style="font-weight: bold; padding: 8px;">
-                        <span style="float: left;">Rp</span>
-                        <span>@Model.InvoiceHeader.PPnForex.ToString("N0", new System.Globalization.CultureInfo("id-ID"))</span>
-                    </td>
-                </tr>
-                <!-- Grand Total : -->
-                <tr>
-                    <td class="summary-label" style="font-weight: bold; padding: 8px;">TOTAL :</td>
-                    <td class="text-right summary-value" style="font-weight: bold; padding: 8px; background-color: #f9f9f9;">
-                        <span style="float: left;">Rp</span>
-                        <span>@Model.InvoiceHeader.TotalForex.ToString("N0", new System.Globalization.CultureInfo("id-ID"))</span>
-                    </td>
-                </tr>
             </tbody>
         </table>
 
-        <!-- Keterangan & Detail Pembayaran -->
-        <div class="footer-info-section">
-            <div>- &nbsp; Untuk luas lahan &le; 2.100 M2 akan dikenakan biaya sebesar Rp. 500,000</div>
-            
-            <table class="info-list-table">
+        <!-- Kotak Terbilang -->
+        <div class="terbilang-box">
+            <table style="width: 100%; border-collapse: collapse;">
                 <tr>
-                    <td style="width: 15px;">-</td>
-                    <td style="width: 160px;">Periode IPL</td>
-                    <td style="width: 20px;">:</td>
-                     <td>@(Model.InvoiceHeader.DueDate.HasValue ? Model.InvoiceHeader.DueDate.Value.ToString("MMMM yyyy", new System.Globalization.CultureInfo("id-ID")) : "-")</td>               </tr>
-
-                </tr>
-                <tr>
-                    <td>-</td>
-                    <td>Tanggal Pembayaran</td>
-                    <td>:</td>
-                     <td>@(Model.InvoiceHeader.DueDate.HasValue ? Model.InvoiceHeader.DueDate.Value.ToString(" dd MMMM yyyy", new System.Globalization.CultureInfo("id-ID")) : "-")</td>               </tr>
-                </tr>
-                <tr>
-                    <td>-</td>
-                    <td>Rekening Pembayaran</td>
-                    <td></td>
-                    <td></td>
-                </tr>
-                <tr>
-                    <td></td>
-                    <td style="padding-left: 15px;">Nama</td>
-                    <td>:</td>
-                    <td>@Model.InvoiceHeader.CompanyName</td>
-                </tr>
-                <tr>
-                    <td></td>
-                    <td style="padding-left: 15px;">Nomor Virtual Account</td>
-                    <td>:</td>
-                    <td>@Model.InvoiceHeader.Rekening</td>
-                </tr>
-                <tr>
-                    <td></td>
-                    <td style="padding-left: 15px;">Bank</td>
-                    <td>:</td>
-                    <td>@Model.InvoiceHeader.Bank</td>
+                    <td style="width: 75px; vertical-align: top;"><strong>Terbilang</strong></td>
+                    <td style="width: 15px; vertical-align: top;">:</td>
+                    <td style="vertical-align: top; font-style: italic;">
+                        "@Model.InvoiceHeader.TerbilangText"
+                    </td>
                 </tr>
             </table>
         </div>
 
-        <div class="note-block">
-           Note :<br>
-            <span style="padding-left: 10px; font-weight: regular; font-style: italic;">
-                " Pembayaran hanya bisa dilakukan dengan Internet Mobile Banking Mandiri atau Datang ke Teller Bank Mandiri "
-            </span>
+        <!-- Tanda Tangan -->
+        <div class="signature-section">
+            <table class="signature-table">
+                <tr>
+                    <td style="width: 60%;"></td>
+                    <td style="width: 40%; text-align: center;">
+                        Yang Menerima,
+                        <div class="signature-space"></div>
+                        <div style="border-bottom: 1px solid #000; width: 85%; margin: 0 auto;"></div>
+                    </td>
+                </tr>
+            </table>
         </div>
-    <!-- Footer Info Download -->
-<div style="text-align: right; font-size: 8pt; color: #888888; margin-top: 20px; font-style: italic;">
-    Diunduh pada: @DateTime.Now.ToString("dd MMMM yyyy HH:mm", new System.Globalization.CultureInfo("id-ID")) WIB
-</div>
+
+        <div style="text-align: right; font-size: 8pt; color: #888888; margin-top: 15px; font-style: italic;">
+            Diunduh pada: @DateTime.Now.ToString("dd MMMM yyyy HH:mm", new System.Globalization.CultureInfo("id-ID")) WIB
+        </div>
 
     </div>
 
