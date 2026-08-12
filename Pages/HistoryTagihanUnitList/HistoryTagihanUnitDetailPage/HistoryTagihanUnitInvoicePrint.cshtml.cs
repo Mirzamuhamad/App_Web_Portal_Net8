@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Dapper;
 using System.Data;
 using Microsoft.Data.SqlClient;
-using System.Security.Claims;
 
 namespace TestLandingPageNet8.Pages.HistoryTagihanUnitList.HistoryTagihanUnitDetailPage
 {
@@ -15,8 +14,8 @@ namespace TestLandingPageNet8.Pages.HistoryTagihanUnitList.HistoryTagihanUnitDet
         public string DocumentTitle => DocumentType switch
         {
             "faktur-pajak" => "FAKTUR PAJAK",
-            "kwitansi" => "KWITANSI PEMBAYARAN",
-            _ => "KWITANSI PEMBAYARAN"
+            "kwitansi" => "KWITANSI",
+            _ => "KWITANSI"
         };
         public string FilePrefix => DocumentType switch
         {
@@ -34,56 +33,44 @@ namespace TestLandingPageNet8.Pages.HistoryTagihanUnitList.HistoryTagihanUnitDet
 
             DocumentType = documentType == "faktur-pajak" ? "faktur-pajak" : "kwitansi";
 
-            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!int.TryParse(userIdStr, out int userId))
-            {
-                return RedirectToPage("/Login");
-            }
-
             using (var connection = Db.Connect())
             {
                 await connection.OpenAsync();
 
                 var parameters = new DynamicParameters();
-                parameters.Add("@Nmbr", invoiceNo, DbType.String);
-                parameters.Add("@UserId", userId, DbType.Int32);
-                parameters.Add("@Kavling", kavlingCode, DbType.String);
+                parameters.Add("@TransNmbr", invoiceNo, DbType.String);
 
-                using (var multi = await connection.QueryMultipleAsync("S_FnFormBillingTenantInvoice", parameters, commandType: CommandType.StoredProcedure))
+                using (var multi = await connection.QueryMultipleAsync("S_Getkwitansi", parameters, commandType: CommandType.StoredProcedure))
                 {
-                    if (!multi.IsConsumed)
+                    var items = (await multi.ReadAsync<InvoiceFlatModel>()).ToList();
+                    
+                    if (items.Any())
                     {
-                        // Membaca data flat sesuai struktur kolom SQL asli
-                        var items = (await multi.ReadAsync<InvoiceFlatModel>()).ToList();
-                        
-                        if (items.Any())
+                        var first = items.First();
+                        InvoiceHeader = new InvoiceHeaderData
                         {
-                            var first = items.First();
-                            InvoiceHeader = new InvoiceHeaderData
-                            {
-                                TransNmbr = first.TransNmbr,
-                                DueDate = first.DueDate,
-                                CustomerName = first.Customer_Name, // Diubah sesuai kolom database
-                                KavlingCode = first.KavlingCode,
-                                Address = first.Address,
-                                PeriodeDesc = first.CommercialDesc, // Menggunakan deskripsi utama sebagai periode
-                                Bank = first.Bank,                  // Diubah sesuai kolom database
-                                Rekening = first.Rekening,          // Diubah sesuai kolom database
-                                BaseForex = first.BaseForex,        // Diambil langsung dari kolom database akumulasi
-                                PPnForex = first.PPnForex,          // Diambil langsung dari kolom database akumulasi
-                                TotalForex = first.TotalForex,
-                                CompanyName = first.CompanyName,
-                                PPn = first.PPn            // Diambil langsung dari kolom database akumulasi
-                            };
+                            TransNmbr = first.TransNmbr,
+                            DueDate = first.DueDate,
+                            CustomerName = first.Nama, 
+                            KavlingCode = first.KavlingCode,
+                            TotalBayar = first.TotalBayar,
+                            CompanyName = first.CompanyName,
+                            Address = first.Address,
+                            TerbilangText = GetTerbilangString(first.TotalBayar),
+                            InvoiceNumber = first.InvoiceNo,
+                            Luas = first.Luas
+                        };
 
-                            InvoiceItems = items.Select(x => new InvoiceItemData
-                            {
-                                Luas = x.Luas,
-                                CommercialItem = x.CommercialItem,
-                                DeskripsiItemCommercial = x.DeskripsiItemCommercial, // Diubah sesuai kolom database
-                                NettoForex = x.NettoForex                            // Diubah sesuai kolom database
-                            }).ToList();
-                        }
+                        InvoiceItems = items.Select(x => new InvoiceItemData
+                        {
+                            TransNmbr = x.InvoiceNo, // <-- Tambahan mapping
+                            CommercialItem = x.CommercialItem,
+                            CommercialDesc = x.CommercialDesc, 
+                            KavlingCode = x.KavlingCode,
+                            Luas = x.Luas,
+                            AmountPerKavling = x.AmountPerKavling,
+                            TotalAmountKavling = x.TotalAmountKavling
+                        }).ToList();
                     }
                 }
             }
@@ -96,36 +83,56 @@ namespace TestLandingPageNet8.Pages.HistoryTagihanUnitList.HistoryTagihanUnitDet
             return Page();
         }
 
-        // Penampung mapping data flat (NAMA PROPERTI HARUS SAMA PERSIS DENGAN KOLOM DATABASE)
+        // Helper Terbilang Rupiah
+        public string Terbilang(decimal nilai)
+        {
+            string[] bilangan = { "", "Satu", "Dua", "Tiga", "Empat", "Lima", "Enam", "Tujuh", "Delapan", "Sembilan", "Sepuluh", "Sebelas" };
+            if (nilai < 12)
+                return " " + bilangan[(int)nilai];
+            else if (nilai < 20)
+                return Terbilang(nilai - 10) + " Belas";
+            else if (nilai < 100)
+                return Terbilang(nilai / 10) + " Puluh" + Terbilang(nilai % 10);
+            else if (nilai < 200)
+                return " Seratus" + Terbilang(nilai - 100);
+            else if (nilai < 1000)
+                return Terbilang(nilai / 100) + " Ratus" + Terbilang(nilai % 100);
+            else if (nilai < 2000)
+                return " Seribu" + Terbilang(nilai - 1000);
+            else if (nilai < 1000000)
+                return Terbilang(nilai / 1000) + " Ribu" + Terbilang(nilai % 1000);
+            else if (nilai < 1000000000)
+                return Terbilang(nilai / 1000000) + " Juta" + Terbilang(nilai % 1000000);
+            else if (nilai < 1000000000000)
+                return Terbilang(nilai / 1000000000) + " Miliar" + Terbilang(nilai % 1000000000);
+            return "";
+        }
+
+        public string GetTerbilangString(decimal nominal)
+        {
+            if (nominal == 0) return "Nol Rupiah";
+            string hasil = Terbilang(nominal).Trim();
+            return hasil + " Rupiah";
+        }
+
         public class InvoiceFlatModel
         {
             public string TransNmbr { get; set; } = string.Empty;
-            public string CustCode { get; set; } = string.Empty;
+            public string Nama { get; set; } = string.Empty;
+            public string UserId { get; set; } = string.Empty;
+            public DateTime? DueDate { get; set; }
             public string KavlingId { get; set; } = string.Empty;
+            public string KavlingCode { get; set; } = string.Empty;
             public string CommercialItem { get; set; } = string.Empty;
             public string CommercialDesc { get; set; } = string.Empty;
-            public string BillingID { get; set; } = string.Empty;
-            public decimal Qty { get; set; }
-            public decimal Price { get; set; }
-            public decimal NettoForex { get; set; }
-            public decimal BaseForex { get; set; }
-            public decimal PPnForex { get; set; }
-            public decimal TotalForex { get; set; }
-            public DateTime? DueDate { get; set; }
-            public string Rekening { get; set; } = string.Empty;
-            public string Bank { get; set; } = string.Empty;
+            public decimal AmountPerKavling { get; set; }
+            public decimal TotalAmountKavling { get; set; }
+            public string Status { get; set; } = string.Empty;
+            public decimal TotalBayar { get; set; }
             public string CompanyName { get; set; } = string.Empty;
             public string Address { get; set; } = string.Empty;
-            public string City { get; set; } = string.Empty;
-            public string StatusName { get; set; } = string.Empty;
-            public string KavlingCode { get; set; } = string.Empty;
-            public string Customer_Name { get; set; } = string.Empty; // Pakai Underscore sesuai SQL
-            public string Reference { get; set; } = string.Empty;
-            public decimal Luas { get; set; }
-            public string DeskripsiItemCommercial { get; set; } = string.Empty;
-            public string BillingModel { get; set; } = string.Empty;
-
-            public decimal PPn { get; set; }
+             public string InvoiceNo { get; set; } = string.Empty;
+              public decimal Luas { get; set; }
         }
 
         public class InvoiceHeaderData
@@ -134,25 +141,25 @@ namespace TestLandingPageNet8.Pages.HistoryTagihanUnitList.HistoryTagihanUnitDet
             public DateTime? DueDate { get; set; }
             public string CustomerName { get; set; } = string.Empty;
             public string KavlingCode { get; set; } = string.Empty;
-            public string Address { get; set; } = string.Empty;
-            public string PeriodeDesc { get; set; } = string.Empty;
-            public string Bank { get; set; } = string.Empty;
-            public string Rekening { get; set; } = string.Empty;
-            public decimal BaseForex { get; set; }
-            public decimal PPnForex { get; set; }
-            public decimal TotalForex { get; set; }
-
-            public decimal PPn { get; set; }
-
+            public decimal TotalBayar { get; set; }
             public string CompanyName { get; set; } = string.Empty;
+            public string Address { get; set; } = string.Empty;
+            public string TerbilangText { get; set; } = string.Empty;
+            public string InvoiceNumber { get; set; } = string.Empty;
+             public decimal Luas { get; set; }
         }
 
         public class InvoiceItemData
         {
-            public decimal Luas { get; set; }
-            public string DeskripsiItemCommercial { get; set; } = string.Empty;
+            public string TransNmbr { get; set; } = string.Empty;
             public string CommercialItem { get; set; } = string.Empty;
-            public decimal NettoForex { get; set; }
+            public string CommercialDesc { get; set; } = string.Empty;
+
+            public string KavlingCode { get; set; } = string.Empty;
+            public decimal Luas { get; set; }
+            public decimal AmountPerKavling { get; set; }
+            public decimal TotalAmountKavling { get; set; }
+
         }
     }
 }
