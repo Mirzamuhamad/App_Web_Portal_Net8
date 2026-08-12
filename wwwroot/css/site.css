@@ -3622,10 +3622,6 @@ video {
   background-color: rgb(0 0 0 / 0.4);
 }
 
-.bg-black\/45 {
-  background-color: rgb(0 0 0 / 0.45);
-}
-
 .bg-black\/70 {
   background-color: rgb(0 0 0 / 0.7);
 }
@@ -4025,10 +4021,6 @@ video {
 
 .bg-opacity-80 {
   --tw-bg-opacity: 0.8;
-}
-
-.bg-\[url\(\'\/Image\/Image9\.jpg\'\)\] {
-  background-image: url('/Image/Image9.jpg');
 }
 
 .bg-gradient-to-br {
@@ -6370,14 +6362,6 @@ video {
     bottom: -5rem;
   }
 
-  .sm\:left-10 {
-    left: 2.5rem;
-  }
-
-  .sm\:right-10 {
-    right: 2.5rem;
-  }
-
   .sm\:my-8 {
     margin-top: 2rem;
     margin-bottom: 2rem;
@@ -6499,10 +6483,6 @@ video {
     width: 6rem;
   }
 
-  .sm\:w-40 {
-    width: 10rem;
-  }
-
   .sm\:w-8 {
     width: 2rem;
   }
@@ -6571,10 +6551,6 @@ video {
     justify-content: space-between;
   }
 
-  .sm\:gap-10 {
-    gap: 2.5rem;
-  }
-
   .sm\:gap-12 {
     gap: 3rem;
   }
@@ -6589,6 +6565,10 @@ video {
 
   .sm\:gap-4 {
     gap: 1rem;
+  }
+
+  .sm\:gap-6 {
+    gap: 1.5rem;
   }
 
   .sm\:gap-8 {
@@ -6754,10 +6734,6 @@ video {
     padding-bottom: 1.25rem;
   }
 
-  .sm\:pb-6 {
-    padding-bottom: 1.5rem;
-  }
-
   .sm\:pt-10 {
     padding-top: 2.5rem;
   }
@@ -6853,10 +6829,6 @@ video {
     margin-bottom: 2rem;
   }
 
-  .md\:mt-6 {
-    margin-top: 1.5rem;
-  }
-
   .md\:block {
     display: block;
   }
@@ -6929,11 +6901,6 @@ video {
     padding: 2rem;
   }
 
-  .md\:py-12 {
-    padding-top: 3rem;
-    padding-bottom: 3rem;
-  }
-
   .md\:py-2 {
     padding-top: 0.5rem;
     padding-bottom: 0.5rem;
@@ -6947,10 +6914,6 @@ video {
   .md\:py-4 {
     padding-top: 1rem;
     padding-bottom: 1rem;
-  }
-
-  .md\:pl-2 {
-    padding-left: 0.5rem;
   }
 
   .md\:text-left {
@@ -6984,10 +6947,6 @@ video {
 
   .lg\:col-span-9 {
     grid-column: span 9 / span 9;
-  }
-
-  .lg\:mt-0 {
-    margin-top: 0px;
   }
 
   .lg\:block {
@@ -7036,11 +6995,6 @@ video {
 
   .lg\:border-l-4 {
     border-left-width: 4px;
-  }
-
-  .lg\:px-10 {
-    padding-left: 2.5rem;
-    padding-right: 2.5rem;
   }
 
   .lg\:px-4 {
