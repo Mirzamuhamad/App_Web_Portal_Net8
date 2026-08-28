@@ -237,11 +237,20 @@
                 },
 
                 poStatusKey(po) {
-                    return po.hasRrpo ? 'done' : 'open';
+                    return po.poWorkflowStatusKey || (po.hasRrpo ? 'rrpo' : 'open');
                 },
 
                 poStatusLabel(po) {
-                    return po.hasRrpo ? 'RRPO Dibuat' : 'Siap RRPO';
+                    return po.poWorkflowStatusLabel || (po.hasRrpo ? 'RRPO Dibuat' : 'Siap RRPO');
+                },
+
+                poStatusTitle(po) {
+                    return [
+                        po.rrpoNo ? `RRPO: ${po.rrpoNo}` : '',
+                        po.invoiceNo ? `Invoice: ${po.invoiceNo}` : '',
+                        po.approvalNo ? `Approval: ${po.approvalNo}` : '',
+                        po.paymentNo ? `Payment: ${po.paymentNo}` : ''
+                    ].filter(Boolean).join(' | ') || this.poStatusLabel(po);
                 },
 
                 rrpoStatusLabel(status) {
@@ -255,9 +264,12 @@
 
                 statusClass(item) {
                     if (this.activeTab === 'po' || this.detailType === 'po') {
-                        return item.hasRrpo
-                            ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
-                            : 'bg-amber-100 text-amber-800 border-amber-200';
+                        const key = this.poStatusKey(item);
+                        if (key === 'completed') return 'bg-emerald-50 text-emerald-700 border-emerald-100';
+                        if (key === 'payment_process') return 'bg-blue-50 text-blue-700 border-blue-100';
+                        if (key === 'done_invoice') return 'bg-indigo-50 text-indigo-700 border-indigo-100';
+                        if (key === 'rrpo') return 'bg-sky-50 text-sky-700 border-sky-100';
+                        return 'bg-amber-50 text-amber-700 border-amber-100';
                     }
 
                     const status = (item.status || '').toUpperCase();
@@ -469,7 +481,16 @@
                                 <option value="open">Siap RRPO</option>
                             </template>
                             <template x-if="activeTab === 'po'">
-                                <option value="done">RRPO Dibuat</option>
+                                <option value="rrpo">RRPO Dibuat</option>
+                            </template>
+                            <template x-if="activeTab === 'po'">
+                                <option value="done_invoice">Done Invoice</option>
+                            </template>
+                            <template x-if="activeTab === 'po'">
+                                <option value="payment_process">Dalam Proses Pembayaran</option>
+                            </template>
+                            <template x-if="activeTab === 'po'">
+                                <option value="completed">Selesai</option>
                             </template>
                             <template x-if="activeTab === 'rrpo'">
                                 <option value="P">Selesai</option>
@@ -548,6 +569,7 @@
                                     <td class="px-6 py-5 text-right font-black" x-text="formatRupiah(item.totalForex)"></td>
                                     <td class="px-6 py-5">
                                         <span class="inline-flex rounded-full border px-3 py-1 text-xs font-black" :class="statusClass(item)"
+                                              :title="activeTab === 'po' ? poStatusTitle(item) : rrpoStatusLabel(item.status)"
                                               x-text="activeTab === 'po' ? poStatusLabel(item) : rrpoStatusLabel(item.status)"></span>
                                     </td>
                                     <td class="px-6 py-5 text-center">
@@ -613,6 +635,7 @@
                     <div class="rounded border border-slate-200 bg-white p-4">
                         <p class="text-[11px] font-black uppercase tracking-widest text-slate-500">Status</p>
                         <span class="mt-2 inline-flex rounded-full border px-3 py-1 text-xs font-black" :class="statusClass(selectedDoc)"
+                              :title="detailType === 'po' ? poStatusTitle(selectedDoc) : rrpoStatusLabel(selectedDoc?.status)"
                               x-text="detailType === 'po' ? poStatusLabel(selectedDoc) : rrpoStatusLabel(selectedDoc?.status)"></span>
                     </div>
                 </div>

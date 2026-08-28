@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Dapper;
+using Microsoft.Data.SqlClient;
 using System.Data;
 using System.Security.Claims;
 
@@ -245,36 +246,15 @@ namespace TestLandingPageNet8.Pages.VendorPortal
 
         private static async Task<List<PoHeaderViewModel>> LoadPostedPoAsync(System.Data.IDbConnection conn, string suppCode)
         {
-            var headers = (await conn.QueryAsync<PoHeaderViewModel>(@"
-                SELECT h.TransNmbr, h.Revisi, h.TransDate, h.Status, h.Supplier, h.Attn, h.Currency,
-                       h.TotalForex, h.Remark, h.UserPrep, h.DatePrep, h.UserPost, h.DatePost,
-                       h.Delivery, h.DeliveryAddr, h.DeliveryCity,
-                       ISNULL(d.TotalItems, 0) AS TotalItems,
-                       ISNULL(d.TotalQty, 0) AS TotalQty,
-                       CAST(CASE WHEN rr.TransNmbr IS NULL THEN 0 ELSE 1 END AS bit) AS HasRrpo,
-                       rr.TransNmbr AS RrpoNo
-                FROM PRCPOHd h
-                OUTER APPLY (
-                    SELECT COUNT(1) AS TotalItems, SUM(Qty) AS TotalQty
-                    FROM PRCPODt
-                    WHERE TransNmbr = h.TransNmbr
-                      AND Revisi = h.Revisi
-                ) d
-                OUTER APPLY (
-                    SELECT TOP 1 TransNmbr
-                    FROM STCRRPOHd
-                    WHERE PONo = h.TransNmbr
-                      AND SuppCode = h.Supplier
-                      AND ISNULL(Status, '') <> 'D'
-                    ORDER BY DatePrep DESC, TransNmbr DESC
-                ) rr
-                WHERE h.Supplier = @SuppCode
-                  AND h.FgActive = 'Y'
-                  AND h.Status = 'P'
-                  AND h.DatePost IS NOT NULL
-                ORDER BY h.TransDate DESC, h.TransNmbr DESC",
-                new { SuppCode = suppCode }
-            )).ToList();
+            List<PoHeaderViewModel> headers;
+            try
+            {
+                headers = await LoadPostedPoHeadersAsync(conn, suppCode, useWorkflowView: true);
+            }
+            catch (SqlException ex) when (ex.Number == 208)
+            {
+                headers = await LoadPostedPoHeadersAsync(conn, suppCode, useWorkflowView: false);
+            }
 
             if (headers.Count == 0)
             {
@@ -297,6 +277,76 @@ namespace TestLandingPageNet8.Pages.VendorPortal
             }
 
             return headers;
+        }
+
+        private static async Task<List<PoHeaderViewModel>> LoadPostedPoHeadersAsync(System.Data.IDbConnection conn, string suppCode, bool useWorkflowView)
+        {
+            var workflowColumns = useWorkflowView
+                ? @",
+                       COALESCE(ps.PoWorkflowStatusKey, CASE WHEN rr.TransNmbr IS NULL THEN 'open' ELSE 'rrpo' END) AS PoWorkflowStatusKey,
+                       COALESCE(ps.PoWorkflowStatusLabel, CASE WHEN rr.TransNmbr IS NULL THEN 'Siap RRPO' ELSE 'RRPO Dibuat' END) AS PoWorkflowStatusLabel,
+                       ps.InvoiceNo,
+                       ps.InvoiceStatus,
+                       ps.ApprovalNo,
+                       ps.ApprovalStatus,
+                       ps.PaymentNo,
+                       ps.PaymentStatus,
+                       COALESCE(ps.IsDoneInvoice, CAST(0 AS bit)) AS IsDoneInvoice,
+                       COALESCE(ps.IsPaymentProcess, CAST(0 AS bit)) AS IsPaymentProcess,
+                       COALESCE(ps.IsPaymentDone, CAST(0 AS bit)) AS IsPaymentDone"
+                : @",
+                       CASE WHEN rr.TransNmbr IS NULL THEN 'open' ELSE 'rrpo' END AS PoWorkflowStatusKey,
+                       CASE WHEN rr.TransNmbr IS NULL THEN 'Siap RRPO' ELSE 'RRPO Dibuat' END AS PoWorkflowStatusLabel,
+                       CAST(NULL AS varchar(50)) AS InvoiceNo,
+                       CAST(NULL AS varchar(10)) AS InvoiceStatus,
+                       CAST(NULL AS varchar(50)) AS ApprovalNo,
+                       CAST(NULL AS varchar(10)) AS ApprovalStatus,
+                       CAST(NULL AS varchar(50)) AS PaymentNo,
+                       CAST(NULL AS varchar(10)) AS PaymentStatus,
+                       CAST(0 AS bit) AS IsDoneInvoice,
+                       CAST(0 AS bit) AS IsPaymentProcess,
+                       CAST(0 AS bit) AS IsPaymentDone";
+
+            var workflowJoin = useWorkflowView
+                ? @"
+                LEFT JOIN dbo.VendorPortalPoInvoicePaymentStatusView ps ON ps.PONo = h.TransNmbr
+                  AND ps.SuppCode = h.Supplier"
+                : string.Empty;
+
+            var sql = $@"
+                SELECT h.TransNmbr, h.Revisi, h.TransDate, h.Status, h.Supplier, h.Attn, h.Currency,
+                       h.TotalForex, h.Remark, h.UserPrep, h.DatePrep, h.UserPost, h.DatePost,
+                       h.Delivery, h.DeliveryAddr, h.DeliveryCity,
+                       ISNULL(d.TotalItems, 0) AS TotalItems,
+                       ISNULL(d.TotalQty, 0) AS TotalQty,
+                       CAST(CASE WHEN rr.TransNmbr IS NULL THEN 0 ELSE 1 END AS bit) AS HasRrpo,
+                       rr.TransNmbr AS RrpoNo
+                       {workflowColumns}
+                FROM PRCPOHd h
+                OUTER APPLY (
+                    SELECT COUNT(1) AS TotalItems, SUM(Qty) AS TotalQty
+                    FROM PRCPODt
+                    WHERE TransNmbr = h.TransNmbr
+                      AND Revisi = h.Revisi
+                ) d
+                OUTER APPLY (
+                    SELECT TOP 1 TransNmbr
+                    FROM STCRRPOHd
+                    WHERE PONo = h.TransNmbr
+                      AND SuppCode = h.Supplier
+                      AND ISNULL(Status, '') <> 'D'
+                    ORDER BY DatePrep DESC, TransNmbr DESC
+                ) rr
+                {workflowJoin}
+                WHERE h.Supplier = @SuppCode
+                  AND h.FgActive = 'Y'
+                  AND h.Status = 'P'
+                  AND h.DatePost IS NOT NULL
+                ORDER BY h.TransDate DESC, h.TransNmbr DESC";
+
+            return (await conn.QueryAsync<PoHeaderViewModel>(sql,
+                new { SuppCode = suppCode }
+            )).ToList();
         }
 
         private static async Task<List<RpoHeaderViewModel>> LoadRpoAsync(System.Data.IDbConnection conn, string suppCode)
@@ -420,6 +470,17 @@ WHERE TransNmbr LIKE @Prefix + '%'",
         public decimal TotalQty { get; set; }
         public bool HasRrpo { get; set; }
         public string? RrpoNo { get; set; }
+        public string PoWorkflowStatusKey { get; set; } = "open";
+        public string PoWorkflowStatusLabel { get; set; } = "Siap RRPO";
+        public string? InvoiceNo { get; set; }
+        public string? InvoiceStatus { get; set; }
+        public string? ApprovalNo { get; set; }
+        public string? ApprovalStatus { get; set; }
+        public string? PaymentNo { get; set; }
+        public string? PaymentStatus { get; set; }
+        public bool IsDoneInvoice { get; set; }
+        public bool IsPaymentProcess { get; set; }
+        public bool IsPaymentDone { get; set; }
         public List<PoDetailViewModel> Details { get; set; } = new();
     }
 
