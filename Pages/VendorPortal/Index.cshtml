@@ -392,10 +392,10 @@
                     <i class="ri-store-2-line text-xl"></i>
                 </span>
                 <span class="vendor-sidebar-label min-w-0">
-                    <span class="block truncate text-xl font-extrabold text-slate-700">@Model.VendorName</span>
-                    <span class="mt-1 block truncate text-sm font-semibold tracking-wide text-slate-500">Supplier ID: @Model.VendorCode</span>
+                    <span class="block truncate text-md font-sm text-slate-700">@Model.VendorName</span>
+                    @* <span class="mt-1 block truncate text-sm font-semibold tracking-wide text-slate-500">Supplier ID: @Model.VendorCode</span> *@
                 </span>
-                <i class="vendor-sidebar-label ri-menu-fold-line ml-auto hidden text-xl text-slate-400 lg:block"></i>
+                @* <i class="vendor-sidebar-label ri-menu-fold-line ml-auto hidden text-xl text-slate-400 lg:block"></i> *@
             </button>
             <button type="button" @@click="sidebarOpen = false" class="flex h-9 w-9 shrink-0 items-center justify-center rounded text-slate-500 hover:bg-slate-100 lg:hidden" aria-label="Tutup sidebar">
                 <i class="ri-close-line text-2xl"></i>
@@ -509,7 +509,7 @@
                         <thead class="bg-slate-50 text-xs font-black tracking-widest text-slate-700">
                             <tr>
                                 <th class="px-6 py-5" x-text="activeTab === 'po' ? 'Nomor Pesanan (PO)' : 'Nomor RRPO'"></th>
-                                <th class="px-6 py-5" x-text="activeTab === 'po' ? 'Supplier' : 'Nomor PO'"></th>
+                                <th class="px-6 py-5" x-text="activeTab === 'po' ? 'Attn' : 'Nomor PO'"></th>
                                 <th class="px-6 py-5">Tanggal</th>
                                 <th class="px-6 py-5 text-center">Total Item</th>
                                 <th class="px-6 py-5 text-right">Nilai Transaksi</th>
@@ -520,7 +520,7 @@
                         <tbody class="divide-y divide-slate-100">
                             <tr x-show="filteredItems().length === 0" x-cloak>
                                 <td colspan="7" class="px-6 py-14 text-center text-sm font-bold text-slate-500">
-                                    Tidak ada data yang sesuai filter.
+                                    Tidak ada data.
                                 </td>
                             </tr>
 
@@ -534,8 +534,8 @@
                                             <div class="flex items-center gap-3">
                                                 <span class="flex h-9 w-9 items-center justify-center rounded-full bg-blue-50 text-xs font-black text-blue-600" x-text="(item.supplier || '-').slice(0, 2)"></span>
                                                 <div>
-                                                    <p class="font-bold" x-text="item.supplier"></p>
-                                                    <p class="text-xs text-slate-500" x-text="item.attn || '-'"></p>
+                                                    @* <p class="font-bold" x-text="item.supplier"></p> *@
+                                                    <p class="text-sm text-slate-500" x-text="item.attn || '-'"></p>
                                                 </div>
                                             </div>
                                         </template>
