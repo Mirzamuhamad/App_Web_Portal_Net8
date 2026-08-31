@@ -487,7 +487,7 @@
                                 <option value="done_invoice">Done Invoice</option>
                             </template>
                             <template x-if="activeTab === 'po'">
-                                <option value="payment_process">Dalam Proses Pembayaran</option>
+                                <option value="payment_process">Proses Pembayaran</option>
                             </template>
                             <template x-if="activeTab === 'po'">
                                 <option value="completed">Selesai</option>
@@ -664,7 +664,7 @@
                     <table class="w-full min-w-[760px] border-collapse text-left text-sm">
                         <thead class="bg-slate-100 text-xs font-black uppercase tracking-widest text-slate-700">
                             <tr>
-                                <th class="px-4 py-3">Kode Barang</th>
+                                <th class="px-4 py-3">Nama Barang</th>
                                 <th class="px-4 py-3">Keterangan</th>
                                 <th class="px-4 py-3 text-right">Qty</th>
                                 <th class="px-4 py-3">Unit</th>
@@ -675,7 +675,7 @@
                         <tbody class="divide-y divide-slate-200">
                             <template x-for="detail in (selectedDoc?.details || [])" :key="(detail.product || detail.productCode) + '-' + detail.qty">
                                 <tr>
-                                    <td class="px-4 py-3 font-black text-slate-800" x-text="detail.product || detail.productCode"></td>
+                                    <td class="px-4 py-3 font-black text-slate-800" x-text="detail.productName || detail.productName"></td>
                                     <td class="px-4 py-3 text-slate-700" x-text="detail.specification || detail.remark || '-'"></td>
                                     <td class="px-4 py-3 text-right font-bold" x-text="formatNumber(detail.qty)"></td>
                                     <td class="px-4 py-3 font-bold" x-text="detail.unit"></td>
@@ -695,11 +695,11 @@
                         <button type="button" @@click="closeDetail()" class="rounded border border-slate-200 px-5 py-3 text-sm font-black text-slate-600 hover:bg-slate-50">
                             Tutup
                         </button>
-                        <button type="button" x-show="detailType === 'po' && selectedDoc && !selectedDoc.hasRrpo" @@click="createRrpo(selectedDoc)" :disabled="isSubmitting"
+                        @* <button type="button" x-show="detailType === 'po' && selectedDoc && !selectedDoc.hasRrpo" @@click="createRrpo(selectedDoc)" :disabled="isSubmitting"
                                 class="rounded bg-blue-600 px-5 py-3 text-sm font-black text-white shadow-sm hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60">
                             <span x-show="!isSubmitting">Done - Buat RRPO</span>
                             <span x-show="isSubmitting">Memproses...</span>
-                        </button>
+                        </button> *@
                     </div>
                 </footer>
             </div>

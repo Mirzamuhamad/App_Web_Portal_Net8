@@ -263,9 +263,9 @@ namespace TestLandingPageNet8.Pages.VendorPortal
 
             var poNos = headers.Select(h => h.TransNmbr).ToList();
             var details = (await conn.QueryAsync<PoDetailViewModel>(@"
-                SELECT TransNmbr, Revisi, Product, Specification, QtyOrder, UnitOrder, Qty, Unit,
+                SELECT TransNmbr, Revisi, Product,ProductName, Specification, QtyOrder, UnitOrder, Qty, Unit,
                        PriceForex, BrutoForex, Disc, DiscForex, NettoForex, Remark, QtyRR, QtyPack
-                FROM PRCPODt
+                FROM V_PRPODt
                 WHERE TransNmbr IN @PoNos
                 ORDER BY TransNmbr DESC, Product",
                 new { PoNos = poNos }
@@ -367,10 +367,11 @@ namespace TestLandingPageNet8.Pages.VendorPortal
 
             var transNmbrs = headers.Select(h => h.TransNmbr).ToList();
             var details = (await conn.QueryAsync<RpoDetailViewModel>(@"
-                SELECT TransNmbr, ProductCode, ProductPart, Qty, Unit, Remark, PriceForex, AmountForex, TotalForex
+                SELECT TransNmbr, STCRRPODt.ProductCode, h.ProductName, ProductPart, Qty, STCRRPODt.Unit, Remark, PriceForex, AmountForex, TotalForex
                 FROM STCRRPODt
+                INNER JOIN MsProduct h ON h.ProductCode = STCRRPODt.ProductCodey
                 WHERE TransNmbr IN @TransNmbrs
-                ORDER BY TransNmbr DESC, ProductCode",
+                ORDER BY TransNmbr DESC, STCRRPODt.ProductCode",
                 new { TransNmbrs = transNmbrs }
             )).ToList();
 
@@ -489,6 +490,7 @@ WHERE TransNmbr LIKE @Prefix + '%'",
         public string TransNmbr { get; set; } = string.Empty;
         public int Revisi { get; set; }
         public string Product { get; set; } = string.Empty;
+        public string ProductName { get; set; } = string.Empty;
         public string? Specification { get; set; }
         public decimal QtyOrder { get; set; }
         public string UnitOrder { get; set; } = string.Empty;
@@ -525,6 +527,7 @@ WHERE TransNmbr LIKE @Prefix + '%'",
     {
         public string TransNmbr { get; set; } = string.Empty;
         public string ProductCode { get; set; } = string.Empty;
+        public string ProductName { get; set; } = string.Empty;
         public string ProductPart { get; set; } = string.Empty;
         public decimal Qty { get; set; }
         public string Unit { get; set; } = string.Empty;
