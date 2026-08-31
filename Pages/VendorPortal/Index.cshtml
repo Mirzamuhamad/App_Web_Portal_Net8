@@ -237,11 +237,20 @@
                 },
 
                 poStatusKey(po) {
-                    return po.hasRrpo ? 'done' : 'open';
+                    return po.poWorkflowStatusKey || (po.hasRrpo ? 'rrpo' : 'open');
                 },
 
                 poStatusLabel(po) {
-                    return po.hasRrpo ? 'RRPO Dibuat' : 'Siap RRPO';
+                    return po.poWorkflowStatusLabel || (po.hasRrpo ? 'RRPO Dibuat' : 'Siap RRPO');
+                },
+
+                poStatusTitle(po) {
+                    return [
+                        po.rrpoNo ? `RRPO: ${po.rrpoNo}` : '',
+                        po.invoiceNo ? `Invoice: ${po.invoiceNo}` : '',
+                        po.approvalNo ? `Approval: ${po.approvalNo}` : '',
+                        po.paymentNo ? `Payment: ${po.paymentNo}` : ''
+                    ].filter(Boolean).join(' | ') || this.poStatusLabel(po);
                 },
 
                 rrpoStatusLabel(status) {
@@ -255,9 +264,12 @@
 
                 statusClass(item) {
                     if (this.activeTab === 'po' || this.detailType === 'po') {
-                        return item.hasRrpo
-                            ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
-                            : 'bg-amber-100 text-amber-800 border-amber-200';
+                        const key = this.poStatusKey(item);
+                        if (key === 'completed') return 'bg-emerald-50 text-emerald-700 border-emerald-100';
+                        if (key === 'payment_process') return 'bg-blue-50 text-blue-700 border-blue-100';
+                        if (key === 'done_invoice') return 'bg-indigo-50 text-indigo-700 border-indigo-100';
+                        if (key === 'rrpo') return 'bg-sky-50 text-sky-700 border-sky-100';
+                        return 'bg-amber-50 text-amber-700 border-amber-100';
                     }
 
                     const status = (item.status || '').toUpperCase();
@@ -392,10 +404,10 @@
                     <i class="ri-store-2-line text-xl"></i>
                 </span>
                 <span class="vendor-sidebar-label min-w-0">
-                    <span class="block truncate text-xl font-extrabold text-slate-700">@Model.VendorName</span>
-                    <span class="mt-1 block truncate text-sm font-semibold tracking-wide text-slate-500">Supplier ID: @Model.VendorCode</span>
+                    <span class="block truncate text-md font-sm text-slate-700">@Model.VendorName</span>
+                    @* <span class="mt-1 block truncate text-sm font-semibold tracking-wide text-slate-500">Supplier ID: @Model.VendorCode</span> *@
                 </span>
-                <i class="vendor-sidebar-label ri-menu-fold-line ml-auto hidden text-xl text-slate-400 lg:block"></i>
+                @* <i class="vendor-sidebar-label ri-menu-fold-line ml-auto hidden text-xl text-slate-400 lg:block"></i> *@
             </button>
             <button type="button" @@click="sidebarOpen = false" class="flex h-9 w-9 shrink-0 items-center justify-center rounded text-slate-500 hover:bg-slate-100 lg:hidden" aria-label="Tutup sidebar">
                 <i class="ri-close-line text-2xl"></i>
@@ -469,7 +481,16 @@
                                 <option value="open">Siap RRPO</option>
                             </template>
                             <template x-if="activeTab === 'po'">
-                                <option value="done">RRPO Dibuat</option>
+                                <option value="rrpo">RRPO Dibuat</option>
+                            </template>
+                            <template x-if="activeTab === 'po'">
+                                <option value="done_invoice">Done Invoice</option>
+                            </template>
+                            <template x-if="activeTab === 'po'">
+                                <option value="payment_process">Proses Pembayaran</option>
+                            </template>
+                            <template x-if="activeTab === 'po'">
+                                <option value="completed">Selesai</option>
                             </template>
                             <template x-if="activeTab === 'rrpo'">
                                 <option value="P">Selesai</option>
@@ -509,7 +530,7 @@
                         <thead class="bg-slate-50 text-xs font-black tracking-widest text-slate-700">
                             <tr>
                                 <th class="px-6 py-5" x-text="activeTab === 'po' ? 'Nomor Pesanan (PO)' : 'Nomor RRPO'"></th>
-                                <th class="px-6 py-5" x-text="activeTab === 'po' ? 'Supplier' : 'Nomor PO'"></th>
+                                <th class="px-6 py-5" x-text="activeTab === 'po' ? 'Attn' : 'Nomor PO'"></th>
                                 <th class="px-6 py-5">Tanggal</th>
                                 <th class="px-6 py-5 text-center">Total Item</th>
                                 <th class="px-6 py-5 text-right">Nilai Transaksi</th>
@@ -520,7 +541,7 @@
                         <tbody class="divide-y divide-slate-100">
                             <tr x-show="filteredItems().length === 0" x-cloak>
                                 <td colspan="7" class="px-6 py-14 text-center text-sm font-bold text-slate-500">
-                                    Tidak ada data yang sesuai filter.
+                                    Tidak ada data.
                                 </td>
                             </tr>
 
@@ -534,8 +555,8 @@
                                             <div class="flex items-center gap-3">
                                                 <span class="flex h-9 w-9 items-center justify-center rounded-full bg-blue-50 text-xs font-black text-blue-600" x-text="(item.supplier || '-').slice(0, 2)"></span>
                                                 <div>
-                                                    <p class="font-bold" x-text="item.supplier"></p>
-                                                    <p class="text-xs text-slate-500" x-text="item.attn || '-'"></p>
+                                                    @* <p class="font-bold" x-text="item.supplier"></p> *@
+                                                    <p class="text-sm text-slate-500" x-text="item.attn || '-'"></p>
                                                 </div>
                                             </div>
                                         </template>
@@ -548,6 +569,7 @@
                                     <td class="px-6 py-5 text-right font-black" x-text="formatRupiah(item.totalForex)"></td>
                                     <td class="px-6 py-5">
                                         <span class="inline-flex rounded-full border px-3 py-1 text-xs font-black" :class="statusClass(item)"
+                                              :title="activeTab === 'po' ? poStatusTitle(item) : rrpoStatusLabel(item.status)"
                                               x-text="activeTab === 'po' ? poStatusLabel(item) : rrpoStatusLabel(item.status)"></span>
                                     </td>
                                     <td class="px-6 py-5 text-center">
@@ -613,6 +635,7 @@
                     <div class="rounded border border-slate-200 bg-white p-4">
                         <p class="text-[11px] font-black uppercase tracking-widest text-slate-500">Status</p>
                         <span class="mt-2 inline-flex rounded-full border px-3 py-1 text-xs font-black" :class="statusClass(selectedDoc)"
+                              :title="detailType === 'po' ? poStatusTitle(selectedDoc) : rrpoStatusLabel(selectedDoc?.status)"
                               x-text="detailType === 'po' ? poStatusLabel(selectedDoc) : rrpoStatusLabel(selectedDoc?.status)"></span>
                     </div>
                 </div>
@@ -641,7 +664,7 @@
                     <table class="w-full min-w-[760px] border-collapse text-left text-sm">
                         <thead class="bg-slate-100 text-xs font-black uppercase tracking-widest text-slate-700">
                             <tr>
-                                <th class="px-4 py-3">Kode Barang</th>
+                                <th class="px-4 py-3">Nama Barang</th>
                                 <th class="px-4 py-3">Keterangan</th>
                                 <th class="px-4 py-3 text-right">Qty</th>
                                 <th class="px-4 py-3">Unit</th>
@@ -652,7 +675,7 @@
                         <tbody class="divide-y divide-slate-200">
                             <template x-for="detail in (selectedDoc?.details || [])" :key="(detail.product || detail.productCode) + '-' + detail.qty">
                                 <tr>
-                                    <td class="px-4 py-3 font-black text-slate-800" x-text="detail.product || detail.productCode"></td>
+                                    <td class="px-4 py-3 font-black text-slate-800" x-text="detail.productName || detail.productName"></td>
                                     <td class="px-4 py-3 text-slate-700" x-text="detail.specification || detail.remark || '-'"></td>
                                     <td class="px-4 py-3 text-right font-bold" x-text="formatNumber(detail.qty)"></td>
                                     <td class="px-4 py-3 font-bold" x-text="detail.unit"></td>
@@ -672,11 +695,11 @@
                         <button type="button" @@click="closeDetail()" class="rounded border border-slate-200 px-5 py-3 text-sm font-black text-slate-600 hover:bg-slate-50">
                             Tutup
                         </button>
-                        <button type="button" x-show="detailType === 'po' && selectedDoc && !selectedDoc.hasRrpo" @@click="createRrpo(selectedDoc)" :disabled="isSubmitting"
+                        @* <button type="button" x-show="detailType === 'po' && selectedDoc && !selectedDoc.hasRrpo" @@click="createRrpo(selectedDoc)" :disabled="isSubmitting"
                                 class="rounded bg-blue-600 px-5 py-3 text-sm font-black text-white shadow-sm hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60">
                             <span x-show="!isSubmitting">Done - Buat RRPO</span>
                             <span x-show="isSubmitting">Memproses...</span>
-                        </button>
+                        </button> *@
                     </div>
                 </footer>
             </div>
