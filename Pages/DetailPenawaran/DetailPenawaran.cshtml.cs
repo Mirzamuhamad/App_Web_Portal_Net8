@@ -47,7 +47,7 @@ public class DetailPenawaranModel : PageModel
             if (Item != null)
             {
                 const string photoSql = @"
-                    SELECT PhotoID, dbo.Dashboard_Url('ImagePath') AS ImagePath, SortOrder
+                    SELECT PhotoID, dbo.Dashboard_Url(ImagePath) AS ImagePath, SortOrder
                     FROM dbo.tbl_WebContentPromoPhoto
                     WHERE ContentID = @ContentID
                     ORDER BY SortOrder, PhotoID";
