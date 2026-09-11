@@ -369,7 +369,7 @@ namespace TestLandingPageNet8.Pages.VendorPortal
             var details = (await conn.QueryAsync<RpoDetailViewModel>(@"
                 SELECT TransNmbr, STCRRPODt.ProductCode, h.ProductName, ProductPart, Qty, STCRRPODt.Unit, Remark, PriceForex, AmountForex, TotalForex
                 FROM STCRRPODt
-                INNER JOIN MsProduct h ON h.ProductCode = STCRRPODt.ProductCodey
+                INNER JOIN MsProduct h ON h.ProductCode = STCRRPODt.ProductCode
                 WHERE TransNmbr IN @TransNmbrs
                 ORDER BY TransNmbr DESC, STCRRPODt.ProductCode",
                 new { TransNmbrs = transNmbrs }
