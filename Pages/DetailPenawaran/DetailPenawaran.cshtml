@@ -12,9 +12,49 @@
         <!-- IMAGE RESPONSIVE BOX -->
         <div class="w-full shadow-lg"> <!-- px-2 mobile, hilang di desktop -->
             <div class="overflow-hidden rounded-2xl sm:rounded-t-3xl sm:rounded-b-3x1">
-                <img src="@Model.Item.ImageUrl" class="w-full h-72 sm:h-96 object-cover" />
+                <img id="promo-preview"
+                     src="@Model.Item!.ImageUrl"
+                     alt="@Model.Item.Title"
+                     class="w-full h-72 sm:h-96 object-cover transition-opacity duration-300" />
             </div> 
         </div>
+
+        @if (Model.Photos.Count > 0)
+        {
+            <section class="px-2 pt-3 sm:px-4" aria-labelledby="foto-penawaran-title">
+                <h2 id="foto-penawaran-title" class="mb-2 text-sm font-semibold text-gray-600">
+                    Foto Penawaran
+                </h2>
+
+                <div id="promo-thumbnails" class="flex gap-2 overflow-x-auto pb-2">
+                    <button type="button"
+                            data-promo-image="@Model.Item.ImageUrl"
+                            data-promo-alt="@Model.Item.Title"
+                            aria-label="Tampilkan foto utama"
+                            aria-pressed="true"
+                            class="promo-thumbnail flex-none overflow-hidden rounded-lg border-2 border-blue-500 bg-gray-100">
+                        <img src="@Model.Item.ImageUrl"
+                             alt=""
+                             class="w-20 h-16 sm:w-24 sm:h-20 object-cover" />
+                    </button>
+
+                    @foreach (var photo in Model.Photos)
+                    {
+                        <button type="button"
+                                data-promo-image="@photo.ImagePath"
+                                data-promo-alt="Foto @Model.Item.Title"
+                                aria-label="Tampilkan foto penawaran"
+                                aria-pressed="false"
+                                class="promo-thumbnail flex-none overflow-hidden rounded-lg border-2 border-transparent bg-gray-100">
+                            <img src="@photo.ImagePath"
+                                 alt=""
+                                 loading="lazy"
+                                 class="w-20 h-16 sm:w-24 sm:h-20 object-cover" />
+                        </button>
+                    }
+                </div>
+            </section>
+        }
 
         <!-- CONTENT -->
         <div class="bg-white pt-2 pl-2 sm:p-2 space-y-4 ">
@@ -38,3 +78,38 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        (() => {
+            const preview = document.getElementById('promo-preview');
+            const thumbnails = document.querySelectorAll('.promo-thumbnail');
+
+            if (!preview || thumbnails.length === 0) {
+                return;
+            }
+
+            thumbnails.forEach((thumbnail) => {
+                thumbnail.addEventListener('click', () => {
+                    const imagePath = thumbnail.dataset.promoImage;
+                    if (!imagePath || preview.src === new URL(imagePath, window.location.href).href) {
+                        return;
+                    }
+
+                    preview.classList.add('opacity-50');
+                    preview.src = imagePath;
+                    preview.alt = thumbnail.dataset.promoAlt || 'Foto penawaran';
+
+                    thumbnails.forEach((item) => {
+                        const isActive = item === thumbnail;
+                        item.classList.toggle('border-blue-500', isActive);
+                        item.classList.toggle('border-transparent', !isActive);
+                        item.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+                    });
+
+                    window.setTimeout(() => preview.classList.remove('opacity-50'), 150);
+                });
+            });
+        })();
+    </script>
+}
