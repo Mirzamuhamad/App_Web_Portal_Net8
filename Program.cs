@@ -9,6 +9,8 @@ builder.Services.AddRazorPages(options =>
 {
     options.Conventions.AuthorizeFolder("/");
     options.Conventions.AllowAnonymousToPage("/Login");
+    // options.Conventions.AllowAnonymousToPage(
+    //     "/TagihanUnitList/TagihanUnitDetailPage/TagihanUnitInvoicePrint");
 }).AddMvcOptions(options =>
 {
     options.Filters.Add<TestLandingPageNet8.Helpers.VendorAccessFilter>();

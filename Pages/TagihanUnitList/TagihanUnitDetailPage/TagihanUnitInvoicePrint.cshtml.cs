@@ -1,29 +1,53 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Dapper;
 using System.Data;
-using Microsoft.Data.SqlClient;
 using System.Security.Claims;
 
 namespace TestLandingPageNet8.Pages.TagihanUnitDetailPage
 {
+    [AllowAnonymous]
     public class TagihanUnitInvoicePrintModel : PageModel
     {
         public InvoiceHeaderData InvoiceHeader { get; set; } = new();
         public List<InvoiceItemData> InvoiceItems { get; set; } = new();
 
-        public async Task<IActionResult> OnGetAsync(string invoiceNo, string kavlingCode)
+        public async Task<IActionResult> OnGetAsync(string? invoiceNo, string? kavlingCode, int? userId)
         {
-            if (string.IsNullOrEmpty(invoiceNo))
+            invoiceNo = invoiceNo?.Trim();
+            kavlingCode = kavlingCode?.Trim() ?? string.Empty;
+
+            if (string.IsNullOrWhiteSpace(invoiceNo))
             {
-                return RedirectToPage("/Index");
+                return BadRequest("Nomor invoice tidak valid.");
             }
 
+            // Aplikasi lama VB.NET mengirim userId lewat query string karena tidak
+            // memiliki cookie portal. Akses internal tetap dapat memakai claim login.
             var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!int.TryParse(userIdStr, out int userId))
+            int resolvedUserId;
+
+            if (userId.HasValue && userId.Value > 0)
             {
-                return RedirectToPage("/Login");
+                resolvedUserId = userId.Value;
             }
+            else if (int.TryParse(userIdStr, out int authenticatedUserId))
+            {
+                resolvedUserId = authenticatedUserId;
+            }
+            else
+            {
+                return new ContentResult
+                {
+                    StatusCode = StatusCodes.Status401Unauthorized,
+                    Content = "UserId tidak valid atau tidak ditemukan."
+                };
+            }
+
+            Response.Headers.CacheControl = "no-store, no-cache, must-revalidate";
+            Response.Headers.Pragma = "no-cache";
+            Response.Headers.Expires = "0";
 
             using (var connection = Db.Connect())
             {
@@ -31,7 +55,7 @@ namespace TestLandingPageNet8.Pages.TagihanUnitDetailPage
 
                 var parameters = new DynamicParameters();
                 parameters.Add("@Nmbr", invoiceNo, DbType.String);
-                parameters.Add("@UserId", userId, DbType.Int32);
+                parameters.Add("@UserId", resolvedUserId, DbType.Int32);
                 parameters.Add("@Kavling", kavlingCode, DbType.String);
 
                 using (var multi = await connection.QueryMultipleAsync("S_FnFormBillingTenantInvoice", parameters, commandType: CommandType.StoredProcedure))
