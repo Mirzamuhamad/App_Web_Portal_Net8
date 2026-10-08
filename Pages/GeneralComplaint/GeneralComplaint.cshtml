@@ -10,7 +10,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pengaduan Umum</title>
+    <title>Counseling</title>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <script
         src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
@@ -47,7 +47,7 @@
 
             <div class="mb-2 text-center">
                 <h2 class="text-2xl font-extrabold text-slate-800 tracking-tight">Counseling</h2>
-                <p class="text-sm text-slate-500">Silakan isi detail laporan Anda di bawah ini.</p>
+                <p class="text-sm text-slate-500">Silakan isi detail Counseling Anda di bawah ini.</p>
             </div>
 
             <form x-ref="form" enctype="multipart/form-data"
@@ -70,7 +70,7 @@
 
                 <div class="space-y-1">
                     <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Topik Counseling </label>
-                    <textarea name="Input.Description" required rows="4" placeholder="Jelaskan detail pengaduan Anda..."
+                    <textarea name="Input.Description" required rows="4" placeholder="Jelaskan detail counseling Anda..."
                         class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition resize-none"></textarea>
                 </div>
 
@@ -86,7 +86,7 @@
 
                 <div class="space-y-3">
                     <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Foto Bukti
-                        Pengaduan (Maks. 5)</label>
+                        Counseling (Maks. 5)</label>
                     <div class="grid grid-cols-3 sm:grid-cols-5 gap-3">
                         <template x-for="(img, index) in previews" :key="index">
                             <div
@@ -126,7 +126,7 @@
                         <template x-if="loading">
                             <i class="ri-loader-4-line animate-spin text-xl"></i>
                         </template>
-                        <span x-text="loading ? 'Sedang Mengirim...' : 'Kirim Pengaduan'"></span>
+                        <span x-text="loading ? 'Sedang Mengirim...' : 'Kirim Counseling'"></span>
                     </button>
                 </div>
             </form>
