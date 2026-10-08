@@ -9,21 +9,22 @@
     <div class="bg-white border-b sticky top-0 z-30 px-2 sm:px-6 py-3 shadow-sm">
         <div class="mx-auto flex items-center justify-between">
             <div class="flex items-center gap-4">
-                <a href="/TagihanUnitList/TagihanUnitList"
+                <a href="/Index"
                     class="w-10 h-10 flex items-center justify-center bg-slate-100 rounded-2xl text-slate-500 hover:bg-teal-50 hover:text-teal-600 transition">
                     <i class="ri-arrow-left-line text-xl"></i>
                 </a>
-                <div>
-                    <h1 class="text-lg text-slate-600 text-slate-800">@Model.Unit.KavlingCode</h1>
-                     <span class="flex items-center gap-1 text-slate-400  text-[12px] sm:text-xs">
-                                    <i class="fa-solid  fa-ruler-combined "></i> @Model.Unit.Luas.ToString("N2", new System.Globalization.CultureInfo("id-ID")) m²
-                    </span>
+                <div class="min-w-0">
+                    <h1 class="text-sm sm:text-lg font-bold text-slate-700">Tagihan Aktif</h1>
+                    <!-- <span class="flex items-center gap-1 text-slate-400 text-[12px] sm:text-xs">
+                        <i class="ri-user-line"></i> Customer @(string.IsNullOrEmpty(Model.CustomerCode) ? "-" : Model.CustomerCode)
+                    </span> -->
                 </div>
             </div>
-            @* <button @@click="isModalOpen = true"
-                class="bg-teal-600 text-white px-5 py-2.5 rounded-2xl text-sm font-bold shadow-lg shadow-teal-100 hover:bg-teal-700 transition">
-                + Buat Pengaduan Baru
-            </button> *@
+            <a href="/HistoryTagihanUnitList/HistoryTagihanUnitList"
+               class="flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-xl text-slate-600 hover:bg-teal-50 hover:text-teal-600 transition text-sm font-medium">
+                <i class="ri-history-line text-lg"></i>
+                <span>History</span>
+            </a>
         </div>
     </div>
 
@@ -149,6 +150,16 @@
         </div>
     }
 }
+else
+{
+    <div class="mx-auto px-2 sm:px-6 mt-6">
+        <div class="bg-white rounded-2xl border border-dashed border-slate-200 p-10 text-center shadow-sm">
+            <i class="ri-checkbox-circle-line text-5xl text-emerald-300"></i>
+            <h2 class="mt-3 text-base font-bold text-slate-600">Belum ada tagihan aktif saat ini</h2>
+            <p class="mt-1 text-xs text-slate-400">Tagihan baru untuk akun ini akan tampil di halaman ini.</p>
+        </div>
+    </div>
+}
 
 @if (Model.UnitDetailTagihan != null && Model.UnitDetailTagihan.Any())
 {
@@ -159,6 +170,9 @@
     {
         var headerInvoice = invoice.First();
         var totalInvoiceIni = invoice.Sum(x => x.AmountPerKavling);
+        var kavlingGrouped = invoice
+            .GroupBy(x => new { x.KavlingId, x.KavlingCode, x.Luas })
+            .ToList();
         
         // Membersihkan karakter spesial seperti '/' pada nomor invoice agar bisa dijadikan ID HTML yang valid
         var validIdString = headerInvoice.TransNmbr.Replace("/", "-");
@@ -193,24 +207,43 @@
                             </div> -->
                         </div>
 
-                        <div class="space-y-3 max-h-60 overflow-y-auto pr-1">
-                            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Daftar Komponen Biaya</h4>
-                            
-                            @foreach (var item in invoice)
+                        <div class="space-y-4 max-h-[55vh] overflow-y-auto pr-1">
+                            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Rincian per Kavling</h4>
+
+                            @foreach (var kavling in kavlingGrouped)
                             {
-                                <div class="border border-slate-100 bg-slate-50/30 rounded-xl p-3 flex justify-between items-start gap-4">
-                                    <div class="space-y-0.5">
-                                        <span class="inline-block text-[10px] bg-teal-50 text-teal-700 px-2 py-0.5 rounded-md font-bold uppercase tracking-wide">
-                                            @item.CommercialItem
-                                        </span>
-                                        <p class="text-xs text-slate-600 leading-normal pt-1">@item.CommercialDesc</p>
+                                var subtotalKavling = kavling.Sum(x => x.AmountPerKavling);
+
+                                <section class="border border-slate-200 rounded-2xl overflow-hidden">
+                                    <div class="bg-slate-50 px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100">
+                                        <div>
+                                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Kavling</p>
+                                            <p class="text-sm font-bold text-slate-700">@(string.IsNullOrEmpty(kavling.Key.KavlingCode) ? "-" : kavling.Key.KavlingCode)</p>
+                                            <p class="text-[10px] text-slate-400">Luas @kavling.Key.Luas.ToString("N2", new System.Globalization.CultureInfo("id-ID")) m²</p>
+                                        </div>
+                                        <div class="sm:text-right">
+                                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Subtotal Kavling</p>
+                                            <p class="text-sm font-bold text-teal-600">Rp @subtotalKavling.ToString("N0", new System.Globalization.CultureInfo("id-ID"))</p>
+                                        </div>
                                     </div>
-                                    <div class="text-right whitespace-nowrap">
-                                        <p class="text-xs font-bold text-slate-800">
-                                            Rp @item.AmountPerKavling.ToString("N0", new System.Globalization.CultureInfo("id-ID"))
-                                        </p>
+
+                                    <div class="divide-y divide-slate-100">
+                                        @foreach (var item in kavling)
+                                        {
+                                            <div class="bg-white p-3 flex justify-between items-start gap-4">
+                                                <div class="space-y-0.5 min-w-0">
+                                                    <span class="inline-block text-[10px] bg-teal-50 text-teal-700 px-2 py-0.5 rounded-md font-bold uppercase tracking-wide">
+                                                        @item.CommercialItem
+                                                    </span>
+                                                    <p class="text-xs text-slate-600 leading-normal pt-1">@item.CommercialDesc</p>
+                                                </div>
+                                                <p class="text-xs font-bold text-slate-800 whitespace-nowrap">
+                                                    Rp @item.AmountPerKavling.ToString("N0", new System.Globalization.CultureInfo("id-ID"))
+                                                </p>
+                                            </div>
+                                        }
                                     </div>
-                                </div>
+                                </section>
                             }
                         </div>
 

@@ -177,7 +177,7 @@
             <tr>
                 <td>Tanggal</td>
                 <td>:</td>
-                <td>@(Model.InvoiceHeader.DueDate.HasValue ? Model.InvoiceHeader.DueDate.Value.ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("id-ID")) : "-")</td>
+                <td>@(Model.InvoiceHeader.PaymentDate.HasValue ? Model.InvoiceHeader.PaymentDate.Value.ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("id-ID")) : "-")</td>
             </tr>
         </table>
 
@@ -211,8 +211,13 @@
                                 @Model.InvoiceHeader.TotalBayar.ToString("N0", new System.Globalization.CultureInfo("id-ID"))
                             </td>
                             <td rowspan="@totalRows" style="vertical-align: middle;">
-                                Kavling @Model.InvoiceHeader.KavlingCode<br />
-                                Luas: @Model.InvoiceHeader.Luas.ToString("N2", new System.Globalization.CultureInfo("id-ID")) m²
+                                @foreach (var kavling in Model.InvoiceKavlings)
+                                {
+                                    <div style="margin-bottom: 8px; page-break-inside: avoid;">
+                                        <strong>Kavling @kavling.KavlingCode</strong><br />
+                                        Luas: @kavling.Luas.ToString("N2", new System.Globalization.CultureInfo("id-ID")) m²
+                                    </div>
+                                }
                             </td>
                             isFirstRow = false;
                         }

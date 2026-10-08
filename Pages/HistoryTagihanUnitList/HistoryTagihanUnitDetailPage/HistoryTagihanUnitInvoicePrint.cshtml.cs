@@ -10,6 +10,7 @@ namespace TestLandingPageNet8.Pages.HistoryTagihanUnitList.HistoryTagihanUnitDet
     {
         public InvoiceHeaderData InvoiceHeader { get; set; } = new();
         public List<InvoiceItemData> InvoiceItems { get; set; } = new();
+        public List<KavlingSummary> InvoiceKavlings { get; set; } = new();
         public string DocumentType { get; set; } = "kwitansi";
         public string DocumentTitle => DocumentType switch
         {
@@ -40,6 +41,15 @@ namespace TestLandingPageNet8.Pages.HistoryTagihanUnitList.HistoryTagihanUnitDet
                 var parameters = new DynamicParameters();
                 parameters.Add("@TransNmbr", invoiceNo, DbType.String);
 
+                const string paymentDateSql = @"
+                    SELECT COALESCE(ReceiptDate, TransDate)
+                    FROM FINReceiptTradeHd
+                    WHERE TransNmbr = @TransNmbr;";
+
+                var paymentDate = await connection.QueryFirstOrDefaultAsync<DateTime?>(
+                    paymentDateSql,
+                    new { TransNmbr = invoiceNo });
+
                 using (var multi = await connection.QueryMultipleAsync("S_Getkwitansi", parameters, commandType: CommandType.StoredProcedure))
                 {
                     var items = (await multi.ReadAsync<InvoiceFlatModel>()).ToList();
@@ -51,6 +61,7 @@ namespace TestLandingPageNet8.Pages.HistoryTagihanUnitList.HistoryTagihanUnitDet
                         {
                             TransNmbr = first.TransNmbr,
                             DueDate = first.DueDate,
+                            PaymentDate = paymentDate,
                             CustomerName = first.Nama, 
                             KavlingCode = first.KavlingCode,
                             TotalBayar = first.TotalBayar,
@@ -71,6 +82,17 @@ namespace TestLandingPageNet8.Pages.HistoryTagihanUnitList.HistoryTagihanUnitDet
                             AmountPerKavling = x.AmountPerKavling,
                             TotalAmountKavling = x.TotalAmountKavling
                         }).ToList();
+
+                        InvoiceKavlings = items
+                            .GroupBy(x => new { x.KavlingId, x.KavlingCode, x.Luas })
+                            .Select(x => new KavlingSummary
+                            {
+                                KavlingId = x.Key.KavlingId,
+                                KavlingCode = x.Key.KavlingCode,
+                                Luas = x.Key.Luas
+                            })
+                            .OrderBy(x => x.KavlingCode)
+                            .ToList();
                     }
                 }
             }
@@ -139,6 +161,7 @@ namespace TestLandingPageNet8.Pages.HistoryTagihanUnitList.HistoryTagihanUnitDet
         {
             public string TransNmbr { get; set; } = string.Empty;
             public DateTime? DueDate { get; set; }
+            public DateTime? PaymentDate { get; set; }
             public string CustomerName { get; set; } = string.Empty;
             public string KavlingCode { get; set; } = string.Empty;
             public decimal TotalBayar { get; set; }
@@ -160,6 +183,13 @@ namespace TestLandingPageNet8.Pages.HistoryTagihanUnitList.HistoryTagihanUnitDet
             public decimal AmountPerKavling { get; set; }
             public decimal TotalAmountKavling { get; set; }
 
+        }
+
+        public class KavlingSummary
+        {
+            public string KavlingId { get; set; } = string.Empty;
+            public string KavlingCode { get; set; } = string.Empty;
+            public decimal Luas { get; set; }
         }
     }
 }

@@ -7,96 +7,188 @@ namespace TestLandingPageNet8.Pages.HistoryTagihanUnitList
 {
     public class HistoryTagihanUnitListModel : PageModel
     {
-        // 1. Tambahkan properti untuk menangkap filter tanggal dari UI
+        private const int PageSize = 10;
+
         [BindProperty(SupportsGet = true)]
         public DateTime? StartDate { get; set; }
 
         [BindProperty(SupportsGet = true)]
         public DateTime? EndDate { get; set; }
 
-        public List<UnitItemList> UnitItems { get; set; } = new();
+        [BindProperty(SupportsGet = true, Name = "p")]
+        public int CurrentPage { get; set; } = 1;
 
-        public async Task OnGetAsync()
+        public int TotalInvoiceCount { get; private set; }
+        public int TotalPages { get; private set; } = 1;
+        public List<PaidInvoice> Invoices { get; private set; } = new();
+
+        public async Task<IActionResult> OnGetAsync()
         {
-            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId))
+            var userIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdValue, out var userId))
             {
-                Response.Redirect("/Login");
-                return;
+                return RedirectToPage("/Login");
             }
 
-            using (var connection = Db.Connect())
+            if (StartDate.HasValue && EndDate.HasValue && StartDate.Value.Date > EndDate.Value.Date)
             {
-                const string sqlUnits = "SELECT * FROM V_ListKavlingUserPOrtal WHERE UserId = @Id";
-                var units = (await connection.QueryAsync<UnitItemList>(sqlUnits, new { Id = userId })).ToList();
+                (StartDate, EndDate) = (EndDate, StartDate);
+            }
 
-                // 2. Sesuaikan query SQL untuk mendukung filter rentang tanggal
-                // Catatan: Ganti 'PaymentDate' sesuai dengan nama kolom tanggal aktual di database Anda
-                string sqlPaidSummary = @"
+            var startDate = StartDate?.Date;
+            var endDateExclusive = EndDate?.Date.AddDays(1);
+
+            const string receiptCte = @"
+                WITH ReceiptCandidates AS
+                (
                     SELECT
-                        KavlingId,
-                        COUNT(DISTINCT TransNmbr) AS PaidInvoiceCount,
-                        SUM(AmountPerKavling) AS TotalPaidAmount
-                    FROM V_GetTagihanDetailKavlingHistory
-                    WHERE UserId = @Id  ";
+                        D.InvoiceNo,
+                        E.TransNmbr AS ReceiptNo,
+                        COALESCE(E.ReceiptDate, E.TransDate) AS PaymentDate,
+                        dbo.Dashboard_Url(D.FileFakturPajak) AS FileFakturPajak,
+                        dbo.Dashboard_Url(E.FileKwitansi) AS FileKwitansi,
+                        ROW_NUMBER() OVER
+                        (
+                            PARTITION BY D.InvoiceNo
+                            ORDER BY COALESCE(E.ReceiptDate, E.TransDate) DESC, E.TransNmbr DESC
+                        ) AS RowNo
+                    FROM FINReceiptTradeHd E
+                    INNER JOIN FINReceiptTradeDtInv D ON D.TransNmbr = E.TransNmbr
+                    WHERE E.Status = 'P'
+                ),
+                PaidInvoices AS
+                (
+                    SELECT InvoiceNo, ReceiptNo, PaymentDate, FileFakturPajak, FileKwitansi
+                    FROM ReceiptCandidates
+                    WHERE RowNo = 1
+                ) ";
 
-                if (StartDate.HasValue)
-                {
-                    sqlPaidSummary += " AND DueDate >= @StartDate ";
-                }
-                if (EndDate.HasValue)
-                {
-                    sqlPaidSummary += " AND DueDate <= @EndDate ";
-                }
+            const string filterSql = @"
+                WHERE A.Status = 'P'
+                  AND EXISTS
+                  (
+                      SELECT 1
+                      FROM V_PortalUsers U
+                      WHERE U.UserId = @UserId
+                        AND U.CustCode = A.CustCode
+                  )
+                  AND (@StartDate IS NULL OR P.PaymentDate >= @StartDate)
+                  AND (@EndDateExclusive IS NULL OR P.PaymentDate < @EndDateExclusive) ";
 
-                sqlPaidSummary += " GROUP BY KavlingId";
+            var parameters = new
+            {
+                UserId = userId,
+                StartDate = startDate,
+                EndDateExclusive = endDateExclusive
+            };
 
-                var parameters = new DynamicParameters();
-                parameters.Add("Id", userId);
-                if (StartDate.HasValue) parameters.Add("StartDate", StartDate.Value);
-                if (EndDate.HasValue) parameters.Add("EndDate", EndDate.Value.Date.AddDays(1).AddTicks(-1)); // Agar mencakup akhir hari penuh
+            using var connection = Db.Connect();
+            await connection.OpenAsync();
 
-                var paidSummary = (await connection.QueryAsync<HistoryPaidSummary>(sqlPaidSummary, parameters))
-                    .ToDictionary(x => x.KavlingId.ToString(), x => x);
+            TotalInvoiceCount = await connection.QuerySingleAsync<int>(
+                receiptCte + @"
+                SELECT COUNT(*)
+                FROM TenantBillingInvoiceHd A
+                INNER JOIN PaidInvoices P ON P.InvoiceNo = A.TransNmbr " + filterSql,
+                parameters);
 
-                foreach (var unit in units)
-                {
-                    if (paidSummary.TryGetValue(unit.KavlingId, out var summary))
-                    {
-                        unit.PaidInvoiceCount = summary.PaidInvoiceCount;
-                        unit.TotalPaidAmount = summary.TotalPaidAmount;
-                    }
-                }
+            TotalPages = Math.Max(1, (int)Math.Ceiling(TotalInvoiceCount / (double)PageSize));
+            CurrentPage = Math.Clamp(CurrentPage, 1, TotalPages);
 
-                // 3. Batasi hanya 10 item teratas (diurutkan berdasarkan total nominal terbesar atau kondisi lain)
-                UnitItems = units
-                    .Where(x => x.PaidInvoiceCount > 0)
-                    .OrderByDescending(x => x.TotalPaidAmount) // Bisa disesuaikan pengurutannya
-                    .Take(10)
-                    .ToList();
+            var headerParameters = new
+            {
+                UserId = userId,
+                StartDate = startDate,
+                EndDateExclusive = endDateExclusive,
+                Offset = (CurrentPage - 1) * PageSize,
+                PageSize
+            };
+
+            var headers = (await connection.QueryAsync<PaidInvoice>(
+                receiptCte + @"
+                SELECT
+                    A.TransNmbr AS InvoiceNo,
+                    P.ReceiptNo,
+                    P.PaymentDate,
+                    A.DueDate,
+                    A.CustCode,
+                    P.FileFakturPajak,
+                    P.FileKwitansi,
+                    COALESCE(T.TotalAmount, 0) AS TotalAmount
+                FROM TenantBillingInvoiceHd A
+                INNER JOIN PaidInvoices P ON P.InvoiceNo = A.TransNmbr
+                LEFT JOIN
+                (
+                    SELECT TransNmbr, SUM(AmountForex) AS TotalAmount
+                    FROM TenantBillingInvoiceDt
+                    GROUP BY TransNmbr
+                ) T ON T.TransNmbr = A.TransNmbr " + filterSql + @"
+                ORDER BY P.PaymentDate DESC, A.TransNmbr DESC
+                OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;",
+                headerParameters)).ToList();
+
+            if (headers.Count == 0)
+            {
+                return Page();
             }
+
+            var invoiceNumbers = headers.Select(x => x.InvoiceNo).ToArray();
+            const string detailSql = @"
+                SELECT
+                    D.TransNmbr AS InvoiceNo,
+                    D.KavlingId,
+                    COALESCE(NULLIF(LTRIM(RTRIM(K.KavlingCode)), ''), CAST(D.KavlingId AS varchar(20))) AS KavlingCode,
+                    COALESCE(K.Luas, 0) AS Luas,
+                    D.CommercialItem,
+                    D.CommercialDesc,
+                    D.AmountForex AS AmountPerKavling
+                FROM TenantBillingInvoiceDt D
+                LEFT JOIN MsKavlingsPortal K ON K.KavlingId = D.KavlingId
+                WHERE D.TransNmbr IN @InvoiceNumbers
+                ORDER BY D.TransNmbr, D.KavlingId, D.CommercialItem;";
+
+            var details = (await connection.QueryAsync<PaidInvoiceDetail>(
+                detailSql,
+                new { InvoiceNumbers = invoiceNumbers })).ToList();
+
+            var detailsByInvoice = details
+                .GroupBy(x => x.InvoiceNo)
+                .ToDictionary(x => x.Key, x => x.ToList(), StringComparer.OrdinalIgnoreCase);
+
+            foreach (var invoice in headers)
+            {
+                if (detailsByInvoice.TryGetValue(invoice.InvoiceNo, out var invoiceDetails))
+                {
+                    invoice.Details = invoiceDetails;
+                }
+            }
+
+            Invoices = headers;
+            return Page();
         }
-    }
 
-    public class UnitItemList
-    {
-        public string KavlingId { get; set; } = string.Empty;
-        public string KavlingCode { get; set; } = string.Empty;
-        public string kawasan { get; set; } = string.Empty;
-        public string ImagePath { get; set; } = "/Image/image9.jpg";
-        public string OwnerType { get; set; } = string.Empty;
-        public string TicketKavlingCount { get; set; } = string.Empty;
-        public decimal TotalAmountKavling { get; set; }
-        public decimal Luas { get; set; }
-        public int PaidInvoiceCount { get; set; }
-        public decimal TotalPaidAmount { get; set; }
-    }
+        public class PaidInvoice
+        {
+            public string InvoiceNo { get; set; } = string.Empty;
+            public string ReceiptNo { get; set; } = string.Empty;
+            public DateTime? PaymentDate { get; set; }
+            public DateTime? DueDate { get; set; }
+            public string CustCode { get; set; } = string.Empty;
+            public string FileFakturPajak { get; set; } = string.Empty;
+            public string FileKwitansi { get; set; } = string.Empty;
+            public decimal TotalAmount { get; set; }
+            public List<PaidInvoiceDetail> Details { get; set; } = new();
+        }
 
-    public class HistoryPaidSummary
-    {
-        public int KavlingId { get; set; }
-        public int PaidInvoiceCount { get; set; }
-        public decimal TotalPaidAmount { get; set; }
+        public class PaidInvoiceDetail
+        {
+            public string InvoiceNo { get; set; } = string.Empty;
+            public int KavlingId { get; set; }
+            public string KavlingCode { get; set; } = string.Empty;
+            public decimal Luas { get; set; }
+            public string CommercialItem { get; set; } = string.Empty;
+            public string CommercialDesc { get; set; } = string.Empty;
+            public decimal AmountPerKavling { get; set; }
+        }
     }
 }
