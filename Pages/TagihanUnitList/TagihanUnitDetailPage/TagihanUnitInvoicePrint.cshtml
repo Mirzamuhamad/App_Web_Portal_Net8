@@ -182,11 +182,20 @@
         </div>
 
         <!-- Tujuan & Periode Atas -->
-        <div class="meta-text-block">
-            Kepada Yth,<br>
-            <strong>Bapak/ibu Pimpinan</strong><br>
-            <strong>Kavling @Model.InvoiceHeader.KavlingCode</strong>
-        </div>
+         <div class="meta-text-block">
+           <table style="width: 100%; border-collapse: collapse;">
+               <tr>
+                   <td style="vertical-align: top; width: 60%;">
+                       Kepada Yth,<br>
+                       <strong>Bapak/ibu Pimpinan</strong><br>
+                       <strong>Kavling @Model.InvoiceHeader.KavlingCode</strong>
+                   </td>
+                   <td style="vertical-align: top; width: 40%; text-align: right;">
+                       <!-- Menampilkan tanggal invoice (menggunakan DueDate atau tanggal transaksi/cetak sesuai kebutuhan model) -->
+                       Tanggal Invoice : @(Model.InvoiceHeader.TransDate.HasValue ? Model.InvoiceHeader.TransDate.Value.ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("id-ID")) : "-")
+               </tr>
+           </table>
+       </div>
 
         <div class="meta-text-block" style="margin-top: 20px;">
             <table style="border-collapse: collapse;">
