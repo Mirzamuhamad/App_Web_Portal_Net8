@@ -82,7 +82,8 @@ namespace TestLandingPageNet8.Pages.TagihanUnitDetailPage
                                 PPnForex = first.PPnForex,          // Diambil langsung dari kolom database akumulasi
                                 TotalForex = first.TotalForex,
                                 CompanyName = first.CompanyName,
-                                PPn = first.PPn            // Diambil langsung dari kolom database akumulasi
+                                PPn = first.PPn,            // Diambil langsung dari kolom database akumulasi
+                                TransDate = first.TransDate // Diambil langsung dari kolom database
                             };
 
                             InvoiceItems = items.Select(x => new InvoiceItemData
@@ -109,6 +110,7 @@ namespace TestLandingPageNet8.Pages.TagihanUnitDetailPage
         public class InvoiceFlatModel
         {
             public string TransNmbr { get; set; }
+             public DateTime? TransDate { get; set; }
             public string CustCode { get; set; }
             public string KavlingId { get; set; }
             public string CommercialItem { get; set; }
@@ -135,12 +137,15 @@ namespace TestLandingPageNet8.Pages.TagihanUnitDetailPage
             public string BillingModel { get; set; }
 
             public decimal PPn { get; set; }
+           
         }
 
         public class InvoiceHeaderData
         {
             public string TransNmbr { get; set; }
+            public DateTime? TransDate { get; set; }
             public DateTime? DueDate { get; set; }
+            
             public string CustomerName { get; set; }
             public string KavlingCode { get; set; }
             public string Address { get; set; }
@@ -154,6 +159,7 @@ namespace TestLandingPageNet8.Pages.TagihanUnitDetailPage
             public decimal PPn { get; set; }
 
             public string CompanyName { get; set; }
+            
         }
 
         public class InvoiceItemData
