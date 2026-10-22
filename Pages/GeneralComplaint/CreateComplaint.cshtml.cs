@@ -29,6 +29,10 @@ namespace TestLandingPageNet8.Pages.GeneralComplaint
             [Required]
             public string Nama { get; set; }
 
+            // Tambahan untuk Substansi
+            [Required]
+            public string Substansi { get; set; }
+
             [Required]
             public string Phone { get; set; }
 
@@ -60,15 +64,16 @@ namespace TestLandingPageNet8.Pages.GeneralComplaint
                 {
                     try
                     {
-                        // 1. Insert ke Tabel GeneralComplaintPortal (Gunakan OUTPUT INSERTED.Id / TransNmbr jika ada)
-                        string sqlComplaint = @"INSERT INTO GeneralComplaintPortal (Nama, Phone, Schedule, Description, Status) 
+                        // 1. Insert ke Tabel GeneralComplaintPortal (Menambahkan kolom Substansi)
+                        string sqlComplaint = @"INSERT INTO GeneralComplaintPortal (Nama, Substansi, Phone, Schedule, Description, Status) 
                                                 OUTPUT INSERTED.Id 
-                                                VALUES (@Nama, @Phone, @Schedule, @Description, 'Proses')";
+                                                VALUES (@Nama, @Substansi, @Phone, @Schedule, @Description, 'Proses')";
 
                         int newComplaintId;
                         using (var cmd = new SqlCommand(sqlComplaint, connection, transaction))
                         {
                             cmd.Parameters.AddWithValue("@Nama", Input.Nama);
+                            cmd.Parameters.AddWithValue("@Substansi", Input.Substansi);
                             cmd.Parameters.AddWithValue("@Phone", Input.Phone);
                             cmd.Parameters.AddWithValue("@Schedule", Input.Schedule);
                             cmd.Parameters.AddWithValue("@Description", Input.Description);
@@ -112,7 +117,6 @@ namespace TestLandingPageNet8.Pages.GeneralComplaint
                             }
                         }
 
-                        // Ambil Nomor Referensi / ID untuk ditampilkan di Subjek Email jika ada (misal: ID atau TransNmbr)
                         // Format Nomor Tiket: GTC-YYMMDD-ID (Contoh: GTC-261016-11)
                         string dateStr = DateTime.Now.ToString("yyMMdd");
                         string ticketNo = $"GTC-{dateStr}-{newComplaintId}";
@@ -153,6 +157,10 @@ namespace TestLandingPageNet8.Pages.GeneralComplaint
                     <tr>
                         <td style='color:#64748b'><b>Nama Lengkap</b></td>
                         <td>: {Input.Nama}</td>
+                    </tr>
+                    <tr>
+                        <td style='color:#64748b'><b>Substansi</b></td>
+                        <td>: {Input.Substansi}</td>
                     </tr>
                     <tr>
                         <td style='color:#64748b'><b>No. WhatsApp</b></td>
