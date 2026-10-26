@@ -159,7 +159,7 @@ namespace TestLandingPageNet8.Pages.GeneralComplaint
                         <td>: {Input.Nama}</td>
                     </tr>
                     <tr>
-                        <td style='color:#64748b'><b>Substansi</b></td>
+                        <td style='color:#64748b'><b>Instansi</b></td>
                         <td>: {Input.Substansi}</td>
                     </tr>
                     <tr>

@@ -1624,6 +1624,10 @@ video {
   max-height: 100%;
 }
 
+.max-h-\[55vh\] {
+  max-height: 55vh;
+}
+
 .min-h-\[48px\] {
   min-height: 48px;
 }
@@ -4612,6 +4616,10 @@ video {
   padding-top: 1.5rem;
 }
 
+.pl-3\.5 {
+  padding-left: 0.875rem;
+}
+
 .text-left {
   text-align: left;
 }
@@ -6620,6 +6628,10 @@ video {
 
   .sm\:gap-8 {
     gap: 2rem;
+  }
+
+  .sm\:gap-10 {
+    gap: 2.5rem;
   }
 
   .sm\:space-y-4 > :not([hidden]) ~ :not([hidden]) {
