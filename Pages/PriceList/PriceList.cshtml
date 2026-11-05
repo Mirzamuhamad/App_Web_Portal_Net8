@@ -63,7 +63,8 @@
         <div class="space-y-3">
             @foreach (var item in Model.PermitPrices)
             {
-                <article class="relative overflow-hidden rounded-xl border border-teal-100 bg-[#F8FFFD] shadow-sm transition hover:border-teal-200 hover:shadow-md">
+                <article x-data="permitDownload()"
+                         class="relative overflow-hidden rounded-xl border border-teal-100 bg-[#F8FFFD] shadow-sm transition hover:border-teal-200 hover:shadow-md">
                     <div class="absolute inset-y-0 left-0 w-1 bg-teal-500"></div>
 
                     <div class="flex flex-col gap-4 py-4 pl-5 pr-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:py-5 sm:pl-6">
@@ -86,13 +87,15 @@
 
                         @if (!string.IsNullOrWhiteSpace(item.DocumentUrl))
                         {
-                            <a asp-page="/PriceList/PriceList"
-                               asp-page-handler="Download"
-                               asp-route-contentId="@item.ContentID"
+                            <a href="@Url.Page("/PriceList/PriceList", "Download", new { contentId = item.ContentID })"
                                aria-label="Download formulir @item.Title"
+                               :aria-busy="downloading"
+                               :class="{ 'pointer-events-none opacity-70': downloading }"
+                               @@click.prevent="download($event.currentTarget.href)"
                                class="inline-flex shrink-0 items-center justify-center gap-1.5 self-stretch rounded-lg bg-teal-600 px-3 py-2 text-[11px] font-semibold text-white shadow-sm transition hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-300 sm:self-center">
-                                <i class="ri-download-2-line"></i>
-                                Download Form (PDF)
+                                <i x-show="!downloading" class="ri-download-2-line"></i>
+                                <i x-show="downloading" x-cloak class="ri-loader-4-line animate-spin"></i>
+                                <span x-text="downloading ? 'Mengunduh...' : 'Download Form (PDF)'">Download Form (PDF)</span>
                             </a>
                         }
                         else
@@ -108,3 +111,68 @@
         </div>
     }
 </main>
+
+<script>
+    function permitDownload() {
+        return {
+            downloading: false,
+
+            async download(url) {
+                if (this.downloading) return;
+
+                this.downloading = true;
+
+                try {
+                    const response = await fetch(url, {
+                        method: 'GET',
+                        credentials: 'same-origin'
+                    });
+
+                    if (!response.ok) {
+                        const message = await response.text();
+                        throw new Error(message || 'Dokumen tidak dapat diunduh.');
+                    }
+
+                    const blob = await response.blob();
+                    const fileName = this.getFileName(response.headers.get('content-disposition'));
+                    const objectUrl = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+
+                    link.href = objectUrl;
+                    link.download = fileName;
+                    document.body.appendChild(link);
+                    link.click();
+                    link.remove();
+
+                    setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+                } catch (error) {
+                    const message = error?.message || 'Dokumen tidak dapat diunduh.';
+
+                    if (typeof showError === 'function') {
+                        showError('Download Gagal', message);
+                    } else {
+                        alert(message);
+                    }
+                } finally {
+                    this.downloading = false;
+                }
+            },
+
+            getFileName(contentDisposition) {
+                if (!contentDisposition) return 'Dokumen-Persyaratan.pdf';
+
+                const encodedName = contentDisposition.match(/filename\*=UTF-8''([^;]+)/i);
+                if (encodedName?.[1]) {
+                    try {
+                        return decodeURIComponent(encodedName[1]);
+                    } catch (_) {
+                        return encodedName[1];
+                    }
+                }
+
+                const plainName = contentDisposition.match(/filename="?([^";]+)"?/i);
+                return plainName?.[1] || 'Dokumen-Persyaratan.pdf';
+            }
+        };
+    }
+</script>
