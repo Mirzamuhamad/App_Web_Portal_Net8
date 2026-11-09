@@ -13,14 +13,26 @@
     ViewData["Title"] = "Pricelist Perizinan";
 }
 
-<main class=" min-h-screen px-3 pb-20 pt-5 sm:px-6 sm:pt-8">
+<main class="min-h-screen px-3 pb-20 pt-5 sm:px-6 sm:pt-8">
     <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-            <h1 class="text-xl font-bold text-slate-700 sm:text-2xl">Pricelist Perizinan</h1>
-            <p class="mt-1 text-sm text-slate-500">Daftar biaya dan formulir layanan perizinan.</p>
+            <h1 class="text-xl font-bold text-slate-700 sm:text-2xl">
+                Pricelist  
+                @if (!string.IsNullOrWhiteSpace(Model.TypeService))
+                {
+                    <span class="text-teal-600">@Model.TypeService</span>
+                }
+            </h1>
+            <p class="mt-1 text-sm text-slate-500">Daftar biaya dan form detail layanan.</p>
         </div>
 
         <form method="get" class="flex w-full max-w-md items-center overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+            <!-- Hidden input agar TypeService tetap terbawa saat form pencarian disubmit -->
+            @if (!string.IsNullOrWhiteSpace(Model.TypeService))
+            {
+                <input type="hidden" name="TypeService" value="@Model.TypeService" />
+            }
+
             <i class="ri-search-line ml-3 text-slate-400"></i>
             <input type="search"
                    name="search"
@@ -28,9 +40,12 @@
                    placeholder="Cari layanan..."
                    aria-label="Cari layanan perizinan"
                    class="min-w-0 flex-1 border-0 px-3 py-2.5 text-sm text-slate-600 outline-none" />
+            
             @if (!string.IsNullOrWhiteSpace(Model.Search))
             {
+                <!-- Tombol clear pencarian tetap membawa TypeService jika ada -->
                 <a asp-page="/PriceList/PriceList"
+                   asp-route-TypeService="@Model.TypeService"
                    aria-label="Hapus pencarian"
                    class="px-2 text-slate-400 transition hover:text-slate-600">
                     <i class="ri-close-line text-lg"></i>
@@ -54,7 +69,7 @@
         <div class="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-5 py-12 text-center text-sm text-slate-500">
             <i class="ri-file-search-line mb-2 block text-3xl text-slate-300"></i>
             @(string.IsNullOrWhiteSpace(Model.Search)
-                ? "Pricelist perizinan belum tersedia."
+                ? "Pricelist perizinan belum tersedia untuk kategori ini."
                 : $"Layanan dengan kata kunci “{Model.Search}” tidak ditemukan.")
         </div>
     }
@@ -113,41 +128,31 @@
 </main>
 
 <script>
+    // ... (Script Alpine.js download tetap sama seperti sebelumnya)
     function permitDownload() {
         return {
             downloading: false,
-
             async download(url) {
                 if (this.downloading) return;
-
                 this.downloading = true;
-
                 try {
-                    const response = await fetch(url, {
-                        method: 'GET',
-                        credentials: 'same-origin'
-                    });
-
+                    const response = await fetch(url, { method: 'GET', credentials: 'same-origin' });
                     if (!response.ok) {
                         const message = await response.text();
                         throw new Error(message || 'Dokumen tidak dapat diunduh.');
                     }
-
                     const blob = await response.blob();
                     const fileName = this.getFileName(response.headers.get('content-disposition'));
                     const objectUrl = URL.createObjectURL(blob);
                     const link = document.createElement('a');
-
                     link.href = objectUrl;
                     link.download = fileName;
                     document.body.appendChild(link);
                     link.click();
                     link.remove();
-
                     setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
                 } catch (error) {
                     const message = error?.message || 'Dokumen tidak dapat diunduh.';
-
                     if (typeof showError === 'function') {
                         showError('Download Gagal', message);
                     } else {
@@ -157,19 +162,12 @@
                     this.downloading = false;
                 }
             },
-
             getFileName(contentDisposition) {
                 if (!contentDisposition) return 'Dokumen-Persyaratan.pdf';
-
                 const encodedName = contentDisposition.match(/filename\*=UTF-8''([^;]+)/i);
                 if (encodedName?.[1]) {
-                    try {
-                        return decodeURIComponent(encodedName[1]);
-                    } catch (_) {
-                        return encodedName[1];
-                    }
+                    try { return decodeURIComponent(encodedName[1]); } catch (_) { return encodedName[1]; }
                 }
-
                 const plainName = contentDisposition.match(/filename="?([^";]+)"?/i);
                 return plainName?.[1] || 'Dokumen-Persyaratan.pdf';
             }

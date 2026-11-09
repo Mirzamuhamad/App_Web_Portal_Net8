@@ -1,3 +1,8 @@
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Globalization;
 using Dapper;
 using Microsoft.AspNetCore.Mvc;
@@ -17,6 +22,10 @@ public class PriceListModel : PageModel
     [BindProperty(SupportsGet = true)]
     public string Search { get; set; } = string.Empty;
 
+    // Tambahkan properti untuk menangkap parameter TypeService dari URL (GET)
+    [BindProperty(SupportsGet = true)]
+    public string TypeService { get; set; } = string.Empty;
+
     public List<PermitPriceItem> PermitPrices { get; private set; } = new();
 
     public string? LoadError { get; private set; }
@@ -24,6 +33,7 @@ public class PriceListModel : PageModel
     public async Task OnGetAsync()
     {
         Search = Search?.Trim() ?? string.Empty;
+        TypeService = TypeService?.Trim() ?? string.Empty;
 
         const string sql = @"
             SELECT
@@ -42,6 +52,7 @@ public class PriceListModel : PageModel
             WHERE ContentType = 'PERMIT'
               AND [Status] = 1
               AND PermitID IS NOT NULL
+              AND (@TypeService = '' OR TypeService = @TypeService)
               AND (
                     @Search = ''
                     OR Title LIKE @LikeSearch
@@ -59,7 +70,8 @@ public class PriceListModel : PageModel
             var result = await connection.QueryAsync<PermitPriceItem>(sql, new
             {
                 Search,
-                LikeSearch = $"%{Search}%"
+                LikeSearch = $"%{Search}%",
+                TypeService
             });
 
             PermitPrices = result.ToList();
@@ -70,6 +82,7 @@ public class PriceListModel : PageModel
             Console.Error.WriteLine($"Gagal memuat pricelist perizinan: {ex}");
         }
     }
+    
 
     public async Task<IActionResult> OnGetDownloadAsync(long contentId, CancellationToken cancellationToken)
     {
