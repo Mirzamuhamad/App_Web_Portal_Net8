@@ -123,8 +123,14 @@
                             @foreach (var TypeService in Model.TypeServiceList)
                             {
                                 var permit = Model.PermitPriceList.FirstOrDefault(item =>
-                                    string.Equals(item.TypeService?.Trim(), TypeService.TypeService?.Trim(), StringComparison.OrdinalIgnoreCase)
-                                    || string.Equals(item.Title?.Trim(), TypeService.TypeService?.Trim(), StringComparison.OrdinalIgnoreCase));
+                                    string.Equals(item.TypeService?.Trim(), TypeService.TypeService?.Trim(), StringComparison.OrdinalIgnoreCase));
+                                if (permit == null)
+                                {
+                                    // Cadangan untuk data lama yang belum memiliki TypeService.
+                                    permit = Model.PermitPriceList.FirstOrDefault(item =>
+                                        string.IsNullOrWhiteSpace(item.TypeService)
+                                        && string.Equals(item.Title?.Trim(), TypeService.TypeService?.Trim(), StringComparison.OrdinalIgnoreCase));
+                                }
                                 var permitDownloadUrl = permit == null || string.IsNullOrWhiteSpace(permit.DocumentUrl)
                                     ? null
                                     : Url.Page("/CreateServiceOrder/CreateServiceOrder", "Download", new { permitId = permit.PermitID });
@@ -276,15 +282,11 @@
 
                     @foreach (var item in Model.PermitPriceList)
                     {
-                        <article data-service-key="@item.TypeService"
-                                 data-title-key="@item.Title"
-                                 x-show="isPermitSelected($el.dataset.serviceKey, $el.dataset.titleKey)"
+                        <article data-permit-id="@item.PermitID"
+                                 x-show="selectedPermit?.permitId === $el.dataset.permitId"
                                  x-cloak
-                                 :class="isPermitSelected($el.dataset.serviceKey, $el.dataset.titleKey) ? 'border-teal-100' : 'border-slate-200 bg-white'"
-                                 :style="isPermitSelected($el.dataset.serviceKey, $el.dataset.titleKey) ? 'background-color: #f8fffd' : ''"
-                                 class="relative overflow-hidden rounded-2xl border p-4 transition">
-                            <div class="absolute inset-y-0 left-0 w-1"
-                                 :class="isPermitSelected($el.parentElement.dataset.serviceKey, $el.parentElement.dataset.titleKey) ? 'bg-teal-500' : 'bg-amber-400'"></div>
+                                 class="relative overflow-hidden rounded-2xl border border-teal-100 bg-[#f8fffd] p-4 transition">
+                            <div class="absolute inset-y-0 left-0 w-1 bg-teal-500"></div>
 
                             <div class="pl-1">
                                 <div class="flex items-start justify-between gap-3">
@@ -372,9 +374,8 @@
                 <div class="service-order-mobile-sheet-list space-y-3 p-4 sm:p-5">
                     @foreach (var item in Model.PermitPriceList)
                     {
-                        <article data-service-key="@item.TypeService"
-                                 data-title-key="@item.Title"
-                                 x-show="isPermitSelected($el.dataset.serviceKey, $el.dataset.titleKey)"
+                        <article data-permit-id="@item.PermitID"
+                                 x-show="selectedPermit?.permitId === $el.dataset.permitId"
                                  x-cloak
                                  class="service-order-price-card-soft relative overflow-hidden rounded-2xl border border-teal-100 p-4 shadow-sm">
                             <div class="absolute inset-y-0 left-0 w-1 bg-teal-500"></div>
@@ -507,14 +508,6 @@
 
             normalizeService(value) {
                 return (value || '').trim().toLocaleLowerCase('id-ID');
-            },
-
-            isPermitSelected(typeService, title) {
-                const selected = this.normalizeService(this.selectedService);
-                return selected !== '' && (
-                    selected === this.normalizeService(typeService)
-                    || selected === this.normalizeService(title)
-                );
             },
 
             async previewImages(event) {
