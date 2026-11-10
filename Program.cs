@@ -1,5 +1,9 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Security.Claims;
+using QuestPDF.Infrastructure;
+
+// Daftarkan lisensi Community QuestPDF
+QuestPDF.Settings.License = LicenseType.Community;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +13,8 @@ builder.Services.AddRazorPages(options =>
 {
     options.Conventions.AuthorizeFolder("/");
     options.Conventions.AllowAnonymousToPage("/Login");
+    // options.Conventions.AllowAnonymousToPage(
+    //     "/TagihanUnitList/TagihanUnitDetailPage/TagihanUnitInvoicePrint");
 }).AddMvcOptions(options =>
 {
     options.Filters.Add<TestLandingPageNet8.Helpers.VendorAccessFilter>();

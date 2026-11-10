@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Data.SqlClient;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.Security.Claims;
 using Dapper;   
 
@@ -17,6 +19,28 @@ namespace TestLandingPageNet8.Pages.CreateServiceOrder
     {
         public string TypeService { get; set; }
     }
+
+    public class PermitPriceItem
+    {
+        public long ContentID { get; set; }
+        public long PermitID { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string? SubTitle { get; set; }
+        public string? Description { get; set; }
+        public decimal Price { get; set; }
+        public string? TypeService { get; set; }
+        public string? DocumentUrl { get; set; }
+        public string? OriginalFileName { get; set; }
+
+        public string PriceText => Price == 0
+            ? "Gratis"
+            : string.Format(CultureInfo.GetCultureInfo("id-ID"), "Rp {0:N0}", Price);
+
+        public string DownloadFileName => string.IsNullOrWhiteSpace(OriginalFileName)
+            ? "Dokumen-Persyaratan"
+            : OriginalFileName;
+    }
+
     public class CreateServiceOrderModel : PageModel
     {
         // Properti untuk menampung list yang akan ditampilkan di Dropdown
@@ -24,17 +48,24 @@ namespace TestLandingPageNet8.Pages.CreateServiceOrder
 
         public List<TypeServiceModel> TypeServiceList { get; set; } = new List<TypeServiceModel>();
 
+        public List<PermitPriceItem> PermitPriceList { get; set; } = new List<PermitPriceItem>();
+
         [BindProperty]
         public ComplaintInput Input { get; set; } = new ComplaintInput();
 
         //tmbahan untuk class email
         private readonly IConfiguration _config;
         private readonly EmailService _email;
+        private readonly IHttpClientFactory _httpClientFactory;
 
-        public CreateServiceOrderModel(IConfiguration config, EmailService email)
+        public CreateServiceOrderModel(
+            IConfiguration config,
+            EmailService email,
+            IHttpClientFactory httpClientFactory)
         {
             _config = config;
             _email = email;
+            _httpClientFactory = httpClientFactory;
         }
         // end of email
 
@@ -99,7 +130,118 @@ namespace TestLandingPageNet8.Pages.CreateServiceOrder
                         });
                     }
                 }
+
+                const string sqlPermitPrice = @"
+                    SELECT
+                        ContentID,
+                        PermitID,
+                        Title,
+                        SubTitle,
+                        [Description],
+                        PermitPrice AS Price,
+                        TypeService,
+                        REPLACE(dbo.Dashboard_Url(DocumentPath), '/~', '') AS DocumentUrl,
+                        OriginalFileName
+                    FROM dbo.V_WebContentCMS
+                    WHERE ContentType = 'PERMIT'
+                      AND [Status] = 1
+                      AND PermitID IS NOT NULL
+                    ORDER BY SortOrder ASC, ContentID DESC;";
+
+                try
+                {
+                    var permitPrices = await connection.QueryAsync<PermitPriceItem>(sqlPermitPrice);
+                    PermitPriceList = permitPrices.ToList();
+                }
+                catch (Exception ex)
+                {
+                    // Pricelist bersifat informasi pendukung. Form Service Order tetap dapat digunakan
+                    // ketika data CMS atau dokumen sedang tidak tersedia.
+                    Console.Error.WriteLine($"Gagal memuat pricelist Service Order: {ex}");
+                }
             }
+        }
+
+        public async Task<IActionResult> OnGetDownloadAsync(long permitId)
+        {
+            const string sqlDocument = @"
+                SELECT TOP (1)
+                    REPLACE(dbo.Dashboard_Url(DocumentPath), '/~', '') AS DocumentUrl,
+                    OriginalFileName
+                FROM dbo.V_WebContentCMS
+                WHERE ContentType = 'PERMIT'
+                  AND [Status] = 1
+                  AND PermitID = @PermitID
+                  AND NULLIF(LTRIM(RTRIM(DocumentPath)), '') IS NOT NULL;";
+
+            using var connection = Db.Connect();
+            await connection.OpenAsync();
+
+            var document = await connection.QuerySingleOrDefaultAsync<PermitDocumentDownload>(
+                sqlDocument,
+                new { PermitID = permitId });
+
+            if (document == null
+                || string.IsNullOrWhiteSpace(document.DocumentUrl)
+                || !Uri.TryCreate(document.DocumentUrl, UriKind.Absolute, out var documentUri)
+                || (documentUri.Scheme != Uri.UriSchemeHttp && documentUri.Scheme != Uri.UriSchemeHttps))
+            {
+                return NotFound("Dokumen persyaratan tidak ditemukan.");
+            }
+
+            try
+            {
+                var client = _httpClientFactory.CreateClient();
+                using var response = await client.GetAsync(
+                    documentUri,
+                    HttpCompletionOption.ResponseHeadersRead,
+                    HttpContext.RequestAborted);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    return StatusCode(StatusCodes.Status502BadGateway, "Dokumen persyaratan tidak dapat diunduh.");
+                }
+
+                var fileBytes = await response.Content.ReadAsByteArrayAsync(HttpContext.RequestAborted);
+                var fileName = Path.GetFileName(document.OriginalFileName);
+
+                if (string.IsNullOrWhiteSpace(fileName))
+                {
+                    fileName = Path.GetFileName(documentUri.LocalPath);
+                }
+
+                if (string.IsNullOrWhiteSpace(fileName))
+                {
+                    fileName = "Dokumen-Persyaratan";
+                }
+
+                var contentType = response.Content.Headers.ContentType?.MediaType;
+                if (string.IsNullOrWhiteSpace(contentType))
+                {
+                    var provider = new FileExtensionContentTypeProvider();
+                    if (!provider.TryGetContentType(fileName, out contentType))
+                    {
+                        contentType = "application/octet-stream";
+                    }
+                }
+
+                return File(fileBytes, contentType, fileName);
+            }
+            catch (OperationCanceledException) when (!HttpContext.RequestAborted.IsCancellationRequested)
+            {
+                return StatusCode(StatusCodes.Status504GatewayTimeout, "Waktu pengunduhan dokumen habis.");
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.Error.WriteLine($"Gagal mengunduh dokumen permit {permitId}: {ex}");
+                return StatusCode(StatusCodes.Status502BadGateway, "Dokumen persyaratan tidak dapat diunduh.");
+            }
+        }
+
+        private sealed class PermitDocumentDownload
+        {
+            public string? DocumentUrl { get; init; }
+            public string? OriginalFileName { get; init; }
         }
 
         public async Task<IActionResult> OnPostAsync()
