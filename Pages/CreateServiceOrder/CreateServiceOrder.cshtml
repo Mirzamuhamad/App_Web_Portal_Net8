@@ -160,7 +160,7 @@
                             <div class="min-w-0">
                                 <p class="text-sm font-extrabold uppercase text-slate-800" x-text="selectedPermit?.title"></p>
                                 <p x-show="selectedPermit?.subtitle" class="mt-1 text-xs text-slate-500" x-text="selectedPermit?.subtitle"></p>
-                                <p class="mt-2 text-sm text-slate-600">
+                                <p x-show="selectedPermit?.price" class="mt-2 text-sm text-slate-600">
                                     Biaya: <span class="text-base font-extrabold text-teal-700" x-text="selectedPermit?.price"></span>
                                 </p>
                             </div>
@@ -299,8 +299,11 @@
                                     </div>
                                 </div>
 
-                                <p class="mt-3 text-xs text-slate-500">Biaya</p>
-                                <p class="text-lg font-extrabold text-teal-700">@item.PriceText</p>
+                                @if (item.Price != 0)
+                                {
+                                    <p class="mt-3 text-xs text-slate-500">Biaya</p>
+                                    <p class="text-lg font-extrabold text-teal-700">@item.PriceText</p>
+                                }
 
                                 @if (!string.IsNullOrWhiteSpace(item.DocumentUrl))
                                 {
@@ -386,9 +389,12 @@
                                     {
                                         <p class="mt-1 text-xs text-slate-500">@(item.SubTitle ?? item.Description)</p>
                                     }
+                                    @if (item.Price != 0)
+                                    {
                                     <p class="mt-2 text-sm text-slate-600">
                                         Biaya: <span class="text-base font-extrabold text-teal-700">@item.PriceText</span>
                                     </p>
+                                    }
                                 </div>
 
                                 @if (!string.IsNullOrWhiteSpace(item.DocumentUrl))

@@ -188,7 +188,7 @@ public class PriceListModel : PageModel
         public DateTime? UploadedDate { get; init; }
 
         public string PriceText => Price == 0
-            ? "Gratis"
+            ? string.Empty
             : string.Format(CultureInfo.GetCultureInfo("id-ID"), "Rp {0:N0}", Price);
 
         public string ServiceText => string.IsNullOrWhiteSpace(TypeService)
