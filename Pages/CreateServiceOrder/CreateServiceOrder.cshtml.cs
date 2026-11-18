@@ -33,7 +33,7 @@ namespace TestLandingPageNet8.Pages.CreateServiceOrder
         public string? OriginalFileName { get; set; }
 
         public string PriceText => Price == 0
-            ? "Gratis"
+            ? string.Empty
             : string.Format(CultureInfo.GetCultureInfo("id-ID"), "Rp {0:N0}", Price);
 
         public string DownloadFileName => string.IsNullOrWhiteSpace(OriginalFileName)
