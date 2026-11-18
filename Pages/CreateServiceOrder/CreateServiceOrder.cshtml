@@ -282,8 +282,9 @@
 
                     @foreach (var item in Model.PermitPriceList)
                     {
-                        <article data-permit-id="@item.PermitID"
-                                 x-show="selectedPermit?.permitId === $el.dataset.permitId"
+                        <article data-service-key="@item.TypeService"
+                                 data-title-key="@item.Title"
+                                 x-show="isPermitSelected($el.dataset.serviceKey, $el.dataset.titleKey)"
                                  x-cloak
                                  class="relative overflow-hidden rounded-2xl border border-teal-100 bg-[#f8fffd] p-4 transition">
                             <div class="absolute inset-y-0 left-0 w-1 bg-teal-500"></div>
@@ -374,8 +375,9 @@
                 <div class="service-order-mobile-sheet-list space-y-3 p-4 sm:p-5">
                     @foreach (var item in Model.PermitPriceList)
                     {
-                        <article data-permit-id="@item.PermitID"
-                                 x-show="selectedPermit?.permitId === $el.dataset.permitId"
+                        <article data-service-key="@item.TypeService"
+                                 data-title-key="@item.Title"
+                                 x-show="isPermitSelected($el.dataset.serviceKey, $el.dataset.titleKey)"
                                  x-cloak
                                  class="service-order-price-card-soft relative overflow-hidden rounded-2xl border border-teal-100 p-4 shadow-sm">
                             <div class="absolute inset-y-0 left-0 w-1 bg-teal-500"></div>
@@ -508,6 +510,16 @@
 
             normalizeService(value) {
                 return (value || '').trim().toLocaleLowerCase('id-ID');
+            },
+
+            isPermitSelected(typeService, title) {
+                const selected = this.normalizeService(this.selectedService);
+                const service = this.normalizeService(typeService);
+
+                return selected !== '' && (
+                    selected === service
+                    || (service === '' && selected === this.normalizeService(title))
+                );
             },
 
             async previewImages(event) {
