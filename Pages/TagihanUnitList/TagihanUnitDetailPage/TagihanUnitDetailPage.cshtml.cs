@@ -18,6 +18,7 @@ namespace TestLandingPageNet8.Pages.TagihanUnitList.TagihanUnitDetailPage
         public decimal TotalSemuaTagihan => UnitDetailTagihan?.Sum(x => x.AmountPerKavling) ?? 0;
         public DateTime? DueDateUtama => UnitDetailTagihan?.FirstOrDefault()?.DueDate;
         public string StatusUtama => UnitDetailTagihan?.FirstOrDefault()?.Status ?? "Kosong";
+        public string CustomerCode { get; set; } = string.Empty;
 
         public List<TicketViewModel> Complaints { get; set; } = new List<TicketViewModel>();
 
@@ -39,45 +40,93 @@ namespace TestLandingPageNet8.Pages.TagihanUnitList.TagihanUnitDetailPage
             public List<IFormFile>? Photos { get; set; }
         }
 
-        public async Task<IActionResult> OnGetAsync(int id)
+        public async Task<IActionResult> OnGetAsync(string? invoiceNo)
         {
+            invoiceNo = string.IsNullOrWhiteSpace(invoiceNo) ? null : invoiceNo.Trim();
+
             using (var connection = Db.Connect())
             {
-
-                // 1. Ambil UserId dari Claims (User yang sedang login)
                 var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
                 if (!int.TryParse(userIdStr, out int userId))
-                {
-                    return RedirectToPage("/Login");
-                }
-
-                if (string.IsNullOrEmpty(userIdStr))
                 {
                     return RedirectToPage("/Login");
                 }
 
                 await connection.OpenAsync();
 
-                // Pastikan variabel query diakhiri dengan titik koma (;)
-                string sqlUnit = "SELECT KavlingId, KavlingCode, Kawasan, Luas FROM V_ListKavlingUserPOrtal WHERE KavlingId = @KavlingId AND UserId = @UserId;";
-                Unit = await connection.QueryFirstOrDefaultAsync<KavlingInfo>(sqlUnit, new { KavlingId = id, UserId = userId });
+                const string customerSql = @"
+                    SELECT NULLIF(LTRIM(RTRIM(CustCode)), '')
+                    FROM V_PortalUsers
+                    WHERE UserId = @UserId;";
 
-                if (Unit == null)
+                var customerCode = await connection.QueryFirstOrDefaultAsync<string?>(
+                    customerSql,
+                    new { UserId = userId });
+                CustomerCode = customerCode ?? string.Empty;
+
+                const string invoiceSql = @"
+                    SELECT DISTINCT
+                        T.TransNmbr,
+                        T.CustCode,
+                        T.DueDate,
+                        T.KavlingId,
+                        K.KavlingCode,
+                        K.Luas,
+                        T.CommercialItem,
+                        T.CommercialDesc,
+                        T.AmountPerKavling,
+                        T.TotalAmountKavling,
+                        T.Status
+                    FROM V_GetTagihanDetailKavling T
+                    LEFT JOIN MsKavlingsPortal K ON K.KavlingId = T.KavlingId
+                    WHERE (
+                            T.UserId = @UserId
+                            OR (@CustCode IS NOT NULL AND T.CustCode = @CustCode)
+                          )
+                      AND (@InvoiceNo IS NULL OR T.TransNmbr = @InvoiceNo)
+                    ORDER BY T.DueDate, T.TransNmbr, T.KavlingId, T.CommercialItem;";
+
+                UnitDetailTagihan = (await connection.QueryAsync<KavlingInfoDetail>(
+                    invoiceSql,
+                    new
+                    {
+                        InvoiceNo = invoiceNo,
+                        UserId = userId,
+                        CustCode = customerCode
+                    })).ToList();
+
+                if (UnitDetailTagihan.Count == 0)
                 {
-                    return RedirectToPage("/Index");
+                    return Page();
                 }
 
-                // Ambil detail tagihan untuk unit tersebut
-                string sqlUnitDetail = "SELECT * FROM V_GetTagihanDetailKavling WHERE UserId = @UserId AND KavlingId = @KavlingId";
-                // PERBAIKAN: Gunakan QueryAsync (Tanpa FirstOrDefault) lalu konversi ke ToList()
-                var resultDetail = await connection.QueryAsync<KavlingInfoDetail>(sqlUnitDetail, new { UserId = userId, KavlingId = id });
-                UnitDetailTagihan = resultDetail.ToList();
+                var firstItem = UnitDetailTagihan[0];
+                CustomerCode = firstItem.CustCode;
 
+                var distinctUnits = UnitDetailTagihan
+                    .GroupBy(x => new { x.KavlingId, x.KavlingCode })
+                    .Select(x => x.First())
+                    .ToList();
 
-                // Baris ini sering menjadi penyebab error jika mapping-nya tidak pas
-                string sqlComplaints = "SELECT * FROM V_ComplaintList WHERE KavlingId = @KavlingId and UserId = @UserId ORDER BY date DESC";
-                var result = await connection.QueryAsync<TicketViewModel>(sqlComplaints, new { KavlingId = id, UserId = userId });
+                Unit = new KavlingInfo
+                {
+                    KavlingId = firstItem.KavlingId,
+                    KavlingCode = string.Join(", ", distinctUnits.Select(x => x.KavlingCode)),
+                    Kawasan = "Area Kawasan",
+                    Luas = distinctUnits.Sum(x => x.Luas)
+                };
+
+                const string complaintsSql = @"
+                    SELECT *
+                    FROM V_ComplaintList
+                    WHERE UserId = @UserId
+                      AND KavlingId IN @KavlingIds
+                    ORDER BY date DESC;";
+
+                var kavlingIds = distinctUnits.Select(x => x.KavlingId).ToArray();
+                var result = await connection.QueryAsync<TicketViewModel>(
+                    complaintsSql,
+                    new { UserId = userId, KavlingIds = kavlingIds });
                 Complaints = result.ToList();
             }
             return Page();
@@ -183,16 +232,17 @@ namespace TestLandingPageNet8.Pages.TagihanUnitList.TagihanUnitDetailPage
         public class KavlingInfoDetail
         {
             public int KavlingId { get; set; }
-            public string TransNmbr { get; set; }
-            public string CustCode { get; set; }
-            public string UserId { get; set; }
+            public string KavlingCode { get; set; } = string.Empty;
+            public decimal Luas { get; set; }
+            public string TransNmbr { get; set; } = string.Empty;
+            public string CustCode { get; set; } = string.Empty;
             public DateTime? DueDate { get; set; }
-            public string CommercialItem { get; set; }
-            public string CommercialDesc { get; set; }
+            public string CommercialItem { get; set; } = string.Empty;
+            public string CommercialDesc { get; set; } = string.Empty;
             public decimal AmountPerKavling { get; set; }
             public decimal TotalAmountKavling { get; set; }
            
-            public string Status { get; set; }
+            public string Status { get; set; } = string.Empty;
         }
 
 
