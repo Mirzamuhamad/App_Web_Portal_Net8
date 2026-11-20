@@ -1,22 +1,37 @@
 @page
-@model Pages.HistoryTagihanUnitList.HistoryTagihanUnitListModel
+@model TestLandingPageNet8.Pages.HistoryTagihanUnitList.HistoryTagihanUnitListModel
 @{
     Layout = "_Layout";
     ViewData["Title"] = "History Tagihan Lunas";
+    var culture = new System.Globalization.CultureInfo("id-ID");
+}
+
+@functions {
+    private static string ToBase64Url(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return string.Empty;
+        }
+
+        return System.Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(value))
+            .TrimEnd('=')
+            .Replace('+', '-')
+            .Replace('/', '_');
+    }
 }
 
 <div class="min-h-screen bg-slate-50 pb-20">
-   <!-- Header -->
     <div class="bg-white border-b sticky top-0 z-30 px-2 sm:px-6 py-3 shadow-sm">
         <div class="mx-auto flex items-center justify-between gap-4">
             <div class="flex items-center gap-4 min-w-0">
-                <a href="/TagihanUnitList/TagihanUnitList"
-                    class="w-10 h-10 flex items-center justify-center bg-slate-100 rounded-2xl text-slate-500 hover:bg-emerald-50 hover:text-emerald-600 transition">
+                <a href="/TagihanUnitList/TagihanUnitDetailPage/TagihanUnitDetailPage"
+                   class="w-10 h-10 flex items-center justify-center bg-slate-100 rounded-2xl text-slate-500 hover:bg-emerald-50 hover:text-emerald-600 transition">
                     <i class="ri-arrow-left-line text-xl"></i>
                 </a>
                 <div class="min-w-0">
                     <h1 class="text-base sm:text-lg font-bold text-slate-700 truncate">History Tagihan Lunas</h1>
-                    <p class="text-[10px] sm:text-xs text-slate-400 uppercase tracking-widest font-semibold">Arsip pembayaran unit (Maks. 10)</p>
+                    <p class="text-[10px] sm:text-xs text-slate-400 uppercase tracking-widest font-semibold">Arsip invoice yang sudah dibayar</p>
                 </div>
             </div>
 
@@ -25,13 +40,9 @@
                     <i class="ri-checkbox-circle-fill text-base"></i>
                     Tagihan Sudah Lunas
                 </span>
-
-                <!-- Tombol Hamburger Filter (Hanya Muncul di Mobile) -->
-                <button type="button" 
-                        onclick="toggleMobileFilter()" 
+                <button type="button" onclick="toggleMobileFilter()"
                         class="sm:hidden w-10 h-10 flex items-center justify-center bg-slate-100 border border-slate-200 rounded-2xl text-slate-600 hover:bg-emerald-50 hover:text-emerald-600 relative transition">
                     <i class="ri-equalizer-line text-xl"></i>
-                    <!-- Indikator dot merah jika filter sedang aktif -->
                     @if (Model.StartDate.HasValue || Model.EndDate.HasValue)
                     {
                         <span class="absolute top-2 right-2 w-2.5 h-2.5 bg-rose-500 rounded-full ring-2 ring-white"></span>
@@ -41,107 +52,253 @@
         </div>
     </div>
 
-    <!-- Filter Section (Responsif: Desktop Terbuka, Mobile Tersembunyi bawaan) -->
     <div id="filterContainer" class="hidden sm:block mx-auto px-2 sm:px-6 pt-4 transition-all duration-300">
         <form method="get" class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row items-end gap-4">
             <div class="w-full sm:w-auto flex-1">
-                <label for="StartDate" class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wider cursor-pointer">Dari Tanggal</label>
-                <input type="date" 
-                       id="StartDate"
-                       asp-for="StartDate" 
-                       onclick="this.showPicker()"
+                <label for="StartDate" class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wider cursor-pointer">Dari Tanggal Pembayaran</label>
+                <input type="date" id="StartDate" asp-for="StartDate" onclick="this.showPicker()"
                        class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 focus:outline-none focus:border-emerald-500 transition cursor-pointer" />
             </div>
             <div class="w-full sm:w-auto flex-1">
-                <label for="EndDate" class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wider cursor-pointer">Sampai Tanggal</label>
-                <input type="date" 
-                       id="EndDate"
-                       asp-for="EndDate" 
-                       onclick="this.showPicker()"
+                <label for="EndDate" class="block text-xs font-bold text-slate-500 mb-1.5 uppercase tracking-wider cursor-pointer">Sampai Tanggal Pembayaran</label>
+                <input type="date" id="EndDate" asp-for="EndDate" onclick="this.showPicker()"
                        class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 focus:outline-none focus:border-emerald-500 transition cursor-pointer" />
             </div>
-            <div class="w-full sm:w-auto flex gap-2 w-full sm:w-auto">
+            <div class="w-full sm:w-auto flex gap-2">
                 <button type="submit" class="flex-1 sm:flex-initial bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm px-5 py-2.5 rounded-xl shadow-md transition flex items-center justify-center gap-2">
                     <i class="ri-filter-3-line"></i> Terapkan
                 </button>
                 @if (Model.StartDate.HasValue || Model.EndDate.HasValue)
                 {
-                    <a href="/HistoryTagihanUnitList/HistoryTagihanUnitList" class="bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-sm px-4 py-2.5 rounded-xl transition flex items-center justify-center">
-                        Reset
-                    </a>
+                    <a href="/HistoryTagihanUnitList/HistoryTagihanUnitList"
+                       class="bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-sm px-4 py-2.5 rounded-xl transition flex items-center justify-center">Reset</a>
                 }
             </div>
         </form>
     </div>
 
-    <!-- Data List -->
-    <div class="grid grid-cols-1 gap-4 pt-4 mx-auto px-2 sm:px-6">
-        @if (Model.UnitItems.Any())
-        {
-            @foreach (var item in Model.UnitItems)
+    @if (Model.Invoices.Any())
+    {
+        <div class="mx-auto px-2 sm:px-6 pt-4">
+            <div class="bg-emerald-50 border border-emerald-100 rounded-2xl px-4 py-3 flex items-center justify-between gap-3">
+                <div class="flex items-center gap-2 text-emerald-700">
+                    <i class="ri-archive-stack-line text-lg"></i>
+                    <span class="text-xs sm:text-sm font-bold">@Model.TotalInvoiceCount invoice lunas</span>
+                </div>
+                <span class="text-[10px] sm:text-xs text-emerald-600 font-semibold">Halaman @Model.CurrentPage dari @Model.TotalPages</span>
+            </div>
+        </div>
+
+        <div class="space-y-4 pt-4 mx-auto px-2 sm:px-6">
+            @for (var index = 0; index < Model.Invoices.Count; index++)
             {
-                <a asp-page="/HistoryTagihanUnitList/HistoryTagihanUnitDetailPage/HistoryTagihanUnitDetailPage"
-                    asp-route-id="@item.KavlingId"
-                    class="block transform hover:scale-[1.002] transition duration-200">
+                var invoice = Model.Invoices[index];
+                var modalId = $"history-invoice-{index}";
+                var invoiceKey = ToBase64Url(invoice.InvoiceNo);
+                var fakturFileKey = ToBase64Url(invoice.FileFakturPajak);
+                var fakturUrl = $"/HistoryTagihanUnitList/HistoryTagihanUnitDetailPage/HistoryDownload?fileKey={fakturFileKey}&documentType=faktur-pajak&invoiceKey={invoiceKey}";
+                var groupedKavling = invoice.Details
+                    .GroupBy(x => new { x.KavlingId, x.KavlingCode, x.Luas })
+                    .ToList();
 
-                    <div class="bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-emerald-100 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative overflow-hidden">
-                        <div class="absolute inset-y-0 right-0 w-24 bg-emerald-50/60"></div>
-
-                        <div class="flex items-start gap-3 flex-1 min-w-0 relative">
-                            <div class="w-1.5 h-12 rounded-full flex-shrink-0 mt-0.5 bg-emerald-500"></div>
-
-                            <div class="flex-1 min-w-0">
-                                <span class="text-[10px] sm:text-xs font-bold text-emerald-600 uppercase tracking-wider block mb-0.5">History Tagihan Kavling</span>
-                                <h3 class="text-base sm:text-lg font-bold truncate text-slate-700">
-                                    @item.KavlingCode
-                                </h3>
-
-                                <div class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-400">
-                                    <span class="flex items-center gap-1">
-                                        <i class="fa-solid fa-ruler-combined text-[10px]"></i> Luas: @item.Luas.ToString("N2", new System.Globalization.CultureInfo("id-ID")) m²
-                                    </span>
-                                    <span class="text-emerald-600 font-medium flex items-center gap-1">
-                                        <i class="fa-solid fa-circle-check text-[10px]"></i> @item.PaidInvoiceCount invoice lunas
-                                    </span>
-                                </div>
+                <section class="bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-emerald-100 p-5 sm:p-6">
+                    <div class="flex flex-row justify-between items-start gap-4 mb-3">
+                        <div class="min-w-0">
+                            <div class="flex items-center gap-2">
+                                <div class="w-1.5 h-6 bg-emerald-500 rounded-full"></div>
+                                <h2 class="text-[10px] sm:text-xs text-slate-400 font-bold uppercase tracking-widest">No Invoice</h2>
                             </div>
+                            <p class="text-sm sm:text-lg font-bold text-emerald-600 tracking-wide pl-3.5 break-all">@invoice.InvoiceNo</p>
+                            <p class="text-[10px] sm:text-xs text-slate-400 pl-3.5 mt-1">Kwitansi: @(string.IsNullOrWhiteSpace(invoice.ReceiptNo) ? "-" : invoice.ReceiptNo)</p>
                         </div>
-
-                        <div class="border border-emerald-200 rounded-xl p-3 flex items-center justify-between gap-4 w-full sm:w-[280px] flex-shrink-0 bg-emerald-50/40 text-gray-700 relative">
-                            <div class="flex items-center justify-center w-8 h-8 rounded-lg flex-shrink-0 bg-emerald-100 text-emerald-600">
-                                <i class="fa-solid fa-receipt text-sm"></i>
-                            </div>
-
-                            <div class="text-right flex-1 min-w-0">
-                                <p class="text-[9px] uppercase tracking-wider text-emerald-600 font-semibold leading-none mb-1.5">Total Tagihan Lunas</p>
-                                <h2 class="text-base sm:text-lg font-bold tracking-tight text-slate-700 whitespace-nowrap">
-                                    <span class="text-xs font-semibold text-emerald-500 mr-0.5">Rp</span>@item.TotalPaidAmount.ToString("N0", new System.Globalization.CultureInfo("id-ID"))
-                                </h2>
+                        <div class="text-right flex-shrink-0">
+                            <p class="text-[9px] sm:text-[10px] text-slate-400 uppercase tracking-wider mb-1 font-semibold">Total Tagihan</p>
+                            <div class="text-lg sm:text-2xl text-slate-800 font-bold tracking-tight">
+                                <span class="text-xs sm:text-sm text-emerald-500">Rp </span>@invoice.TotalAmount.ToString("N0", culture)
                             </div>
                         </div>
                     </div>
-                </a>
+
+                    <div class="h-px w-full mb-4 border-t border-dashed border-slate-200"></div>
+
+                    <div class="flex flex-col md:flex-row md:items-end justify-between gap-5">
+                        <div class="flex flex-wrap items-end gap-6 sm:gap-10">
+                            <div>
+                                <p class="text-[10px] text-slate-400 uppercase tracking-widest mb-1 font-semibold">Tanggal Pembayaran</p>
+                                <p class="font-bold text-xs sm:text-sm text-slate-600 flex items-center gap-1.5">
+                                    <i class="ri-calendar-check-line text-emerald-500"></i>
+                                    @(invoice.PaymentDate.HasValue ? invoice.PaymentDate.Value.ToString("dd MMMM yyyy", culture) : "-")
+                                </p>
+                            </div>
+                            <div>
+                                <p class="text-[10px] text-slate-400 uppercase tracking-widest mb-1 font-semibold">Status</p>
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-50 text-emerald-600 text-[10px] font-extrabold border border-emerald-100 uppercase tracking-wider">
+                                    <i class="ri-checkbox-circle-fill"></i> Lunas
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="w-full md:w-auto flex flex-col sm:flex-row gap-2 justify-end">
+                            @if (!string.IsNullOrWhiteSpace(invoice.ReceiptNo))
+                            {
+                                <a href="/HistoryTagihanUnitList/HistoryTagihanUnitDetailPage/HistoryTagihanUnitInvoicePrint?invoiceNo=@System.Net.WebUtility.UrlEncode(invoice.ReceiptNo)&documentType=kwitansi"
+                                   target="_blank"
+                                   class="border border-emerald-600 text-emerald-600 hover:bg-emerald-50 px-5 py-2 rounded-xl transition-all text-center active:scale-95 flex items-center justify-center gap-2 text-xs font-bold shadow-sm">
+                                    <i class="ri-receipt-line text-base"></i> Download Kwitansi
+                                </a>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(invoice.FileFakturPajak))
+                            {
+                                <a href="@fakturUrl"
+                                   class="border border-sky-600 text-sky-600 hover:bg-sky-50 px-5 py-2 rounded-xl transition-all text-center active:scale-95 flex items-center justify-center gap-2 text-xs font-bold shadow-sm">
+                                    <i class="ri-file-shield-2-line text-base"></i> Download Faktur Pajak
+                                </a>
+                            }
+                            <button type="button" onclick="openBillingModal('@modalId')"
+                                    class="border border-slate-200 hover:bg-slate-50 text-slate-700 px-5 py-2 rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2 text-xs font-semibold shadow-sm">
+                                <i class="ri-file-list-3-line text-base text-slate-400"></i> Rincian Tagihan
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <div id="modal-billing-@modalId" class="fixed inset-0 z-50 hidden overflow-y-auto" role="dialog" aria-modal="true">
+                    <div class="flex items-center justify-center min-h-screen px-4 py-8 text-center">
+                        <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeBillingModal('@modalId')"></div>
+                        <div class="relative inline-block bg-white rounded-3xl text-left overflow-hidden shadow-2xl w-full max-w-2xl border border-slate-100">
+                            <div class="px-5 sm:px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                                <div>
+                                    <p class="text-[10px] text-emerald-600 uppercase tracking-widest font-bold">Rincian Tagihan Lunas</p>
+                                    <h3 class="text-sm sm:text-base font-bold text-slate-800 break-all">@invoice.InvoiceNo</h3>
+                                </div>
+                                <button type="button" onclick="closeBillingModal('@modalId')" class="text-slate-400 hover:text-slate-600 rounded-lg p-1 hover:bg-slate-100">
+                                    <i class="ri-close-line text-xl"></i>
+                                </button>
+                            </div>
+
+                            <div class="p-4 sm:p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+                                @foreach (var kavling in groupedKavling)
+                                {
+                                    var subtotalKavling = kavling.Sum(x => x.AmountPerKavling);
+                                    <div class="border border-slate-200 rounded-2xl overflow-hidden">
+                                        <div class="bg-slate-50 px-4 py-3 flex justify-between items-start gap-3">
+                                            <div>
+                                                <p class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Kavling</p>
+                                                <p class="text-sm font-bold text-slate-700">@kavling.Key.KavlingCode</p>
+                                                <p class="text-[10px] text-slate-400">Luas @kavling.Key.Luas.ToString("N2", culture) m²</p>
+                                            </div>
+                                            <div class="text-right">
+                                                <p class="text-[10px] text-slate-400 uppercase tracking-wider">Subtotal</p>
+                                                <p class="text-sm font-bold text-emerald-600">Rp @subtotalKavling.ToString("N0", culture)</p>
+                                            </div>
+                                        </div>
+                                        <div class="divide-y divide-slate-100">
+                                            @foreach (var item in kavling)
+                                            {
+                                                <div class="px-4 py-3 flex justify-between items-start gap-4">
+                                                    <div class="min-w-0">
+                                                        <span class="inline-block text-[10px] bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-md font-bold uppercase tracking-wide">@item.CommercialItem</span>
+                                                        <p class="text-xs text-slate-600 leading-normal pt-1">@item.CommercialDesc</p>
+                                                    </div>
+                                                    <p class="text-xs font-bold text-slate-800 whitespace-nowrap">Rp @item.AmountPerKavling.ToString("N0", culture)</p>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+
+                                <div class="flex justify-between items-center font-bold text-slate-800 text-base pt-3 border-t border-slate-200">
+                                    <span>Total Tagihan</span>
+                                    <span class="text-emerald-600">Rp @invoice.TotalAmount.ToString("N0", culture)</span>
+                                </div>
+                            </div>
+
+                            <div class="px-5 sm:px-6 py-4 bg-slate-50/50 border-t border-slate-100 flex justify-end">
+                                <button type="button" onclick="closeBillingModal('@modalId')"
+                                        class="w-full sm:w-auto px-5 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 active:scale-95 shadow-sm">Tutup Detail</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             }
-        }
-        else
+        </div>
+
+        @if (Model.TotalPages > 1)
         {
+            var firstPage = Math.Max(1, Model.CurrentPage - 2);
+            var lastPage = Math.Min(Model.TotalPages, firstPage + 4);
+            firstPage = Math.Max(1, lastPage - 4);
+
+            <nav class="mx-auto px-2 sm:px-6 pt-6 flex items-center justify-center gap-2" aria-label="Navigasi halaman history invoice">
+                <a asp-page="/HistoryTagihanUnitList/HistoryTagihanUnitList"
+                   asp-route-p="@(Model.CurrentPage - 1)"
+                   asp-route-StartDate="@(Model.StartDate?.ToString("yyyy-MM-dd"))"
+                   asp-route-EndDate="@(Model.EndDate?.ToString("yyyy-MM-dd"))"
+                   class="px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-600 @(Model.CurrentPage == 1 ? "pointer-events-none opacity-40" : "hover:bg-slate-50")">
+                    <i class="ri-arrow-left-s-line"></i>
+                </a>
+                @for (var pageNumber = firstPage; pageNumber <= lastPage; pageNumber++)
+                {
+                    <a asp-page="/HistoryTagihanUnitList/HistoryTagihanUnitList"
+                       asp-route-p="@pageNumber"
+                       asp-route-StartDate="@(Model.StartDate?.ToString("yyyy-MM-dd"))"
+                       asp-route-EndDate="@(Model.EndDate?.ToString("yyyy-MM-dd"))"
+                       class="min-w-9 px-3 py-2 rounded-xl border text-center text-xs font-bold @(pageNumber == Model.CurrentPage ? "border-emerald-600 bg-emerald-600 text-white" : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50")">@pageNumber</a>
+                }
+                <a asp-page="/HistoryTagihanUnitList/HistoryTagihanUnitList"
+                   asp-route-p="@(Model.CurrentPage + 1)"
+                   asp-route-StartDate="@(Model.StartDate?.ToString("yyyy-MM-dd"))"
+                   asp-route-EndDate="@(Model.EndDate?.ToString("yyyy-MM-dd"))"
+                   class="px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-600 @(Model.CurrentPage == Model.TotalPages ? "pointer-events-none opacity-40" : "hover:bg-slate-50")">
+                    <i class="ri-arrow-right-s-line"></i>
+                </a>
+            </nav>
+        }
+    }
+    else
+    {
+        <div class="mx-auto px-2 sm:px-6 pt-4">
             <div class="bg-white rounded-2xl border border-dashed border-slate-200 p-10 text-center shadow-sm">
                 <i class="ri-inbox-archive-line text-5xl text-slate-200"></i>
-                <h2 class="mt-3 text-base font-bold text-slate-600">Belum ada history tagihan lunas</h2>
-                <p class="mt-1 text-xs text-slate-400">Tagihan yang sudah berstatus lunas atau sesuai filter tanggal akan tampil di halaman ini.</p>
+                <h2 class="mt-3 text-base font-bold text-slate-600">Belum ada riwayat tagihan lunas saat ini</h2>
+                <p class="mt-1 text-xs text-slate-400">Invoice yang sudah dibayar dan sesuai filter tanggal akan tampil di halaman ini.</p>
             </div>
-        }
-    </div>
+        </div>
+    }
 </div>
 
 @section Scripts {
     <script>
         function toggleMobileFilter() {
-            const filterContainer = document.getElementById('filterContainer');
-            // Jika di mobile (layar < 640px), toggle kelas 'hidden'
             if (window.innerWidth < 640) {
-                filterContainer.classList.toggle('hidden');
+                document.getElementById('filterContainer')?.classList.toggle('hidden');
             }
         }
+
+        function openBillingModal(modalKey) {
+            const modal = document.getElementById('modal-billing-' + modalKey);
+            if (modal) {
+                modal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closeBillingModal(modalKey) {
+            const modal = document.getElementById('modal-billing-' + modalKey);
+            if (modal) {
+                modal.classList.add('hidden');
+                document.body.style.overflow = '';
+            }
+        }
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape') {
+                const modal = document.querySelector('[id^="modal-billing-"]:not(.hidden)');
+                if (modal) {
+                    modal.classList.add('hidden');
+                    document.body.style.overflow = '';
+                }
+            }
+        });
     </script>
-    }
+}

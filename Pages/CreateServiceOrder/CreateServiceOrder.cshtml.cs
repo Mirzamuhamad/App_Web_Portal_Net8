@@ -33,7 +33,7 @@ namespace TestLandingPageNet8.Pages.CreateServiceOrder
         public string? OriginalFileName { get; set; }
 
         public string PriceText => Price == 0
-            ? "Gratis"
+            ? string.Empty
             : string.Format(CultureInfo.GetCultureInfo("id-ID"), "Rp {0:N0}", Price);
 
         public string DownloadFileName => string.IsNullOrWhiteSpace(OriginalFileName)
@@ -49,6 +49,13 @@ namespace TestLandingPageNet8.Pages.CreateServiceOrder
         public List<TypeServiceModel> TypeServiceList { get; set; } = new List<TypeServiceModel>();
 
         public List<PermitPriceItem> PermitPriceList { get; set; } = new List<PermitPriceItem>();
+
+        [BindProperty(SupportsGet = true)]
+        public string? From { get; set; }
+
+        public bool IsPermitMode =>
+            string.Equals(From?.Trim(), "Perizinan", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(From?.Trim(), "Perijinan", StringComparison.OrdinalIgnoreCase);
 
         [BindProperty]
         public ComplaintInput Input { get; set; } = new ComplaintInput();
@@ -77,6 +84,8 @@ namespace TestLandingPageNet8.Pages.CreateServiceOrder
             [Required]
             [StringLength(100)]
             public string Title { get; set; }
+
+            public long? PermitID { get; set; }
 
             [Required]
             public string Description { get; set; }
@@ -117,7 +126,7 @@ namespace TestLandingPageNet8.Pages.CreateServiceOrder
             {
                 await connection.OpenAsync();
 
-                string sqlService = "SELECT * FROM V_GetTypeService ORDER BY Urutan ASC;";
+                string sqlService = "SELECT * FROM V_GetTypeServiceFOrTenant ORDER BY Urutan ASC;";
 
                 using (var cmdService = new SqlCommand(sqlService, connection))
                 using (var reader = await cmdService.ExecuteReaderAsync())
@@ -146,11 +155,14 @@ namespace TestLandingPageNet8.Pages.CreateServiceOrder
                     WHERE ContentType = 'PERMIT'
                       AND [Status] = 1
                       AND PermitID IS NOT NULL
+                      AND (@PermitMode = 0 OR TypeService = 'Perizinan')
                     ORDER BY SortOrder ASC, ContentID DESC;";
 
                 try
                 {
-                    var permitPrices = await connection.QueryAsync<PermitPriceItem>(sqlPermitPrice);
+                    var permitPrices = await connection.QueryAsync<PermitPriceItem>(
+                        sqlPermitPrice,
+                        new { PermitMode = IsPermitMode });
                     PermitPriceList = permitPrices.ToList();
                 }
                 catch (Exception ex)
@@ -248,6 +260,17 @@ namespace TestLandingPageNet8.Pages.CreateServiceOrder
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
+            if (IsPermitMode)
+            {
+                // Judul layanan pada mode Perizinan selalu ditentukan ulang dari master.
+                ModelState.Remove("Input.Title");
+
+                if (!Input.PermitID.HasValue)
+                {
+                    return new JsonResult(new { success = false, message = "Pilih jenis perizinan terlebih dahulu." });
+                }
+            }
+
             if (!ModelState.IsValid)
             {
                 return new JsonResult(new { success = false, message = "Lengkapi semua data yang diperlukan." });
@@ -257,6 +280,31 @@ namespace TestLandingPageNet8.Pages.CreateServiceOrder
             using (var connection = Db.Connect())
             {
                 await connection.OpenAsync();
+
+                if (IsPermitMode)
+                {
+                    const string sqlSelectedPermit = @"
+                        SELECT TOP (1) Title
+                        FROM dbo.V_WebContentCMS
+                        WHERE ContentType = 'PERMIT'
+                          AND [Status] = 1
+                          AND PermitID = @PermitID
+                          AND TypeService = 'Perizinan';";
+
+                    var selectedPermitTitle = await connection.QuerySingleOrDefaultAsync<string>(
+                        sqlSelectedPermit,
+                        new { PermitID = Input.PermitID });
+
+                    if (string.IsNullOrWhiteSpace(selectedPermitTitle))
+                    {
+                        return new JsonResult(new { success = false, message = "Jenis perizinan tidak valid atau sudah tidak aktif." });
+                    }
+
+                    // TypeService pada ServiceOrderPortal bersifat informasi, sehingga
+                    // diisi dengan nama item perizinan yang dipilih tenant.
+                    Input.Title = selectedPermitTitle;
+                }
+
                 using (var transaction = connection.BeginTransaction())
                 {
                     try
