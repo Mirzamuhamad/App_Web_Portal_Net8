@@ -3,8 +3,13 @@
 @{
     Layout = "_Layout";
     ViewData["Title"] = "Service Order";
-    var sourceMenu = ViewContext.HttpContext.Request.Query["from"].ToString();
+    var sourceMenu = Model.From ?? ViewContext.HttpContext.Request.Query["from"].ToString();
     var isKeluhan = sourceMenu == "Pengaduan/Keluhan";
+    var isPermitMode = Model.IsPermitMode;
+    var permitModeItems = Model.PermitPriceList
+        .Where(item => string.Equals(item.TypeService?.Trim(), "Perizinan", StringComparison.OrdinalIgnoreCase))
+        .ToList();
+    var hasPriceList = isPermitMode ? permitModeItems.Any() : Model.PermitPriceList.Any();
 }
 
 @* <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet"> *@
@@ -66,13 +71,15 @@
                 <i class="ri-arrow-left-line"></i> 
             </a>
             <div>
-                <h2 class="text-lg sm:text-2xl font-extrabold text-slate-800 tracking-tight">Buat Service Order</h2>
+                <h2 class="text-lg sm:text-2xl font-extrabold text-slate-800 tracking-tight">
+                    @(isPermitMode ? "Buat Permohonan Perizinan" : "Buat Service Order")
+                </h2>
                 @* <p class="text-sm text-slate-500">Laporkan kendala Anda secara cepat.</p> *@
             </div>
 
         </div>
 
-        <div class="service-order-form-layout @(Model.PermitPriceList.Any() && !isKeluhan ? "has-price-panel" : null)">
+        <div class="service-order-form-layout @(hasPriceList && !isKeluhan ? "has-price-panel" : null)">
         <form x-ref="form" enctype="multipart/form-data"
             class="bg-white p-2 md:p-6 rounded-2xl sm:rounded-[2.5rem] shadow-xl shadow-slate-200/40 border border-slate-100 space-y-3 sm:space-y-4">
             @Html.AntiForgeryToken()
@@ -102,15 +109,49 @@
             </div> *@
 
             <div class="space-y-1">
-                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Pilih Type Service/Order</label>
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">
+                    @(isPermitMode ? "Pilih Jenis Perizinan" : "Pilih Type Service/Order")
+                </label>
                 <div class="relative">
                     @if (isKeluhan)
                     {
                         <!-- Jika dari menu Keluhan, langsung kunci nilainya ke "Keluhan" -->
                         <select name="Input.Title" required id="serviceTypeSelect"
                                 @@change="syncSelectedPermit()"
+                                data-filter-mode="service"
                                 class="w-full bg-slate-100 border border-slate-200 rounded-2xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition appearance-none cursor-not-allowed" readonly>
                             <option value="Pengaduan/Keluhan" selected>Pengaduan/Keluhan</option>
+                        </select>
+                    }
+                    else if (isPermitMode)
+                    {
+                        <input type="hidden" name="Input.Title" id="selectedServiceTitle" value="" />
+                        <select name="Input.PermitID" required id="serviceTypeSelect"
+                                @@change="syncSelectedPermit()"
+                                data-filter-mode="permit"
+                                class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition appearance-none cursor-pointer">
+                            @if (permitModeItems.Any())
+                            {
+                                <option value="" selected disabled>Pilih jenis perizinan</option>
+                                @foreach (var permit in permitModeItems)
+                                {
+                                    var permitDownloadUrl = string.IsNullOrWhiteSpace(permit.DocumentUrl)
+                                        ? null
+                                        : Url.Page("/CreateServiceOrder/CreateServiceOrder", "Download", new { permitId = permit.PermitID });
+
+                                    <option value="@permit.PermitID"
+                                            data-permit-title="@permit.Title"
+                                            data-permit-subtitle="@(permit.SubTitle ?? permit.Description)"
+                                            data-permit-price="@permit.PriceText"
+                                            data-permit-url="@permitDownloadUrl"
+                                            data-permit-id="@permit.PermitID"
+                                            data-permit-filename="@permit.DownloadFileName">@permit.Title</option>
+                                }
+                            }
+                            else
+                            {
+                                <option value="" selected disabled>Jenis perizinan belum tersedia</option>
+                            }
                         </select>
                     }
                     else
@@ -118,8 +159,9 @@
                         <!-- Jika diakses normal, tampilkan semua list seperti biasa -->
                         <select name="Input.Title" required id="serviceTypeSelect"
                                 @@change="syncSelectedPermit()"
+                                data-filter-mode="service"
                                 class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3.5 text-sm focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 outline-none transition appearance-none cursor-pointer">
-                            
+                            <option value="" selected disabled>Pilih type service/order</option>
                             @foreach (var TypeService in Model.TypeServiceList)
                             {
                                 var permit = Model.PermitPriceList.FirstOrDefault(item =>
@@ -150,7 +192,7 @@
                 </div>
             </div>
 
-            @if (Model.PermitPriceList.Any() && !isKeluhan)
+            @if (hasPriceList && !isKeluhan)
             {
                 <div class="service-order-mobile-price space-y-2">
                     <div x-show="selectedPermit" x-cloak
@@ -250,14 +292,14 @@
                     <template x-if="loading">
                         <i class="ri-loader-4-line animate-spin text-xl"></i>
                     </template>
-                    <span x-text="loading ? 'Sedang Mengirim...' : 'Kirim Service Order '"></span>
+                    <span x-text="loading ? 'Sedang Mengirim...' : '@(isPermitMode ? "Kirim Permohonan Perizinan" : "Kirim Service Order")'"></span>
                 </button>
             </div>
 
            
         </form>
 
-        @if (Model.PermitPriceList.Any() && !isKeluhan)
+        @if (hasPriceList && !isKeluhan)
         {
             <aside class="service-order-price-panel overflow-hidden rounded-[2rem] border border-slate-100 bg-white shadow-xl shadow-slate-200/40"
                    aria-labelledby="desktopPriceListTitle">
@@ -267,7 +309,10 @@
                             <i class="ri-price-tag-3-line text-xl"></i>
                         </div>
                         <div>
-                            <h3 id="desktopPriceListTitle" class="text-base font-extrabold text-slate-800">Pricelist layanan terpilih</h3>
+                            <h3 id="desktopPriceListTitle" class="text-base font-extrabold text-slate-800">
+                               
+                                @(isPermitMode ? "Persyaratan dan Form" : "Pricelist layanan terpilih")
+                                </h3>
                             <p class="mt-0.5 text-xs text-slate-500" x-text="selectedService || 'Pilih jenis layanan pada form'"></p>
                         </div>
                     </div>
@@ -282,8 +327,10 @@
 
                     @foreach (var item in Model.PermitPriceList)
                     {
-                        <article data-permit-id="@item.PermitID"
-                                 x-show="selectedPermit?.permitId === $el.dataset.permitId"
+                        <article data-service-key="@item.TypeService"
+                                 data-title-key="@item.Title"
+                                 data-permit-id="@item.PermitID"
+                                 x-show="isPriceItemVisible($el.dataset.serviceKey, $el.dataset.titleKey, $el.dataset.permitId)"
                                  x-cloak
                                  class="relative overflow-hidden rounded-2xl border border-teal-100 bg-[#f8fffd] p-4 transition">
                             <div class="absolute inset-y-0 left-0 w-1 bg-teal-500"></div>
@@ -338,7 +385,7 @@
         </div>
     </div>
 
-    @if (Model.PermitPriceList.Any() && !isKeluhan)
+    @if (hasPriceList && !isKeluhan)
     {
         <div x-show="showPriceList"
              x-cloak
@@ -365,7 +412,9 @@
                 </div>
                 <div class="flex items-start justify-between border-b border-slate-100 px-5 py-4">
                     <div>
-                        <h3 id="priceListTitle" class="text-lg font-extrabold text-slate-800">Pricelist layanan terpilih</h3>
+                        <h3 id="priceListTitle" class="text-lg font-extrabold text-slate-800">
+                            Pricelist layanan terpilih
+                        </h3>
                         <p class="mt-1 text-xs text-slate-500" x-text="selectedService"></p>
                     </div>
                     <button type="button" @@click="showPriceList = false" aria-label="Tutup pricelist"
@@ -377,8 +426,10 @@
                 <div class="service-order-mobile-sheet-list space-y-3 p-4 sm:p-5">
                     @foreach (var item in Model.PermitPriceList)
                     {
-                        <article data-permit-id="@item.PermitID"
-                                 x-show="selectedPermit?.permitId === $el.dataset.permitId"
+                        <article data-service-key="@item.TypeService"
+                                 data-title-key="@item.Title"
+                                 data-permit-id="@item.PermitID"
+                                 x-show="isPriceItemVisible($el.dataset.serviceKey, $el.dataset.titleKey, $el.dataset.permitId)"
                                  x-cloak
                                  class="service-order-price-card-soft relative overflow-hidden rounded-2xl border border-teal-100 p-4 shadow-sm">
                             <div class="absolute inset-y-0 left-0 w-1 bg-teal-500"></div>
@@ -440,6 +491,7 @@
             loading: false,
             selectedPermit: null,
             selectedService: '',
+            permitMode: @(isPermitMode ? "true" : "false"),
             downloadingPermitId: null,
             showPriceList: false,
             // Variabel Baru
@@ -453,8 +505,16 @@
             syncSelectedPermit() {
                 const select = document.getElementById('serviceTypeSelect');
                 const option = select?.options[select.selectedIndex];
+                const filterMode = select?.dataset.filterMode || 'service';
 
-                this.selectedService = select?.value || '';
+                this.selectedService = filterMode === 'permit'
+                    ? (option?.dataset.permitTitle || '')
+                    : (select?.value || '');
+
+                const selectedServiceTitle = document.getElementById('selectedServiceTitle');
+                if (selectedServiceTitle && filterMode === 'permit') {
+                    selectedServiceTitle.value = option?.dataset.permitTitle || '';
+                }
 
                 if (!option?.dataset.permitTitle) {
                     this.selectedPermit = null;
@@ -516,6 +576,24 @@
                 return (value || '').trim().toLocaleLowerCase('id-ID');
             },
 
+            isPermitSelected(typeService, title) {
+                const selected = this.normalizeService(this.selectedService);
+                const service = this.normalizeService(typeService);
+
+                return selected !== '' && (
+                    selected === service
+                    || (service === '' && selected === this.normalizeService(title))
+                );
+            },
+
+            isPriceItemVisible(typeService, title, permitId) {
+                if (this.permitMode) {
+                    return String(this.selectedPermit?.permitId || '') === String(permitId || '');
+                }
+
+                return this.isPermitSelected(typeService, title);
+            },
+
             async previewImages(event) {
                 const files = Array.from(event.target.files);
                 if (this.previews.length + files.length > 5) {
@@ -575,6 +653,11 @@
                 formData.append('Input.KavlingId', this.$refs.form.querySelector('[name="Input.KavlingId"]').value);
                 formData.append('Input.Title', this.$refs.form.querySelector('[name="Input.Title"]').value);
                 formData.append('Input.Description', this.$refs.form.querySelector('[name="Input.Description"]').value);
+
+                const permitInput = this.$refs.form.querySelector('[name="Input.PermitID"]');
+                if (permitInput) {
+                    formData.append('Input.PermitID', permitInput.value);
+                }
 
                 // Tambahkan file yang sudah dikompresi
                 this.compressedFiles.forEach((file) => {
