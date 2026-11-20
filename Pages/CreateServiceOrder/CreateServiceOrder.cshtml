@@ -309,7 +309,10 @@
                             <i class="ri-price-tag-3-line text-xl"></i>
                         </div>
                         <div>
-                            <h3 id="desktopPriceListTitle" class="text-base font-extrabold text-slate-800">Pricelist layanan terpilih</h3>
+                            <h3 id="desktopPriceListTitle" class="text-base font-extrabold text-slate-800">
+                               
+                                @(isPermitMode ? "Persyaratan dan Form" : "Pricelist layanan terpilih")
+                                </h3>
                             <p class="mt-0.5 text-xs text-slate-500" x-text="selectedService || 'Pilih jenis layanan pada form'"></p>
                         </div>
                     </div>
@@ -409,7 +412,9 @@
                 </div>
                 <div class="flex items-start justify-between border-b border-slate-100 px-5 py-4">
                     <div>
-                        <h3 id="priceListTitle" class="text-lg font-extrabold text-slate-800">Pricelist layanan terpilih</h3>
+                        <h3 id="priceListTitle" class="text-lg font-extrabold text-slate-800">
+                            Pricelist layanan terpilih
+                        </h3>
                         <p class="mt-1 text-xs text-slate-500" x-text="selectedService"></p>
                     </div>
                     <button type="button" @@click="showPriceList = false" aria-label="Tutup pricelist"

@@ -126,7 +126,7 @@ namespace TestLandingPageNet8.Pages.CreateServiceOrder
             {
                 await connection.OpenAsync();
 
-                string sqlService = "SELECT * FROM V_GetTypeService ORDER BY Urutan ASC;";
+                string sqlService = "SELECT * FROM V_GetTypeServiceFOrTenant ORDER BY Urutan ASC;";
 
                 using (var cmdService = new SqlCommand(sqlService, connection))
                 using (var reader = await cmdService.ExecuteReaderAsync())
